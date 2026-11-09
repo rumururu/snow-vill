@@ -26,3 +26,12 @@
 6. Product domain, privacy policy, terms, legal operator identity.
 7. CDN/hosting provider and commercial plan.
 8. Whether marketing card has any names or counts (default no personal data).
+
+## M0 prototype choices (2026-11-09, provisional)
+- Stack for M0: Next.js 16 App Router + TypeScript + Tailwind v4; SVG/HTML scene (no PixiJS yet); Vitest + Testing Library.
+- Mock data in memory + tab `sessionStorage`; clearly labelled "시뮬레이션 데이터". Invite links therefore only resolve in the creating tab.
+- One house per village per browser (mock "my house" flag). Real ownership/recovery is still open item 1.
+- Village owner (creator browser) can remove any house; a participant can remove their own. Report is UI-only.
+- Nicknames appear as small chips in the private village scene; the share card shows no names, photos, messages or counts (item 8 default).
+- Limits: village name ≤20, nickname ≤10, message ≤60 user-perceived characters; photos JPG/PNG/WEBP ≤10MB, re-encoded to 512px JPEG.
+- Full village (8/8): claim disabled; share card + new village offered (partially answers item 5).

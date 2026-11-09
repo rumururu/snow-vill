@@ -1,7 +1,7 @@
 # Codex handoff — build instructions
 
 ## Context
-This repository is a **planning/design handoff**. The business hypothesis and detailed requirements are in docs/. No production frontend or backend exists yet. Avoid inventing implementation progress.
+This repository started as a **planning/design handoff**. The business hypothesis and detailed requirements are in docs/. As of 2026-11-09 the **M0 clickable prototype exists** (see below); no backend or production deployment exists yet. Avoid inventing implementation progress.
 
 ## Immediate task: M0 clickable prototype
 1. Initialize Next.js + TypeScript + Tailwind with a clean Korean-first responsive UI.
@@ -11,6 +11,26 @@ This repository is a **planning/design handoff**. The business hypothesis and de
 5. Build real mobile interactions, focus handling, loading/error/empty/full states, prefers-reduced-motion and 320px layout.
 6. Add tests for slot collision in mock state, 8-slot cap, sheet open/close, validation, and photo-free share preview.
 7. Document setup/run/test commands. Do not implement payments or pretend mocked persistence is real.
+
+## M0 implementation status
+Implemented 2026-11-09 (Next.js 16 App Router, TypeScript, Tailwind v4, Vitest). Run/test commands: README.
+
+| Item | Status |
+|---|---|
+| Routes `/`, `/create`, `/v/[id]`, not-found / error | Done |
+| 8 deterministic slots from the SVG mockup, rendered rear→front; accessible HTML hotspots ≥44px | Done (`src/lib/scene.ts`) |
+| Claim sheet: nickname, 3 styles, optional photo (signature check, ≤10MB, 1:1 crop, canvas re-encode), ≤60-char message, draft kept on failure | Done |
+| Photo-frame sheet: photo/fallback, message, date, report (simulated), remove (mock owner / own house) | Done |
+| Invite: link copy, Web Share with copy fallback, non-PII `src` token | Done (link only works in the same browser tab — mock data) |
+| Share card 1080×1350, photo-free by type (`ShareCardData` has styles only), PNG export | Done |
+| States: loading skeleton, not found, full, slot collision, upload rejected/failed, already joined, storage quota | Done |
+| Focus trap/return, Esc, inert background, reduced motion, 320px layout | Done, browser-verified by `npm run screenshots` |
+| Tests: slot collision, 8-slot cap, sheet open/close, validation, photo-free share card | Done (`npm test`) |
+| Persistence, multi-device, real invites, ownership, report submission, analytics events, OG image | **Not implemented** (M1/M2) |
+
+M0 product choices to revisit (also in 09-decisions): one house per village per browser; nicknames shown as chips inside the private scene but never on the share card; mock village owner may remove any house; sample village id is `demo`.
+
+Swap points for M1: replace `src/store/villageStore.ts` with API calls (keep `src/lib/village.ts` rules mirrored server-side); replace `SceneArt` placeholder SVG with sprites listed in `src/lib/assets.ts`; replace data-URL photos with private storage ids + signed URLs.
 
 ## M1 backend
 Supabase schema migrations, RLS, private photo bucket, owner claim/recovery, invite authorization, image sanitization, atomic slot assignment, content reporting/deletion, rate limits. Ensure no public photo leaks in metadata. Use separate staging credentials.

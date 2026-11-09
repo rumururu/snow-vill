@@ -1,0 +1,53 @@
+import type { SceneSlotArt } from "@/components/scene/SceneArt";
+import { SLOTS } from "@/lib/scene";
+import { houseAt, isFull, type Village } from "@/lib/village";
+
+export const SHARE_CARD_WIDTH = 1080;
+export const SHARE_CARD_HEIGHT = 1350;
+
+/**
+ * Data allowed on the public share card: slot styles and completion only.
+ * No photos, nicknames, messages or counts (docs/09-decisions.md #8).
+ */
+export interface ShareCardData {
+  slots: SceneSlotArt[];
+  complete: boolean;
+}
+
+export function toShareCardData(village: Village): ShareCardData {
+  return {
+    slots: SLOTS.map((s) => ({ slot: s.slot, style: houseAt(village, s.slot)?.style ?? null })),
+    complete: isFull(village),
+  };
+}
+
+/** Invite link. `src` is a non-PII attribution token (FR09). */
+export function inviteUrl(origin: string, villageId: string, src: "copy" | "share" = "copy"): string {
+  const url = new URL(`/v/${encodeURIComponent(villageId)}`, origin);
+  url.searchParams.set("src", `invite_${src}`);
+  return url.toString();
+}
+
+export type ShareOutcome = "shared" | "copied" | "cancelled" | "failed";
+
+/** Web Share when available, otherwise clipboard copy. Outcome is an attempt, not delivery. */
+export async function shareOrCopy(data: { title: string; text: string; url: string }): Promise<ShareOutcome> {
+  if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+    try {
+      await navigator.share(data);
+      return "shared";
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return "cancelled";
+    }
+  }
+  return (await copyText(data.url)) ? "copied" : "failed";
+}
+
+export async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900" role="img" aria-label="Original schematic illustration of an eight-house Snow Village">
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#d9e7ee"/><stop offset="1" stop-color="#f6f0e4"/></linearGradient><filter id="shadow"><feGaussianBlur stdDeviation="9"/></filter></defs>
+<rect width="900" height="900" fill="url(#sky)"/><circle cx="750" cy="120" r="75" fill="#fffaf0" opacity=".8"/>
+<path d="M450 110 820 450 450 790 80 450Z" fill="#e7f0ed" stroke="#b8d0ca" stroke-width="7"/>
+<path d="M450 165 770 450 450 730 130 450Z" fill="#f6f0e4"/>
+<path d="M450 170V725M130 450H770" stroke="#d5c6a9" stroke-width="36" stroke-linecap="round"/>
+<path d="M450 170V725M130 450H770" stroke="#fff9eb" stroke-width="26" stroke-linecap="round"/>
+<g id="house"><ellipse cx="0" cy="64" rx="84" ry="20" fill="#8da49d" opacity=".25" filter="url(#shadow)"/><path d="M-64-13 0-47 64-13 64 55 0 90-64 55Z" fill="#c88a56"/><path d="M0-47 64-13 0 22-64-13Z" fill="#404f70"/><path d="M-64-13 0-47 64-13 0 22Z" fill="#627797"/><path d="M-15 29 14 44 14 72-15 57Z" fill="#e7b66b"/><path d="M-64-13 0 22 0 90-64 55Z" fill="#dba576" opacity=".7"/><path d="M-64-13 0 22 64-13" fill="none" stroke="#f6f0e4" stroke-width="8" stroke-linecap="round"/></g>
+<use href="#house" transform="translate(335 270) scale(.83)"/><use href="#house" transform="translate(565 270) scale(.83)"/>
+<use href="#house" transform="translate(215 390) scale(.83)"/><use href="#house" transform="translate(685 390) scale(.83)"/>
+<use href="#house" transform="translate(215 540) scale(.83)"/><use href="#house" transform="translate(685 540) scale(.83)"/>
+<use href="#house" transform="translate(335 660) scale(.83)"/><use href="#house" transform="translate(565 660) scale(.83)"/>
+<path d="M450 295 517 455H383Z" fill="#708b82"/><path d="M450 337 504 486H396Z" fill="#557668"/><path d="M450 380 490 515H410Z" fill="#3d6558"/><rect x="440" y="510" width="20" height="34" fill="#a5754e"/><path d="m450 271 12 24 27 4-20 19 5 27-24-13-24 13 5-27-20-19 27-4Z" fill="#e7b66b"/>
+<g fill="#e7b66b"><circle cx="428" cy="394" r="7"/><circle cx="471" cy="437" r="8"/><circle cx="442" cy="476" r="7"/></g>
+<g fill="#fff" opacity=".9"><circle cx="130" cy="180" r="5"/><circle cx="720" cy="225" r="6"/><circle cx="785" cy="610" r="5"/><circle cx="100" cy="650" r="6"/><circle cx="565" cy="130" r="5"/><circle cx="340" cy="800" r="5"/></g>
+</svg>

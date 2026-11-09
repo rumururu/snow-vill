@@ -46,8 +46,8 @@ Implemented and deployed 2026-11-09 on the shared `mkideabox-games` Supabase pro
 | Other games untouched | `supabase/deploy.sh` hash of all non-snowvill objects identical before/after (142 objects) |
 | Multi-device browser E2E (create → photo → invite → friend views photo → claim → collision → report → remove → delete) | Done — all checks pass, server leftovers 0 |
 | Owner recovery on a new device, invite token separation/expiry | **Open** (decision items 1–2); the village link currently grants view + claim |
-| Hosting: static export + Cloudflare Workers static assets, `_headers` CSP | Ready — verified on the local Cloudflare runtime (`wrangler dev`): both browser E2E suites pass with the CSP active. **Not deployed yet**: needs `wrangler login` + domain decision |
-| Production CORS origin (`SNOWVILL_ALLOWED_ORIGINS` secret), privacy policy, data retention schedule, moderation tooling, analytics | **Open** |
+| Hosting: static export + Cloudflare Workers static assets, `_headers` CSP | Ready — verified on the local Cloudflare runtime (`wrangler dev`): both browser E2E suites pass with the CSP active. Deployed 2026-11-09 to https://snow-village.myappmanage.workers.dev; CORS secret set; multi-device E2E passes against production (23/23, twice). Custom domain pending |
+| Privacy policy, data retention schedule, moderation tooling, analytics | **Open** |
 
 Deviation from docs/04 route plan: no Next.js API routes. The browser calls Supabase RPC (anon) and the `snowvill-photo` Edge Function directly, so the service-role key never leaves Supabase and the web app can be hosted as a plain static/edge app.
 

@@ -61,6 +61,8 @@ It walks the full flow (sample → claim with a generated test image → frame �
 
 ## Hosting
 
+**Deployed (beta, 2026-11-09):** https://snow-village.myappmanage.workers.dev — Cloudflare account `Rumururu@gmail.com's Account`, Worker `snow-village`. Custom domain not attached yet.
+
 The site is a **static export** (`output: "export"`) served by **Cloudflare Workers static assets** (`wrangler.jsonc`, no Worker script) — free and not metered per request. Village pages are `/v/?id=<id>` because static exports cannot serve arbitrary dynamic path segments. `public/_headers` sets the CSP (only this site + the Supabase project), `nosniff`, referrer/permissions policies, `noindex`, and immutable caching for hashed assets.
 
 Deploy checklist:

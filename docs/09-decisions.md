@@ -44,3 +44,4 @@
 - Photos: the client re-encodes to a 512px JPEG; the server accepts JPEG only (≤300KB, ≤1024px), strips APP1–APP15/COM metadata segments without re-encoding, and stores privately; viewing uses 120s signed URLs.
 - Character limits count Unicode code points (same as PostgreSQL `char_length`) on both client and server.
 - No data-retention job yet: villages persist until deleted by the owner. A post-season retention/deletion schedule must be set before launch (with the privacy policy).
+- Hosting (2026-11-09): static export on Cloudflare Workers static assets (free, unmetered static requests, `mkideabox.com` already on Cloudflare). Village URL format changed to `/v/?id=<id>`. Proposed production domain `snow.mkideabox.com` (not yet confirmed).

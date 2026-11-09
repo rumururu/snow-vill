@@ -124,7 +124,7 @@ describe("VillageView (sample village)", () => {
     renderWithStore(<VillageView villageId={r.id} isNew />, store);
     expect(screen.getByRole("dialog", { name: "1번 집터에 내 집 만들기" })).toBeInTheDocument();
     expect(screen.getByText(/마을이 생겼어요!/)).toBeInTheDocument();
-    expect(routerMock.replace).toHaveBeenCalledWith(`/v/${r.id}`, { scroll: false });
+    expect(routerMock.replace).toHaveBeenCalledWith(`/v/?id=${r.id}`, { scroll: false });
   });
 
   it("invite sheet shows the invite URL with a non-PII source token", async () => {
@@ -132,7 +132,7 @@ describe("VillageView (sample village)", () => {
     renderWithStore(<VillageView villageId="demo" />);
     await user.click(screen.getByRole("button", { name: "친구 초대" }));
     const dialog = screen.getByRole("dialog", { name: "친구 초대" });
-    expect(within(dialog).getByLabelText("초대 링크")).toHaveValue("http://localhost:3000/v/demo?src=invite_copy");
+    expect(within(dialog).getByLabelText("초대 링크")).toHaveValue("http://localhost:3000/v/?id=demo&src=invite_copy");
     await user.click(within(dialog).getByRole("button", { name: "복사" }));
     expect(await within(dialog).findByRole("status")).toHaveTextContent(/복사/);
   });

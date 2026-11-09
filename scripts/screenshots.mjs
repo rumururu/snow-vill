@@ -44,7 +44,7 @@ try {
   await shot("01-landing");
 
   // S03 sample village
-  await page.goto(`${BASE_URL}/v/demo`);
+  await page.goto(`${BASE_URL}/v/?id=demo`);
   await slot(0).waitFor();
   check((await page.locator("button[data-slot]").count()) === 8, "8 house hotspots rendered");
   for (let i = 0; i < 8; i++) {
@@ -109,7 +109,7 @@ try {
   await page.getByRole("button", { name: "친구 초대" }).click();
   await page.getByRole("dialog", { name: "친구 초대" }).waitFor();
   const invite = await page.getByLabel("초대 링크").inputValue();
-  check(invite.endsWith("/v/demo?src=invite_copy"), `invite url ${invite}`);
+  check(invite.endsWith("/v/?id=demo&src=invite_copy"), `invite url ${invite}`);
   await shot("06-invite");
   await page.keyboard.press("Escape");
 
@@ -138,18 +138,18 @@ try {
   await shot("08-create");
   await page.getByRole("button", { name: "마을 생성하기" }).click();
   await page.getByRole("dialog", { name: "1번 집터에 내 집 만들기" }).waitFor();
-  check(/\/v\/[a-z0-9]+$/.test(new URL(page.url()).pathname), `created village route ${new URL(page.url()).pathname}`);
+  check(/^[a-z0-9]+$/.test(new URL(page.url()).searchParams.get("id") ?? ""), `created village route ${page.url()}`);
   await shot("09-first-claim");
 
   // Unknown village
-  await page.goto(`${BASE_URL}/v/does-not-exist`);
+  await page.goto(`${BASE_URL}/v/?id=does-not-exist`);
   await page.getByRole("heading", { name: "마을을 찾을 수 없어요" }).waitFor();
   check(true, "unknown village shows not-found state");
 
   // 320 / 390 / 480 widths: no horizontal overflow
   for (const width of [320, 390, 480]) {
     await page.setViewportSize({ width, height: 740 });
-    for (const path of ["/", "/create", "/v/demo"]) {
+    for (const path of ["/", "/create/", "/v/?id=demo"]) {
       await page.goto(`${BASE_URL}${path}`);
       await page.waitForLoadState("networkidle");
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -157,7 +157,7 @@ try {
     }
   }
   await page.setViewportSize({ width: 320, height: 640 });
-  await page.goto(`${BASE_URL}/v/demo`);
+  await page.goto(`${BASE_URL}/v/?id=demo`);
   await slot(0).waitFor();
   await shot("10-village-320");
 

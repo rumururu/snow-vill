@@ -48,7 +48,7 @@ try {
   await A.page.getByLabel("우리 마을의 이름은?").fill(name);
   await A.page.getByRole("button", { name: "마을 생성하기" }).click();
   await A.page.getByRole("dialog", { name: "1번 집터에 내 집 만들기" }).waitFor();
-  villageId = new URL(A.page.url()).pathname.split("/").pop();
+  villageId = new URL(A.page.url()).searchParams.get("id");
   console.log(`VILLAGE_ID=${villageId}`);
   const owner = await A.page.evaluate(() => JSON.parse(localStorage.getItem("snow-village:identity:v1") ?? "{}"));
   console.log(`OWNER_SECRET=${owner.owners?.[villageId] ?? ""}`);
@@ -83,7 +83,7 @@ try {
 
   await A.page.getByRole("button", { name: "친구 초대" }).click();
   const invite = await A.page.getByLabel("초대 링크").inputValue();
-  check(invite.includes(`/v/${villageId}`), `invite link ${invite}`);
+  check(invite.includes(`/v/?id=${villageId}`), `invite link ${invite}`);
   await A.page.keyboard.press("Escape");
 
   // ---- friend on another "device": open link, view photo, claim ----

@@ -48,3 +48,6 @@ playwright-report/
 test-results/
 uploads/
 private-photos/
+
+# wrangler local state
+.wrangler/

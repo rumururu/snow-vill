@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 import { VillageScene } from "@/components/scene/VillageScene";
 import { SimulatedBadge } from "@/components/ui/SimulatedBadge";
 import { charLength, VILLAGE_CAPACITY, VILLAGE_NAME_MAX, type Village } from "@/lib/village";
+import { villagePath } from "@/lib/share";
 import { useVillageStore } from "@/store/VillageStoreProvider";
 
 const PREVIEW_DATE = "2026-12-01T00:00:00.000Z";
@@ -29,7 +30,7 @@ export function CreateVillageForm() {
       setBusy(false);
       return;
     }
-    router.push(`/v/${result.id}?new=1`);
+    router.push(villagePath(result.id, { new: "1" }));
   }
 
   return (

@@ -17,7 +17,7 @@ Implemented 2026-11-09 (Next.js 16 App Router, TypeScript, Tailwind v4, Vitest).
 
 | Item | Status |
 |---|---|
-| Routes `/`, `/create`, `/v/[id]`, not-found / error | Done |
+| Routes `/`, `/create`, `/v/[id]`, not-found / error | Done (village route became `/v/?id=` for static hosting, 2026-11-09) |
 | 8 deterministic slots from the SVG mockup, rendered rear→front; accessible HTML hotspots ≥44px | Done (`src/lib/scene.ts`) |
 | Claim sheet: nickname, 3 styles, optional photo (signature check, ≤10MB, 1:1 crop, canvas re-encode), ≤60-char message, draft kept on failure | Done |
 | Photo-frame sheet: photo/fallback, message, date, report (simulated), remove (mock owner / own house) | Done |
@@ -46,7 +46,8 @@ Implemented and deployed 2026-11-09 on the shared `mkideabox-games` Supabase pro
 | Other games untouched | `supabase/deploy.sh` hash of all non-snowvill objects identical before/after (142 objects) |
 | Multi-device browser E2E (create → photo → invite → friend views photo → claim → collision → report → remove → delete) | Done — all checks pass, server leftovers 0 |
 | Owner recovery on a new device, invite token separation/expiry | **Open** (decision items 1–2); the village link currently grants view + claim |
-| Hosting/domain, CORS origin for production (`SNOWVILL_ALLOWED_ORIGINS` secret), privacy policy, data retention schedule, moderation tooling, analytics | **Open** |
+| Hosting: static export + Cloudflare Workers static assets, `_headers` CSP | Ready — verified on the local Cloudflare runtime (`wrangler dev`): both browser E2E suites pass with the CSP active. **Not deployed yet**: needs `wrangler login` + domain decision |
+| Production CORS origin (`SNOWVILL_ALLOWED_ORIGINS` secret), privacy policy, data retention schedule, moderation tooling, analytics | **Open** |
 
 Deviation from docs/04 route plan: no Next.js API routes. The browser calls Supabase RPC (anon) and the `snowvill-photo` Edge Function directly, so the service-role key never leaves Supabase and the web app can be hosted as a plain static/edge app.
 

@@ -10,7 +10,8 @@ import { InviteSheet } from "@/components/share/InviteSheet";
 import { ShareSheet } from "@/components/share/ShareSheet";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { SimulatedBadge } from "@/components/ui/SimulatedBadge";
-import { freeSlots, houseAt, isFull, VILLAGE_CAPACITY, type House } from "@/lib/village";
+import { villagePath } from "@/lib/share";
+import { freeSlots, houseAt, isFull, SAMPLE_VILLAGE_ID, VILLAGE_CAPACITY, type House } from "@/lib/village";
 import { useVillageState, useVillageStore } from "@/store/VillageStoreProvider";
 
 function prefersReducedMotion() {
@@ -78,7 +79,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
 
   // Drop ?new=1 so a reload does not re-open the first-claim prompt.
   useEffect(() => {
-    if (isNew) router.replace(`/v/${encodeURIComponent(villageId)}`, { scroll: false });
+    if (isNew) router.replace(villagePath(villageId), { scroll: false });
   }, [isNew, router, villageId]);
 
   if (!state.hydrated || (!village && (status === undefined || status === "loading"))) return <VillageSkeleton />;
@@ -113,7 +114,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
           <Link href="/create" className="flex min-h-12 items-center justify-center rounded-2xl bg-night font-bold text-ivory">
             새 마을 만들기
           </Link>
-          <Link href="/v/demo" className="flex min-h-12 items-center justify-center rounded-2xl bg-white font-semibold text-night">
+          <Link href={villagePath(SAMPLE_VILLAGE_ID)} className="flex min-h-12 items-center justify-center rounded-2xl bg-white font-semibold text-night">
             샘플 마을 둘러보기
           </Link>
         </div>

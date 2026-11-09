@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "screenshots": "node scripts/screenshots.mjs"
+    "screenshots": "node scripts/screenshots.mjs",
+    "preview:cf": "npm run build && wrangler dev --port 3100 --ip 127.0.0.1",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "next": "16.4.5",
@@ -32,6 +34,7 @@
     "playwright-core": "^1.65.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "wrangler": "^4.158.0"
   }
 }

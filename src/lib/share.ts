@@ -21,11 +21,18 @@ export function toShareCardData(village: Village): ShareCardData {
   };
 }
 
+/**
+ * Village page path. The site is a static export, so the village id travels as a query
+ * parameter (`/v/?id=…`) instead of a dynamic path segment.
+ */
+export function villagePath(villageId: string, extra: Record<string, string> = {}): string {
+  const params = new URLSearchParams({ id: villageId, ...extra });
+  return `/v/?${params.toString()}`;
+}
+
 /** Invite link. `src` is a non-PII attribution token (FR09). */
 export function inviteUrl(origin: string, villageId: string, src: "copy" | "share" = "copy"): string {
-  const url = new URL(`/v/${encodeURIComponent(villageId)}`, origin);
-  url.searchParams.set("src", `invite_${src}`);
-  return url.toString();
+  return new URL(villagePath(villageId, { src: `invite_${src}` }), origin).toString();
 }
 
 export type ShareOutcome = "shared" | "copied" | "cancelled" | "failed";

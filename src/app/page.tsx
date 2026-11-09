@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { LandingHero } from "@/components/landing/LandingHero";
 import { remoteConfig } from "@/lib/remote";
+import { villagePath } from "@/lib/share";
+import { SAMPLE_VILLAGE_ID } from "@/lib/village";
 
-/** S01 — landing. Invite links (/v/[id]) bypass this page. */
+/** S01 — landing. Invite links (/v/?id=…) bypass this page. */
 export default function LandingPage() {
   const online = Boolean(remoteConfig());
   return (
@@ -37,7 +39,7 @@ export default function LandingPage() {
         </Link>
         <p className="text-center text-sm text-night/70">회원가입 없이 바로 시작</p>
         <Link
-          href="/v/demo"
+          href={villagePath(SAMPLE_VILLAGE_ID)}
           className="flex min-h-12 items-center justify-center rounded-2xl bg-white/80 text-base font-semibold text-night"
         >
           샘플 마을 둘러보기

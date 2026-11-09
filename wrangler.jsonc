@@ -1,0 +1,12 @@
+// Cloudflare Workers — static assets only (no Worker script): `next build` writes the static export to ./out.
+// Deploy: `npm run deploy` (requires `npx wrangler login` once). Local check: `npm run preview:cf`.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "snow-village",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./out",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

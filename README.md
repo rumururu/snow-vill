@@ -18,7 +18,9 @@ npm run dev          # http://localhost:3000
 | Command | What it does |
 |---|---|
 | `npm run dev` | Dev server (Turbopack) |
-| `npm run build && npm start` | Production build / server |
+| `npm run build` | Static export to `out/` (all routes are static; data is fetched in the browser) |
+| `npm run preview:cf` | Build + serve `out/` on the local Cloudflare runtime at http://127.0.0.1:3100 (same headers as production) |
+| `npm run deploy` | Build + deploy to Cloudflare Workers static assets (needs `npx wrangler login` once) |
 | `npm run lint` | ESLint (next core-web-vitals + TypeScript) |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm test` | Vitest unit + component tests (jsdom) |
@@ -37,8 +39,8 @@ curl -s -H "Authorization: Bearer $TOK" "https://api.supabase.com/v1/projects/qf
 ```
 
 ### Try it
-- `/` landing → **무료로 마을 만들기** → `/create` → name the village → `/v/<id>` opens the first-house sheet.
-- `/v/demo` is a **sample village** (3/8 occupied, fallback illustrations). `⋯` menu → *샘플 마을 초기화* restores it.
+- `/` landing → **무료로 마을 만들기** → `/create` → name the village → `/v/?id=<id>` opens the first-house sheet.
+- `/v/?id=demo` is a **sample village** (3/8 occupied, fallback illustrations). `⋯` menu → *샘플 마을 초기화* restores it.
 - Tap an empty house (`+`) → claim sheet (nickname, 3 styles, optional photo, ≤60-char message).
 - Tap a lit house → photo-frame sheet (photo or fallback illustration, message, date, report, remove).
 - **친구 초대** → copy link / Web Share. `⋯` → *친구 입주 시뮬레이션* fills empty slots with fictional friends; at 8/8 the completion share sheet opens with a **photo-free** 1080×1350 card (PNG download).
@@ -56,6 +58,16 @@ CDP_URL=http://127.0.0.1:9222 BASE_URL=http://localhost:3100 npm run screenshots
 ```
 
 It walks the full flow (sample → claim with a generated test image → frame → invite → fill → share card export → create), asserts 8 hotspots ≥44px, no horizontal overflow at 320/390/480px, reduced-motion behaviour and zero console errors, and writes PNGs to `docs/screenshots/`.
+
+## Hosting
+
+The site is a **static export** (`output: "export"`) served by **Cloudflare Workers static assets** (`wrangler.jsonc`, no Worker script) — free and not metered per request. Village pages are `/v/?id=<id>` because static exports cannot serve arbitrary dynamic path segments. `public/_headers` sets the CSP (only this site + the Supabase project), `nosniff`, referrer/permissions policies, `noindex`, and immutable caching for hashed assets.
+
+Deploy checklist:
+1. `npx wrangler login` (Cloudflare account that owns `mkideabox.com`).
+2. Make sure `.env.local` exists (otherwise the deployed site runs in simulation mode), then `npm run deploy`.
+3. Add the production origin to the Edge Function CORS list: Supabase secret `SNOWVILL_ALLOWED_ORIGINS` (comma-separated, keep the localhost entries), then `supabase/deploy.sh`.
+4. Run `scripts/e2e-remote.sh` with `BASE_URL=<production origin>`.
 
 ## Backend (M1)
 
@@ -90,7 +102,7 @@ Live backend (from `scripts/e2e-remote.sh`): a friend's phone opening the invite
 
 ```
 src/
-  app/                     routes: / (S01), /create (S02), /v/[id] (S03 + sheets), not-found, error
+  app/                     routes: / (S01), /create (S02), /v/?id= (S03 + sheets), not-found, error — static export
   lib/village.ts           pure domain rules: validation, 8-slot cap, atomic-style claim, sample data
   lib/scene.ts             fixed 2:1 isometric slot geometry (from the SVG mockup), depth order, hit boxes
   lib/assets.ts            asset manifest (placeholder → production sprite paths) + palette

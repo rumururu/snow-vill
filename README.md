@@ -59,6 +59,10 @@ CDP_URL=http://127.0.0.1:9222 BASE_URL=http://localhost:3100 npm run screenshots
 
 It walks the full flow (sample → claim with a generated test image → frame → invite → fill → share card export → create), asserts 8 hotspots ≥44px, no horizontal overflow at 320/390/480px, reduced-motion behaviour and zero console errors, and writes PNGs to `docs/screenshots/`.
 
+## Flutter app (iOS / Android)
+
+`app/` — store companion app sharing the same backend and art; villages are shared with the web. Store billing (RevenueCat) for decorating packs is the next phase. See [app/README.md](app/README.md).
+
 ## Hosting
 
 **Deployed (beta, 2026-11-10):** **https://snow.mkideabox.com** (custom domain on the `mkideabox.com` zone; fallback https://snow-village.myappmanage.workers.dev) — Cloudflare account `Rumururu@gmail.com's Account`, Worker `snow-village`. Privacy policy: https://snow.mkideabox.com/privacy/ (`src/app/privacy/page.tsx`, linked from the landing page and the claim sheet). CORS: Supabase secret `SNOWVILL_ALLOWED_ORIGINS` lists both production origins + localhost.

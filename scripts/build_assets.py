@@ -20,6 +20,8 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "assets" / "source"
 OUT = ROOT / "public" / "assets"
 GEOMETRY = ROOT / "src" / "lib" / "asset-geometry.json"
+# The Flutter app bundles the same files (assets must live inside the Flutter package).
+APP_ASSETS = ROOT / "app" / "assets" / "art"
 
 SPRITE_SIZE = 512
 BACKGROUND_SIZE = 1024
@@ -128,6 +130,13 @@ def main() -> None:
     print(f"background_snow    {out.stat().st_size // 1024:4d} KB")
 
     GEOMETRY.write_text(json.dumps(geometry, indent=2) + "\n")
+    if APP_ASSETS.parent.parent.exists():
+        import shutil
+        if APP_ASSETS.exists():
+            shutil.rmtree(APP_ASSETS)
+        shutil.copytree(OUT, APP_ASSETS)
+        shutil.copy(GEOMETRY, APP_ASSETS / "asset-geometry.json")
+        print(f"copied to {APP_ASSETS.relative_to(ROOT)}")
     total = sum(p.stat().st_size for p in OUT.rglob("*.webp"))
     print(f"total delivery {total // 1024} KB → {GEOMETRY.relative_to(ROOT)}")
 

@@ -4,11 +4,13 @@ import { useRef, useState, useSyncExternalStore } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { copyText, inviteUrl, shareOrCopy } from "@/lib/share";
 import { freeSlots, type Village } from "@/lib/village";
+import { useVillageStore } from "@/store/VillageStoreProvider";
 
 const noopSubscribe = () => () => {};
 
 export function InviteSheet({ village, open, onClose }: { village: Village; open: boolean; onClose: () => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const simulated = useVillageStore().isLocal(village.id);
   const [status, setStatus] = useState<string | null>(null);
   const origin = useSyncExternalStore(noopSubscribe, () => window.location.origin, () => "");
   const canNativeShare = useSyncExternalStore(
@@ -81,10 +83,16 @@ export function InviteSheet({ village, open, onClose }: { village: Village; open
           {status}
         </p>
       )}
-      <p className="mt-4 rounded-xl border border-dashed border-night/25 px-3 py-2 text-xs leading-relaxed text-night/70">
-        프로토타입 안내: 마을 데이터가 이 브라우저 탭에만 임시로 저장돼서, 이 링크를 다른 기기나 브라우저에서 열면
-        마을이 보이지 않아요. 실제 초대는 서버가 연결되는 M1 이후에 동작해요.
-      </p>
+      {simulated ? (
+        <p className="mt-4 rounded-xl border border-dashed border-night/25 px-3 py-2 text-xs leading-relaxed text-night/70">
+          시뮬레이션 마을이에요. 데이터가 이 브라우저 탭에만 임시로 저장돼서, 이 링크를 다른 기기나 브라우저에서 열면
+          마을이 보이지 않아요.
+        </p>
+      ) : (
+        <p className="mt-4 rounded-xl bg-sky px-3 py-2 text-xs leading-relaxed text-night/75">
+          링크를 받은 사람은 누구나 마을을 구경하고 빈 집에 입주할 수 있어요. 믿을 수 있는 친구에게만 보내 주세요.
+        </p>
+      )}
     </BottomSheet>
   );
 }

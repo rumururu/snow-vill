@@ -32,7 +32,25 @@ M0 product choices to revisit (also in 09-decisions): one house per village per 
 
 Swap points for M1: replace `src/store/villageStore.ts` with API calls (keep `src/lib/village.ts` rules mirrored server-side); replace `SceneArt` placeholder SVG with sprites listed in `src/lib/assets.ts`; replace data-URL photos with private storage ids + signed URLs.
 
-## M1 backend
+## M1 implementation status
+Implemented and deployed 2026-11-09 on the shared `mkideabox-games` Supabase project (prefix `snowvill_`), following `mkideabox-corp-process/processes/infrastructure/game-shared-backend.md`. Commands: README "Backend (M1)".
+
+| Item | Status / evidence |
+|---|---|
+| Schema, RLS deny-by-default, grants revoked from anon/authenticated (tables, sequence, internal functions) | Done — `supabase/tests/local.sh` 58/58 (throwaway Postgres reproducing Supabase default privileges) |
+| Atomic slot claim (village row lock + `UNIQUE(village_id, slot)`), capacity 8, one house per install | Done — concurrent-claim test locally; real two-browser collision in `scripts/e2e-remote.sh` |
+| Owner claim secret / house claim secret (SHA-256 stored only) | Done; secrets kept in browser localStorage |
+| Private photo bucket, server-side JPEG validation + EXIF strip, signed URLs (120s), photo deleted with house/village | Done — `supabase/tests/live.sh` 51/51 (EXIF fixture stripped, public URL blocked, PNG/1600px/wrong-secret rejected) |
+| Report flow, owner remove house, owner delete village | Done (reports stored; no moderation dashboard yet) |
+| Rate limits (per install: create 3/min·20/day, claim 6/min·60/day, report 5/min, upload 6/min, view 60/min) | Done — 429 verified live |
+| Other games untouched | `supabase/deploy.sh` hash of all non-snowvill objects identical before/after (142 objects) |
+| Multi-device browser E2E (create → photo → invite → friend views photo → claim → collision → report → remove → delete) | Done — all checks pass, server leftovers 0 |
+| Owner recovery on a new device, invite token separation/expiry | **Open** (decision items 1–2); the village link currently grants view + claim |
+| Hosting/domain, CORS origin for production (`SNOWVILL_ALLOWED_ORIGINS` secret), privacy policy, data retention schedule, moderation tooling, analytics | **Open** |
+
+Deviation from docs/04 route plan: no Next.js API routes. The browser calls Supabase RPC (anon) and the `snowvill-photo` Edge Function directly, so the service-role key never leaves Supabase and the web app can be hosted as a plain static/edge app.
+
+## M1 backend (original plan)
 Supabase schema migrations, RLS, private photo bucket, owner claim/recovery, invite authorization, image sanitization, atomic slot assignment, content reporting/deletion, rate limits. Ensure no public photo leaks in metadata. Use separate staging credentials.
 
 ## M2 growth

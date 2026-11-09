@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { LandingHero } from "@/components/landing/LandingHero";
+import { remoteConfig } from "@/lib/remote";
 
 /** S01 — landing. Invite links (/v/[id]) bypass this page. */
 export default function LandingPage() {
+  const online = Boolean(remoteConfig());
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))]">
       <header className="flex items-center gap-2">
         <span aria-hidden className="text-2xl">❄️</span>
         <span className="text-lg font-extrabold tracking-tight text-night">Snow Village</span>
         <span className="ml-auto rounded-full border border-dashed border-night/40 px-2.5 py-1 text-[11px] font-semibold text-night/70">
-          M0 프로토타입
+          {online ? "베타" : "시뮬레이션"}
         </span>
       </header>
 
@@ -41,7 +43,9 @@ export default function LandingPage() {
           샘플 마을 둘러보기
         </Link>
         <p className="text-center text-[11px] leading-relaxed text-night/55">
-          지금은 서버 없이 동작하는 시연용 프로토타입이에요. 데이터는 이 브라우저 탭에만 임시 저장돼요.
+          {online
+            ? "베타 서비스예요. 사진은 집을 눌렀을 때만 보이고, 공유 카드에는 들어가지 않아요."
+            : "서버 없이 동작하는 시뮬레이션 모드예요. 데이터는 이 브라우저 탭에만 임시 저장돼요."}
         </p>
       </div>
     </main>

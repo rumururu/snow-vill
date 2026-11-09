@@ -4,7 +4,7 @@
 
 2026 Christmas mobile-web MVP. Friends join an isometric 2D winter village, decorate one of eight cottages and optionally attach one photo. Photos are displayed in a private frame when the cottage is tapped—not on public sharing previews.
 
-> **Status:** M0 clickable prototype implemented (Next.js). **All data is simulated**: it lives in memory and in the current tab's `sessionStorage` only. There is no backend, no persistence across devices, and no real invitation delivery. Owner/"my house" roles are local UX flags, not authorization. All market and performance numbers in documents are hypotheses, not verified forecasts.
+> **Status (2026-11-09):** M0 prototype + **M1 backend** implemented. With `NEXT_PUBLIC_SUPABASE_*` set, villages, houses and private photos live on the shared `mkideabox-games` Supabase project (prefix `snowvill_`) and invite links work across devices. Without it, the app runs in **simulation mode** (data only in the current tab, clearly labelled). The `/v/demo` sample village is always simulated. Not yet done: hosting/domain, privacy policy, owner recovery on a new device, analytics. All market and performance numbers in documents are hypotheses, not verified forecasts.
 
 ## Run the M0 prototype
 
@@ -22,9 +22,19 @@ npm run dev          # http://localhost:3000
 | `npm run lint` | ESLint (next core-web-vitals + TypeScript) |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm test` | Vitest unit + component tests (jsdom) |
-| `npm run screenshots` | Browser smoke test + README screenshots via installed Chrome over CDP (see below) |
+| `npm run screenshots` | Simulation-mode browser smoke test + README screenshots via installed Chrome over CDP (see below) |
+| `supabase/tests/local.sh` | SQL tests (58) on a throwaway local Postgres with Supabase's roles/default privileges |
+| `supabase/deploy.sh` | Deploy schema + photo bucket + Edge Function via Management API, verify other games unchanged, run live tests |
+| `supabase/tests/live.sh` | Live server tests (51) through the anon REST/Edge path; deletes its test data |
+| `scripts/e2e-remote.sh` | Multi-device browser E2E against the live backend (needs a build with `.env.local`); verifies server cleanup |
 
-No environment variables or credentials are needed — M0 connects to no external service.
+Without `.env.local` the app runs in simulation mode and needs no credentials. To use the real backend, copy `.env.example` to `.env.local` and fill in the **anon** key (public by design — never a service_role/secret key):
+
+```bash
+TOK=$(security find-generic-password -a mkideabox-games-mgmt-token -s supabase -w)
+curl -s -H "Authorization: Bearer $TOK" "https://api.supabase.com/v1/projects/qfhbkfzxhldfycmcwntw/api-keys?reveal=true" \
+  | python3 -c "import json,sys;print(next(k['api_key'] for k in json.load(sys.stdin) if k['name']=='anon'))"
+```
 
 ### Try it
 - `/` landing → **무료로 마을 만들기** → `/create` → name the village → `/v/<id>` opens the first-house sheet.
@@ -47,6 +57,21 @@ CDP_URL=http://127.0.0.1:9222 BASE_URL=http://localhost:3100 npm run screenshots
 
 It walks the full flow (sample → claim with a generated test image → frame → invite → fill → share card export → create), asserts 8 hotspots ≥44px, no horizontal overflow at 320/390/480px, reduced-motion behaviour and zero console errors, and writes PNGs to `docs/screenshots/`.
 
+## Backend (M1)
+
+Shared Supabase project **`mkideabox-games`** (ref `qfhbkfzxhldfycmcwntw`, Seoul), governed by
+`/Volumes/home_extension/mkideabox-corp-process/processes/infrastructure/game-shared-backend.md`: every object is prefixed `snowvill_`, deploys go through the Management API with the keychain token (never `supabase login`), and other games' objects must not change.
+
+| Piece | What it does |
+|---|---|
+| `supabase/migrations/…_snowvill_core.sql` | Tables `snowvill_villages/houses/reports/calls` (RLS on, no policies, all grants revoked). Anon functions: `snowvill_create_village`, `snowvill_get_village`, `snowvill_claim_house` (village row lock + `UNIQUE(village_id, slot)`), `snowvill_report`. Validation → 400, per-install rate limits → 429 |
+| `supabase/migrations/…_snowvill_photo_bucket.sql` | Private bucket `snowvill-photos` (JPEG only, ≤300KB), no storage policies |
+| `supabase/functions/snowvill-photo` | Edge Function: upload (claim secret only, JPEG ≤1024px, EXIF/COM segments stripped), 2-minute signed URL for viewing, remove house, delete village (photos deleted too) |
+
+Ownership without accounts: creating a village or claiming a house returns a random secret once; the server stores only its SHA-256, the browser keeps it in `localStorage`. Clearing site data loses owner rights (recovery is still an open decision).
+
+⚠️ The free-plan egress (5GB/month) and DB (500MB) are shared with every game in the organization, including ctw's paid wallet. Photos are the main egress driver, so the beta runs here and **must be re-decided before public launch** (Pro plan or moving photos) — see docs/09-decisions.md.
+
 ## Screenshots (390×844, generated by `npm run screenshots`)
 
 | Landing | Village (3/8 sample) | Claim sheet | Photo frame |
@@ -56,6 +81,8 @@ It walks the full flow (sample → claim with a generated test image → frame �
 | House lit | Invite | Completed + share card | Create → first house |
 |---|---|---|---|
 | ![](docs/screenshots/04-house-lit.png) | ![](docs/screenshots/06-invite.png) | ![](docs/screenshots/07-share-complete.png) | ![](docs/screenshots/09-first-claim.png) |
+
+Live backend (from `scripts/e2e-remote.sh`): a friend's phone opening the invite link and viewing the creator's photo via signed URL — [11-remote-friend-photo.png](docs/screenshots/11-remote-friend-photo.png); a real server-side slot collision with the draft kept — [12-remote-collision.png](docs/screenshots/12-remote-collision.png).
 
 320px layout: [10-village-320.png](docs/screenshots/10-village-320.png) · exported card: [share-card-export.png](docs/screenshots/share-card-export.png). The "photo" in screenshots is a generated gradient test image, not a real person's photo.
 
@@ -69,22 +96,24 @@ src/
   lib/assets.ts            asset manifest (placeholder → production sprite paths) + palette
   lib/image.ts             photo signature check, 10MB limit, 1:1 crop + canvas re-encode (drops EXIF)
   lib/share.ts             photo-free share-card data, invite URL (non-PII src token), Web Share/copy
-  store/                   MOCK store (useSyncExternalStore + sessionStorage) — replaced by API in M1
+  lib/remote.ts            Supabase REST/Edge Function client, error mapping (anon key only)
+  store/                   store: remote villages via lib/remote, simulated ones in memory + sessionStorage
   components/scene/        SceneArt (inline SVG placeholders), VillageScene (8 accessible HTML hotspots)
   components/house/        ClaimHouseSheet (S04), PhotoFrameSheet (S05), fallback avatar
   components/share/        InviteSheet, ShareSheet (S06), ShareCard (1080×1350, no photos by type)
   components/ui/           BottomSheet (focus trap/return, Esc, inert background), SimulatedBadge
-scripts/screenshots.mjs    Chrome-CDP smoke test + screenshots
+scripts/screenshots.mjs    Chrome-CDP smoke test + screenshots (simulation mode)
+scripts/e2e-remote.*       multi-device E2E against the live backend
+supabase/                  migrations, Edge Function, deploy + local/live tests
 ```
 
-What is **real** in M0: UI flows, client-side validation, slot-cap/collision rules (in the mock store), image type/size checks and re-encoding, focus management, reduced motion, responsive layout, photo-free share card generation.
-What is **simulated**: persistence, other participants, invitation delivery, ownership, report submission, upload latency. See [docs/06-codex-handoff.md](docs/06-codex-handoff.md#m0-implementation-status) for the M1 gap list.
+With the backend configured, persistence, cross-device invites, atomic slot claims, private photos, reports, owner removal/deletion and rate limits are **real**. Still simulated or missing: the `/v/demo` sample, owner recovery on another device, analytics events, OG image, hosting. See [docs/06-codex-handoff.md](docs/06-codex-handoff.md#m1-implementation-status).
 
 ## Start here (Codex)
 1. Read [AGENTS.md](AGENTS.md) and [docs/06-codex-handoff.md](docs/06-codex-handoff.md).
 2. Read [product requirements](docs/02-prd.md), [UI spec](docs/03-ui-ux.md), [architecture](docs/04-technical-design.md), and [asset manifest](assets/README.md).
 3. Inspect the vector mockup in [assets/mockups/village-concept.svg](assets/mockups/village-concept.svg). It is an **original illustrative placeholder**, not final game art.
-4. M0 is done; validate the core interaction with real users before starting the M1 backend.
+4. M0 and the M1 backend are done; next are hosting, privacy policy and the 30–50-group beta (M2).
 
 ## Documentation
 - [Business plan](docs/01-business-plan.md)

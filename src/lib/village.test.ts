@@ -53,8 +53,9 @@ describe("house input validation", () => {
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors.message).toBeDefined();
   });
-  it("counts emoji as one character each", () => {
-    expect(charLength("🎄⛄👨‍👩‍👧")).toBe(3);
+  it("counts code points like PostgreSQL char_length", () => {
+    expect(charLength("눈사람🎄⛄")).toBe(5);
+    expect(charLength("👨‍👩‍👧")).toBe(5); // ZWJ sequence = 5 code points
     expect(validateHouseInput({ nickname: "a", style: "wood", message: "🎄".repeat(60) }).ok).toBe(true);
   });
   it("photo is optional", () => {

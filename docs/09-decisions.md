@@ -35,3 +35,12 @@
 - Nicknames appear as small chips in the private village scene; the share card shows no names, photos, messages or counts (item 8 default).
 - Limits: village name ≤20, nickname ≤10, message ≤60 user-perceived characters; photos JPG/PNG/WEBP ≤10MB, re-encoded to 512px JPEG.
 - Full village (8/8): claim disabled; share card + new village offered (partially answers item 5).
+
+## M1 backend choices (2026-11-09)
+- **Backend location (owner decision):** the existing shared Supabase project `mkideabox-games` (account mkideabox.devtest), prefix `snowvill_`, for the beta. **Re-decide before public launch**: the free-plan egress (5GB/month) and DB (500MB) are shared with every game in the organization, including ctw's paid wallet; if Snow Village photo views exceed the quota, all of them are blocked. Options then: Pro plan, or moving photos to separate storage.
+- No Supabase Auth (shared-project rule). Ownership = random secrets returned once, SHA-256 stored server-side, kept in the browser's localStorage. Losing site data loses owner rights until a recovery design exists (open item 1).
+- The village link is currently both the read and the claim capability (interim answer to open item 2). The invite sheet warns users to share it only with trusted friends.
+- Rate limits use a client-generated install UUID (spoofable; IP-based limits not used to avoid storing IPs). Revisit if abuse appears in beta.
+- Photos: the client re-encodes to a 512px JPEG; the server accepts JPEG only (≤300KB, ≤1024px), strips APP1–APP15/COM metadata segments without re-encoding, and stores privately; viewing uses 120s signed URLs.
+- Character limits count Unicode code points (same as PostgreSQL `char_length`) on both client and server.
+- No data-retention job yet: villages persist until deleted by the owner. A post-season retention/deletion schedule must be set before launch (with the privacy policy).

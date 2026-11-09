@@ -117,9 +117,9 @@ describe("VillageView (sample village)", () => {
     expect(screen.getByRole("heading", { name: "마을을 찾을 수 없어요" })).toBeInTheDocument();
   });
 
-  it("opens the first-claim prompt after creation and cleans the URL", () => {
+  it("opens the first-claim prompt after creation and cleans the URL", async () => {
     const store = createVillageStore({ storage: null });
-    const r = store.createVillage("새 마을");
+    const r = await store.createVillage("새 마을");
     if (!r.ok) throw new Error();
     renderWithStore(<VillageView villageId={r.id} isNew />, store);
     expect(screen.getByRole("dialog", { name: "1번 집터에 내 집 만들기" })).toBeInTheDocument();

@@ -3,6 +3,8 @@
 ## Proposed stack
 Next.js App Router, TypeScript, Tailwind, PixiJS for 2D sprites (SVG/HTML prototype acceptable at M0), Supabase Postgres and private Storage, server-side share-card generation, PostHog or equivalent event analytics. Avoid AI API dependency.
 
+> **Implemented (M1, 2026-11-09):** see docs/06-codex-handoff.md "M1 implementation status". The API is Supabase RPC functions (`snowvill_*`) plus the `snowvill-photo` Edge Function instead of Next.js API routes; schema in `supabase/migrations/`.
+
 ## Route plan
 GET /; GET /create; GET /v/[villageId]; POST /api/villages; GET /api/villages/:id; POST /api/villages/:id/houses; GET /api/houses/:id (authorized); DELETE /api/houses/:id; GET /api/share/:id; POST /api/reports. Endpoint authorization and anti-abuse rules required before deployment.
 

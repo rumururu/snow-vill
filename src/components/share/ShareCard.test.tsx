@@ -37,9 +37,9 @@ describe("photo-free share card", () => {
   it("share sheet in a village with uploaded photos shows no photo pixels", async () => {
     const user = userEvent.setup();
     const store = createVillageStore({ storage: null });
-    const r = store.createVillage("사진 마을");
+    const r = await store.createVillage("사진 마을");
     if (!r.ok) throw new Error();
-    store.claimHouse(r.id, 0, { nickname: "사진주인", style: "wood", photo: PHOTO });
+    await store.claimHouse(r.id, 0, { nickname: "사진주인", style: "wood", photo: PHOTO });
     renderWithStore(<VillageView villageId={r.id} />, store);
 
     await user.click(screen.getByRole("button", { name: "더보기 메뉴" }));

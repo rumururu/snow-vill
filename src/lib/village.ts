@@ -30,6 +30,8 @@ export interface House {
    * M1 replaces this with a private storage id served via short-lived signed URLs.
    */
   photo: string | null;
+  /** True when a photo exists (remote: stored privately, fetched via short-lived signed URL). */
+  hasPhoto: boolean;
   message: string;
   createdAt: string;
 }
@@ -57,11 +59,11 @@ export type ClaimResult =
   | { ok: false; reason: "INVALID_SLOT" | "SLOT_TAKEN" | "VILLAGE_FULL" }
   | { ok: false; reason: "INVALID_INPUT"; errors: FieldErrors };
 
-/** Count user-perceived characters (emoji / Hangul syllables count as one). */
+/**
+ * Count Unicode code points — the same unit as PostgreSQL char_length(), so client and
+ * server limits agree. (Hangul syllables and most emoji count as 1; ZWJ emoji sequences count more.)
+ */
 export function charLength(text: string): number {
-  if (typeof Intl !== "undefined" && "Segmenter" in Intl) {
-    return Array.from(new Intl.Segmenter("ko", { granularity: "grapheme" }).segment(text)).length;
-  }
   return Array.from(text).length;
 }
 
@@ -88,7 +90,7 @@ export function validateVillageName(raw: string): { ok: true; value: string } | 
 
 export function validateHouseInput(
   input: HouseInput,
-): { ok: true; value: Omit<House, "id" | "slot" | "createdAt"> } | { ok: false; errors: FieldErrors } {
+): { ok: true; value: Omit<House, "id" | "slot" | "createdAt" | "hasPhoto"> } | { ok: false; errors: FieldErrors } {
   const errors: FieldErrors = {};
   const nickname = sanitizeText(input.nickname ?? "");
   const message = sanitizeText(input.message ?? "", { multiline: true });
@@ -147,7 +149,13 @@ export function claimHouse(
   const validated = validateHouseInput(input);
   if (!validated.ok) return { ok: false, reason: "INVALID_INPUT", errors: validated.errors };
 
-  const house: House = { id: opts.id, slot, createdAt: opts.now.toISOString(), ...validated.value };
+  const house: House = {
+    id: opts.id,
+    slot,
+    createdAt: opts.now.toISOString(),
+    ...validated.value,
+    hasPhoto: Boolean(validated.value.photo),
+  };
   const houses = [...village.houses, house].sort((a, b) => a.slot - b.slot);
   return { ok: true, village: { ...village, houses }, house };
 }
@@ -167,9 +175,9 @@ export function createSampleVillage(now: Date = new Date("2026-12-01T09:00:00+09
     createdAt: at(0),
     isSample: true,
     houses: [
-      { id: "sample-1", slot: 0, nickname: "하늘", style: "wood", photo: null, message: "올해도 고마웠어! 메리 크리스마스 🎄", createdAt: at(1) },
-      { id: "sample-2", slot: 3, nickname: "도윤", style: "indigo", photo: null, message: "따뜻한 겨울 보내자", createdAt: at(30) },
-      { id: "sample-3", slot: 5, nickname: "서연", style: "sage", photo: null, message: "", createdAt: at(95) },
+      { id: "sample-1", slot: 0, nickname: "하늘", style: "wood", photo: null, hasPhoto: false, message: "올해도 고마웠어! 메리 크리스마스 🎄", createdAt: at(1) },
+      { id: "sample-2", slot: 3, nickname: "도윤", style: "indigo", photo: null, hasPhoto: false, message: "따뜻한 겨울 보내자", createdAt: at(30) },
+      { id: "sample-3", slot: 5, nickname: "서연", style: "sage", photo: null, hasPhoto: false, message: "", createdAt: at(95) },
     ],
   };
 }

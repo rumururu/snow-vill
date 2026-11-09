@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ClaimHouseSheet } from "@/components/house/ClaimHouseSheet";
 import { PhotoFrameSheet } from "@/components/house/PhotoFrameSheet";
 import { VillageScene } from "@/components/scene/VillageScene";
 import { InviteSheet } from "@/components/share/InviteSheet";
 import { ShareSheet } from "@/components/share/ShareSheet";
+import { BottomSheet } from "@/components/ui/BottomSheet";
 import { SimulatedBadge } from "@/components/ui/SimulatedBadge";
 import { freeSlots, houseAt, isFull, VILLAGE_CAPACITY, type House } from "@/lib/village";
 import { useVillageState, useVillageStore } from "@/store/VillageStoreProvider";
@@ -21,6 +22,12 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
   const store = useVillageStore();
   const state = useVillageState();
   const village = state.villages[villageId];
+  const status = state.status[villageId];
+  const simulated = store.isLocal(villageId);
+  const [refreshFailed, setRefreshFailed] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // After creation (?new=1), prompt the owner to claim the first house (slot 0).
   const [claimSlot, setClaimSlot] = useState<number | null>(isNew ? 0 : null);
@@ -46,12 +53,50 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
   }
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
+  const refresh = useCallback(() => {
+    store
+      .loadVillage(villageId)
+      .then(() => setRefreshFailed(false))
+      .catch(() => setRefreshFailed(true));
+  }, [store, villageId]);
+
+  // Load once, then keep friends' new houses in view: refetch on focus and every 20s while visible.
+  useEffect(() => {
+    if (!state.hydrated) return;
+    refresh();
+    if (simulated) return;
+    const onVisible = () => document.visibilityState === "visible" && refresh();
+    const timer = setInterval(onVisible, 20_000);
+    window.addEventListener("focus", onVisible);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", onVisible);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [state.hydrated, refresh, simulated]);
+
   // Drop ?new=1 so a reload does not re-open the first-claim prompt.
   useEffect(() => {
     if (isNew) router.replace(`/v/${encodeURIComponent(villageId)}`, { scroll: false });
   }, [isNew, router, villageId]);
 
-  if (!state.hydrated) return <VillageSkeleton />;
+  if (!state.hydrated || (!village && (status === undefined || status === "loading"))) return <VillageSkeleton />;
+
+  if (!village && status === "error") {
+    return (
+      <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col items-center justify-center gap-4 px-6 text-center">
+        <p className="text-5xl" aria-hidden>
+          📡
+        </p>
+        <h1 className="text-xl font-bold text-night">마을을 불러오지 못했어요</h1>
+        <p className="text-sm text-night/70">연결 상태를 확인하고 다시 시도해 주세요.</p>
+        <button type="button" onClick={refresh} className="min-h-12 w-full rounded-2xl bg-night font-bold text-ivory">
+          다시 시도
+        </button>
+      </main>
+    );
+  }
 
   if (!village) {
     return (
@@ -61,8 +106,8 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
         </p>
         <h1 className="text-xl font-bold text-night">마을을 찾을 수 없어요</h1>
         <p className="text-sm leading-relaxed text-night/70">
-          링크가 잘못되었거나 마을이 사라졌을 수 있어요. 프로토타입에서는 마을이 만든 브라우저 탭에만 임시로 저장돼서 다른
-          기기에서는 열리지 않아요.
+          링크가 잘못되었거나 마을이 삭제되었을 수 있어요.
+          {simulated && " 시뮬레이션 모드에서는 마을이 만든 브라우저 탭에만 임시로 저장돼서 다른 기기에서는 열리지 않아요."}
         </p>
         <div className="flex w-full flex-col gap-2">
           <Link href="/create" className="flex min-h-12 items-center justify-center rounded-2xl bg-night font-bold text-ivory">
@@ -93,10 +138,14 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
     setClaimSlot(slot);
   }
 
-  function onClaimed(house: House) {
+  function onClaimed(house: House, photoError?: string) {
     setClaimSlot(null);
     setIgniteSlot(house.slot);
-    notify(`${house.nickname}님의 집에 불이 켜졌어요!`);
+    notify(
+      photoError
+        ? `집은 완성됐지만 사진을 올리지 못했어요. ${photoError} 내 집을 눌러 다시 올려 주세요.`
+        : `${house.nickname}님의 집에 불이 켜졌어요!`,
+    );
     setTimeout(() => setIgniteSlot(null), 1200);
     const nowFull = store.getState().villages[villageId]?.houses.length === VILLAGE_CAPACITY;
     if (nowFull) setTimeout(() => setShareOpen(true), prefersReducedMotion() ? 0 : 900);
@@ -108,7 +157,8 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
       setIgniteSlot(result.house.slot);
       setTimeout(() => setIgniteSlot(null), 1200);
       notify(`(시뮬레이션) ${result.house.nickname}님이 입주했어요.`);
-      if (isFull(result.village)) setTimeout(() => setShareOpen(true), prefersReducedMotion() ? 0 : 900);
+      const after = store.getState().villages[villageId];
+      if (after && isFull(after)) setTimeout(() => setShareOpen(true), prefersReducedMotion() ? 0 : 900);
     } else notify("빈 집이 없어요.");
   }
 
@@ -126,8 +176,9 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
           <h1 className="min-w-0 flex-1 truncate text-center text-lg font-bold text-night">{village.name}</h1>
           <OverflowMenu
             onShareCard={() => setShareOpen(true)}
-            onSimulateFriend={full ? undefined : simulateFriend}
+            onSimulateFriend={full || !simulated ? undefined : simulateFriend}
             onResetSample={village.isSample ? () => (store.resetSample(), notify("샘플 마을을 처음 상태로 되돌렸어요.")) : undefined}
+            onDeleteVillage={isOwner && !village.isSample ? () => setDeleteOpen(true) : undefined}
           />
         </header>
 
@@ -141,7 +192,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
               {full ? "마을이 완성됐어요" : village.houses.length === 0 ? "빈 집에 불을 켜주세요" : `빈 집 ${free.length}채`}
             </span>
           </p>
-          <SimulatedBadge />
+          {simulated && <SimulatedBadge />}
         </div>
 
         <main className="flex flex-1 flex-col justify-center px-1">
@@ -155,7 +206,12 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
           <p className="px-4 text-center text-xs text-night/60">
             {full ? "집을 눌러 친구들의 사진 액자를 열어 보세요." : "불 켜진 집을 누르면 사진 액자가, 빈 집을 누르면 내 집 만들기가 열려요."}
           </p>
-          {state.persistWarning && (
+          {refreshFailed && (
+            <p role="status" className="mx-4 mt-2 rounded-xl bg-[#F8E6DD] px-3 py-2 text-xs text-night">
+              연결이 불안정해요. 마지막으로 불러온 마을을 보여 드리고 있어요.
+            </p>
+          )}
+          {state.persistWarning && simulated && (
             <p role="alert" className="mx-4 mt-2 rounded-xl bg-[#F8E6DD] px-3 py-2 text-xs text-night">
               {state.persistWarning}
             </p>
@@ -225,18 +281,58 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
         onChangeSlot={setClaimSlot}
       />
       <PhotoFrameSheet
+        villageId={villageId}
         house={frameHouse}
         isMine={Boolean(frameHouse && frameHouse.id === myHouseId)}
         isVillageOwner={isOwner}
         onClose={() => setFrameHouseId(null)}
-        onRemove={(h) => {
+        onRemove={async (h) => {
+          const result = await store.removeHouse(villageId, h.id);
+          if (!result.ok) return result.message;
           setFrameHouseId(null);
-          store.removeHouse(villageId, h.id);
           notify(`${h.nickname}님의 집을 비웠어요.`);
+          return null;
         }}
       />
       <InviteSheet village={village} open={inviteOpen} onClose={() => setInviteOpen(false)} />
       <ShareSheet village={village} open={shareOpen} onClose={() => setShareOpen(false)} />
+      <BottomSheet
+        open={deleteOpen}
+        onClose={() => {
+          setDeleteOpen(false);
+          setDeleteError(null);
+        }}
+        title="마을을 삭제할까요?"
+        footer={
+          <button
+            type="button"
+            disabled={deleting}
+            onClick={async () => {
+              setDeleting(true);
+              const result = await store.deleteVillage(villageId);
+              setDeleting(false);
+              if (!result.ok) {
+                setDeleteError(result.message);
+                return;
+              }
+              setDeleteOpen(false);
+              router.push("/");
+            }}
+            className="min-h-12 w-full rounded-2xl bg-[#B5523B] font-bold text-white disabled:opacity-60"
+          >
+            {deleting ? "삭제하는 중…" : "마을과 모든 집 삭제하기"}
+          </button>
+        }
+      >
+        <p className="text-sm leading-relaxed text-night">
+          {village.name}의 집 {village.houses.length}채와 사진, 메시지가 모두 지워지고 되돌릴 수 없어요.
+        </p>
+        {deleteError && (
+          <p role="alert" className="mt-2 rounded-xl bg-[#F8E6DD] px-3 py-2 text-sm text-night">
+            {deleteError}
+          </p>
+        )}
+      </BottomSheet>
     </>
   );
 }
@@ -245,10 +341,12 @@ function OverflowMenu({
   onShareCard,
   onSimulateFriend,
   onResetSample,
+  onDeleteVillage,
 }: {
   onShareCard: () => void;
   onSimulateFriend?: () => void;
   onResetSample?: () => void;
+  onDeleteVillage?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -310,6 +408,11 @@ function OverflowMenu({
           <Link href="/create" className={item}>
             새 마을 만들기
           </Link>
+          {onDeleteVillage && (
+            <button type="button" className={`${item} text-[#B5523B]`} onClick={run(onDeleteVillage)}>
+              마을 삭제…
+            </button>
+          )}
         </div>
       )}
     </div>

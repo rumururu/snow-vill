@@ -19,15 +19,16 @@ export function CreateVillageForm() {
   const [busy, setBusy] = useState(false);
   const preview: Village = { id: "preview", name: name.trim() || "우리 마을", createdAt: PREVIEW_DATE, houses: [] };
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
     if (busy) return;
-    const result = store.createVillage(name);
+    setBusy(true);
+    const result = await store.createVillage(name);
     if (!result.ok) {
       setError(result.error);
+      setBusy(false);
       return;
     }
-    setBusy(true);
     router.push(`/v/${result.id}?new=1`);
   }
 
@@ -42,7 +43,7 @@ export function CreateVillageForm() {
           ←
         </Link>
         <span className="flex-1" />
-        <SimulatedBadge />
+        {!store.isRemoteEnabled() && <SimulatedBadge />}
       </header>
 
       <form onSubmit={submit} noValidate className="flex flex-1 flex-col">

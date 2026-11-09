@@ -26,7 +26,7 @@ interface ClaimHouseSheetProps {
   village: Village;
   slot: number | null;
   onClose: () => void;
-  onClaimed: (house: House) => void;
+  onClaimed: (house: House, photoError?: string) => void;
   onChangeSlot: (slot: number) => void;
   /** Shown as a lead line, e.g. right after village creation. */
   intro?: string;
@@ -56,6 +56,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
   const slotDef = slot !== null ? SLOTS[slot] : null;
   const messageLen = charLength(draft.message);
   const nextFree = freeSlots(village).filter((s) => s !== slot);
+  const simulated = store.isLocal(village.id);
 
   function update<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
@@ -94,16 +95,18 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
       return;
     }
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, latencyMs));
-    if (simCollision) store.simulateFriendClaim(village.id, slot);
-    const result = store.claimHouse(village.id, slot, draft);
+    if (simulated) {
+      await new Promise((r) => setTimeout(r, latencyMs));
+      if (simCollision) store.simulateFriendClaim(village.id, slot);
+    }
+    const result = await store.claimHouse(village.id, slot, draft);
     setSubmitting(false);
 
     if (result.ok) {
       setDraft(EMPTY_DRAFT);
       setErrors({});
       setSimCollision(false);
-      onClaimed(result.house);
+      onClaimed(result.house, result.photoError);
       return;
     }
     switch (result.reason) {
@@ -120,6 +123,12 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
       case "INVALID_INPUT":
         setErrors(result.errors);
         break;
+      case "REMOTE_ERROR":
+        setSubmitError(`${result.message} 작성한 내용은 그대로 있어요.`);
+        break;
+      case "NOT_FOUND":
+        setSubmitError("마을을 찾을 수 없어요. 링크를 다시 확인해 주세요.");
+        break;
       default:
         setSubmitError("집을 만들지 못했어요. 잠시 후 다시 시도해 주세요.");
     }
@@ -134,14 +143,34 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
       title={slotDef ? `${slotDef.slot + 1}번 집터에 내 집 만들기` : "내 집 만들기"}
       initialFocusRef={nicknameRef}
       footer={
-        <button
-          type="submit"
-          form="claim-house-form"
-          disabled={submitting || photoBusy}
-          className="min-h-12 w-full rounded-2xl bg-night text-base font-bold text-ivory shadow-sm transition-opacity disabled:opacity-60 motion-reduce:transition-none"
-        >
-          {submitting ? "집 짓는 중…" : "내 집 완성하기"}
-        </button>
+        <>
+          {/* Server errors live in the sticky footer so they are always on screen, not below the fold. */}
+          {submitError && (
+            <div role="alert" className="mb-3 space-y-2 rounded-xl bg-[#F8E6DD] px-3 py-3 text-sm text-night">
+              <p>{submitError}</p>
+              {freeAfterCollision.length > 0 && slot !== null && (
+                <button
+                  type="button"
+                  className="min-h-11 rounded-xl bg-ivory px-3 font-semibold"
+                  onClick={() => {
+                    setSubmitError(null);
+                    onChangeSlot(freeAfterCollision[0]);
+                  }}
+                >
+                  {freeAfterCollision[0] + 1}번 빈 집터로 옮기기
+                </button>
+              )}
+            </div>
+          )}
+          <button
+            type="submit"
+            form="claim-house-form"
+            disabled={submitting || photoBusy}
+            className="min-h-12 w-full rounded-2xl bg-night text-base font-bold text-ivory shadow-sm transition-opacity disabled:opacity-60 motion-reduce:transition-none"
+          >
+            {submitting ? "집 짓는 중…" : "내 집 완성하기"}
+          </button>
+        </>
       }
     >
       {intro && <p className="mb-3 rounded-xl bg-glow/25 px-3 py-2 text-sm text-night">{intro}</p>}
@@ -290,24 +319,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
           {errors.message && <p role="alert" className="text-sm text-[#B5523B]">{errors.message}</p>}
         </div>
 
-        {submitError && (
-          <div role="alert" className="space-y-2 rounded-xl bg-[#F8E6DD] px-3 py-3 text-sm text-night">
-            <p>{submitError}</p>
-            {freeAfterCollision.length > 0 && slot !== null && (
-              <button
-                type="button"
-                className="min-h-11 rounded-xl bg-ivory px-3 font-semibold"
-                onClick={() => {
-                  setSubmitError(null);
-                  onChangeSlot(freeAfterCollision[0]);
-                }}
-              >
-                {freeAfterCollision[0] + 1}번 빈 집터로 옮기기
-              </button>
-            )}
-          </div>
-        )}
-
+        {simulated && (
         <details className="rounded-xl border border-dashed border-night/25 px-3 py-2 text-sm text-night/80">
           <summary className="min-h-11 cursor-pointer content-center font-medium">테스트용 시뮬레이션 (프로토타입)</summary>
           <div className="space-y-2 pb-2 pt-1">
@@ -322,6 +334,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
             {nextFree.length === 0 && <p className="text-xs">이 집터가 마지막 빈 집이에요.</p>}
           </div>
         </details>
+        )}
       </form>
     </BottomSheet>
   );

@@ -8,6 +8,8 @@ export const metadata = {
 
 const EFFECTIVE_DATE = "2026-11-09";
 const CONTACT = "mkideabox.feedback@gmail.com";
+// Company-standard privacy officer (same as other mkideabox app policies).
+const OFFICER = { name: "hyung-woo park", email: "mkideabox@gmail.com", phone: "+82-10-4732-7825" };
 
 function Section({ n, title, children }: { n: number; title: string; children: ReactNode }) {
   return (
@@ -89,10 +91,13 @@ export default function PrivacyPage() {
         <p>
           서비스는 쿠키를 직접 만들지 않습니다. 다만 서버(Supabase) 앞단의 Cloudflare가 자동화된 공격을 막기 위해 보안 쿠키
           (__cf_bm, 30분)를 설정할 수 있습니다. 브라우저의 로컬 저장소(localStorage)에 설치 ID와, 내가 만든 마을·내 집을 관리할 수
-          있게 해 주는 비밀값을 저장합니다. 샘플 마을에서 해 본 내용은 그 탭의 임시 저장소(sessionStorage)에만 남고 서버로 보내지
-          않습니다. 서버는 이 비밀값 자체가 아니라 되돌릴 수 없게 변환한 값(해시)만 보관합니다. 브라우저의 사이트
-          데이터를 지우면 이 비밀값도 사라져 그 브라우저에서 더 이상 내 집을 비우거나 마을을 지울 수 없게 됩니다. 이때는 아래
-          메일로 요청해 주세요.
+          있게 해 주는 비밀값을 저장합니다. 서버는 이 비밀값 자체가 아니라 되돌릴 수 없게 변환한 값(해시)만 보관합니다. 브라우저의
+          사이트 데이터를 지우면 이 비밀값도 사라져 그 브라우저에서 더 이상 내 집을 비우거나 마을을 지울 수 없게 됩니다. 이때는 아래
+          메일로 요청해 주세요. 샘플 마을에서 해 본 내용은 그 탭의 임시 저장소(sessionStorage)에만 남고 서버로 보내지 않습니다.
+        </p>
+        <p>
+          보안 쿠키는 브라우저 설정에서 차단할 수 있지만, 차단하면 접속이 원활하지 않을 수 있습니다. 로컬 저장소는 브라우저의
+          사이트 데이터 삭제로 지울 수 있으며, 지우면 위에서 말한 관리 권한도 사라집니다.
         </p>
       </Section>
 
@@ -114,26 +119,43 @@ export default function PrivacyPage() {
         </ul>
       </Section>
 
-      <Section n={6} title="처리를 맡기는 회사 (국외 이전 포함)">
+      <Section n={6} title="파기 절차와 방법">
+        <p>
+          삭제 요청을 받거나 보관 기간이 끝난 정보는 지체 없이 파기합니다. 전자 파일 형태로만 보관하므로 데이터베이스와 사진
+          저장소에서 복구할 수 없는 방법으로 지우며, 종이 문서로 출력해 보관하지 않습니다.
+        </p>
+      </Section>
+
+      <Section n={7} title="처리를 맡기는 회사와 국외 이전">
         <ul className="list-disc space-y-1.5 pl-5">
           <li>
-            <b>Supabase, Inc.</b>(미국): 마을·집 정보와 사진의 저장 및 처리. 데이터는 서울 리전(ap-northeast-2) 서버에 저장되며,
-            인터넷을 통해 사용자가 정보를 보낼 때 전송됩니다. 보관 기간은 위 5항과 같습니다.{" "}
+            <b>Supabase, Inc.</b>(미국) — 위탁 업무: 데이터베이스·사진 저장과 서버 기능. 처리 항목: 2항의 마을·집 정보, 사진, 설치
+            ID, 요청 기록, 신고 내용. 저장 위치: 서울 리전(ap-northeast-2). 이전 시기·방법: 서비스를 이용할 때마다 인터넷으로
+            전송. 보관 기간: 5항과 같음. 연락처:{" "}
+            <a className="underline" href="https://supabase.com/contact" rel="noreferrer" target="_blank">
+              supabase.com/contact
+            </a>{" "}
+            ·{" "}
             <a className="underline" href="https://supabase.com/privacy" rel="noreferrer" target="_blank">
               개인정보처리방침
             </a>
           </li>
           <li>
-            <b>Cloudflare, Inc.</b>(미국, 전 세계 네트워크): 웹사이트 전송과 보안. 접속 시 IP 주소 등 접속 정보가 처리됩니다.{" "}
+            <b>Cloudflare, Inc.</b>(미국, 전 세계 네트워크) — 위탁 업무: 웹사이트 전송과 보안(Supabase 서버 앞단 포함). 처리 항목:
+            IP 주소, 브라우저 정보 등 접속 정보. 이전 시기·방법: 웹사이트에 접속할 때마다 인터넷으로 전송. 보관 기간: Cloudflare
+            정책에 따름. 연락처: privacyquestions@cloudflare.com ·{" "}
             <a className="underline" href="https://www.cloudflare.com/privacypolicy/" rel="noreferrer" target="_blank">
               개인정보처리방침
             </a>
           </li>
         </ul>
-        <p>위 회사들에 정보를 팔거나 광고 목적으로 제공하지 않습니다.</p>
+        <p>
+          이 정보는 서비스를 제공하는 데 꼭 필요하므로, 국외 이전을 원하지 않으면 서비스를 이용하지 않거나 5항의 방법으로 정보를
+          지울 수 있습니다. 법령에 따른 경우를 빼고는 정보를 다른 제3자에게 제공하지 않으며, 팔거나 광고 목적으로 쓰지 않습니다.
+        </p>
       </Section>
 
-      <Section n={7} title="안전하게 지키는 방법">
+      <Section n={8} title="안전하게 지키는 방법">
         <p>
           모든 통신은 HTTPS로 암호화합니다. 사진은 공개 주소가 없는 비공개 저장소에 두고 2분 동안만 유효한 주소로 보여 줍니다.
           데이터베이스는 서비스 기능을 통해서만 접근할 수 있게 막아 두었고, 관리용 비밀값은 해시로만 저장합니다. 입력 길이와 사진
@@ -141,7 +163,7 @@ export default function PrivacyPage() {
         </p>
       </Section>
 
-      <Section n={8} title="아동의 개인정보">
+      <Section n={9} title="아동의 개인정보">
         <p>
           서비스는 만 14세 미만 아동을 대상으로 하지 않으며, 만 14세 미만 아동의 정보를 알면서 처리하지 않습니다. 만 14세 미만
           아동의 정보가 올라온 것을 알게 되면{" "}
@@ -149,17 +171,30 @@ export default function PrivacyPage() {
         </p>
       </Section>
 
-      <Section n={9} title="이용자의 권리">
+      <Section n={10} title="이용자의 권리">
         <p>
           자신의 정보를 보거나 고치거나 지워 달라고 요청할 수 있고, 처리를 멈춰 달라고 요청할 수 있습니다. 위 메일로 연락해 주시면
           지체 없이 처리하고 결과를 알려 드립니다.
         </p>
       </Section>
 
-      <Section n={10} title="개인정보 보호책임자 및 변경">
+      <Section n={11} title="권익침해 구제 방법">
+        <p>개인정보 침해에 대한 상담이나 분쟁 해결이 필요하면 아래 기관에 문의할 수 있습니다.</p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>개인정보분쟁조정위원회: 1833-6972 (www.kopico.go.kr)</li>
+          <li>개인정보침해신고센터: 118 (privacy.kisa.or.kr)</li>
+          <li>대검찰청: 1301 (www.spo.go.kr)</li>
+          <li>경찰청: 182 (ecrm.police.go.kr)</li>
+        </ul>
+      </Section>
+
+      <Section n={12} title="개인정보 보호책임자 및 변경">
         <p>
-          개인정보 보호책임자: mkideabox 운영자 ·{" "}
-          <a className="underline" href={`mailto:${CONTACT}`}>{CONTACT}</a>
+          개인정보 보호책임자: {OFFICER.name} · 이메일:{" "}
+          <a className="underline" href={`mailto:${OFFICER.email}`}>{OFFICER.email}</a> · 전화: {OFFICER.phone}
+        </p>
+        <p>
+          서비스 문의·삭제 요청: <a className="underline" href={`mailto:${CONTACT}`}>{CONTACT}</a>
         </p>
         <p>이 방침이 바뀌면 이 페이지에 새 시행일과 함께 게시합니다.</p>
       </Section>

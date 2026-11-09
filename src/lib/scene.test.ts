@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hitBoxPixels, renderOrder, SLOTS, WORLD_SIZE } from "./scene";
+import { hitBoxPercent, hitBoxPixels, pointInPolygon, renderOrder, SLOTS, SPRITES, WORLD_SIZE } from "./scene";
 
 describe("scene geometry", () => {
   it("has 8 deterministic slots inside the 1024 world", () => {
@@ -13,33 +13,44 @@ describe("scene geometry", () => {
     }
   });
 
-  it("hit boxes do not overlap each other", () => {
-    for (const a of SLOTS)
-      for (const b of SLOTS) {
-        if (a.slot >= b.slot) continue;
-        const overlap =
-          a.hit.x < b.hit.x + b.hit.width &&
-          b.hit.x < a.hit.x + a.hit.width &&
-          a.hit.y < b.hit.y + b.hit.height &&
-          b.hit.y < a.hit.y + a.hit.height;
-        expect(overlap, `slots ${a.slot} and ${b.slot}`).toBe(false);
-      }
-  });
-
-  it("raw hit boxes are at least 44px at the 390px reference width", () => {
-    // The scene spans the full width minus small gutters on a 390px screen.
+  it("tap regions are at least 44px at the 320px minimum width", () => {
+    // 320px viewport minus the 4px page gutter on each side.
     for (const s of SLOTS) {
-      const px = hitBoxPixels(s.slot, 382);
+      const px = hitBoxPixels(s.slot, 312);
       expect(px.width).toBeGreaterThanOrEqual(44);
       expect(px.height).toBeGreaterThanOrEqual(44);
     }
   });
 
-  it("renders rear to front with the tree between the middle rows", () => {
+  it("every house keeps ≥ 60% of its tap region not covered by houses in front of it", () => {
+    // DOM/paint order is slot order (back → front); sample the world on a 4px grid.
+    for (const s of SLOTS) {
+      let own = 0;
+      let free = 0;
+      for (let y = s.hit.y; y <= s.hit.y + s.hit.height; y += 4)
+        for (let x = s.hit.x; x <= s.hit.x + s.hit.width; x += 4) {
+          if (!pointInPolygon({ x, y }, s.hitPolygon)) continue;
+          own++;
+          if (!SLOTS.slice(s.slot + 1).some((f) => pointInPolygon({ x, y }, f.hitPolygon))) free++;
+        }
+      expect(free / own, `slot ${s.slot}`).toBeGreaterThanOrEqual(0.6);
+    }
+  });
+
+  it("renders rear to front with the tree in the middle row", () => {
     const order = renderOrder();
     const depths = order.map((e) => e.depth);
     expect(depths).toEqual([...depths].sort((a, b) => a - b));
     const labels = order.map((e) => (e.kind === "tree" ? "tree" : e.slot));
     expect(labels).toEqual([0, 1, 2, 3, "tree", 4, 5, 6, 7]);
+  });
+
+  it("clip-path polygons and sprites come from measured geometry", () => {
+    expect(hitBoxPercent(0).clipPath).toMatch(/^polygon\(/);
+    for (const g of Object.values(SPRITES)) {
+      expect(g.src).toMatch(/^\/assets\/.+\.webp$/);
+      expect(g.hull.length).toBeGreaterThanOrEqual(6);
+      expect(g.tileWidth).toBeGreaterThan(0.3);
+    }
   });
 });

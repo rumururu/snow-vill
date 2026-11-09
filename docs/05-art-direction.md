@@ -28,3 +28,6 @@ Identical roof pitch and perspective; consistent ground anchors; transparent alp
 
 ## Mockup provenance
 assets/mockups/village-concept.svg is an original simple vector layout created for this repository. Earlier conversation reference imagery was search-rendered inspiration, not an owned downloadable source asset. Do not claim it is bundled.
+
+## Implemented art (2026-11-10)
+Generated with ChatGPT image generation (original designs; mood/finish level guided by the planning references, not traced). Style moved from flat cel shading to **soft 3D-render miniature diorama** (houses on snowy base tiles, warm window light, twilight background) because that is what made the concept compelling. Consistency rule used: every variant is an edit of the master with silhouette IoU ≥ 0.90 (measured). Layout changed from the schematic mockup ring to a 3×3 isometric grid. Details: assets/source/PROVENANCE.md, assets/README.md.

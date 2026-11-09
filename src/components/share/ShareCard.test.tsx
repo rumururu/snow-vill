@@ -27,7 +27,11 @@ describe("photo-free share card", () => {
   it("rendered card contains no raster images, photo data, names or messages", () => {
     render(<ShareCard data={toShareCardData(villageWithPhotos())} />);
     const card = screen.getByTestId("share-card");
-    expect(card.querySelectorAll("image, img, foreignObject")).toHaveLength(0);
+    expect(card.querySelectorAll("img, foreignObject")).toHaveLength(0);
+    // Only the scene's own art may appear (background, houses, tree).
+    const hrefs = Array.from(card.querySelectorAll("image")).map((n) => n.getAttribute("href"));
+    expect(hrefs.length).toBeGreaterThan(0);
+    expect(hrefs.every((h) => h?.startsWith("/assets/"))).toBe(true);
     expect(card.outerHTML).not.toContain("data:image");
     expect(card.outerHTML).not.toContain("비밀");
     expect(card.outerHTML).not.toContain("올해도 고마웠어");
@@ -45,7 +49,8 @@ describe("photo-free share card", () => {
     await user.click(screen.getByRole("button", { name: "더보기 메뉴" }));
     await user.click(screen.getByRole("button", { name: "공유 카드 보기" }));
     const dialog = screen.getByRole("dialog", { name: "마을 공유 카드" });
-    expect(dialog.querySelectorAll("img, image")).toHaveLength(0);
+    expect(dialog.querySelectorAll("img")).toHaveLength(0);
+    expect(Array.from(dialog.querySelectorAll("image")).every((n) => n.getAttribute("href")?.startsWith("/assets/"))).toBe(true);
     expect(dialog.innerHTML).not.toContain("data:image");
     expect(within(dialog).getByText(/사진·이름·메시지가 들어가지 않아요/)).toBeInTheDocument();
 

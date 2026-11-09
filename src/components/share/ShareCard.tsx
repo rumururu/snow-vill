@@ -39,7 +39,7 @@ export const ShareCard = forwardRef<SVGSVGElement, { data: ShareCardData; classN
         {data.complete ? "우리 마을이 완성됐어요!" : "우리 마을에 불이 켜지고 있어요"}
       </text>
       <svg x="48" y="240" width="984" height="984" viewBox="0 0 1024 1024">
-        <SceneArt slots={data.slots} complete={data.complete} idPrefix="card" title="마을 장면" />
+        <SceneArt slots={data.slots} complete={data.complete} title="마을 장면" />
       </svg>
       <text x="540" y="1290" textAnchor="middle" fontFamily={FONT} fontSize="34" fill={PALETTE.indigo} opacity=".75">
         친구들과 만드는 우리만의 겨울 마을 ❄
@@ -50,7 +50,24 @@ export const ShareCard = forwardRef<SVGSVGElement, { data: ShareCardData; classN
 
 /** Rasterize the card SVG to a PNG blob (client only). */
 export async function rasterizeShareCard(svg: SVGSVGElement): Promise<Blob> {
-  const markup = new XMLSerializer().serializeToString(svg);
+  // An SVG drawn as an <img> cannot load external files, so inline the scene sprites
+  // (same-origin /assets/*.webp only — the card never contains participant photos).
+  const clone = svg.cloneNode(true) as SVGSVGElement;
+  await Promise.all(
+    Array.from(clone.querySelectorAll("image")).map(async (node) => {
+      const href = node.getAttribute("href") ?? "";
+      if (!href.startsWith("/assets/")) throw new Error(`unexpected image in share card: ${href}`);
+      const blob = await (await fetch(href)).blob();
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+      node.setAttribute("href", dataUrl);
+    }),
+  );
+  const markup = new XMLSerializer().serializeToString(clone);
   const url = URL.createObjectURL(new Blob([markup], { type: "image/svg+xml;charset=utf-8" }));
   try {
     const img = new Image();

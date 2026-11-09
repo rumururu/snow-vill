@@ -47,6 +47,7 @@ Implemented and deployed 2026-11-09 on the shared `mkideabox-games` Supabase pro
 | Multi-device browser E2E (create → photo → invite → friend views photo → claim → collision → report → remove → delete) | Done — all checks pass, server leftovers 0 |
 | Owner recovery on a new device, invite token separation/expiry | **Open** (decision items 1–2); the village link currently grants view + claim |
 | Hosting: static export + Cloudflare Workers static assets, `_headers` CSP | Ready — verified on the local Cloudflare runtime (`wrangler dev`): both browser E2E suites pass with the CSP active. Deployed to **https://snow.mkideabox.com** (2026-11-10, custom domain; workers.dev fallback kept); CORS secret set; multi-device E2E passes against both production origins |
+| Production art: ChatGPT-generated diorama houses (3 styles + empty), tree base/complete, background; measured anchors/tap hulls; 3×3 layout (2026-11-10) | Done — 297KB delivery; unit 68, simulation smoke, remote E2E (local + production ×3) pass |
 | Privacy policy page `/privacy/` (Korean), linked from landing + claim sheet; daily purge job makes the 1-day request-log retention true | Done — content must be reviewed by the operator |
 | Post-season data retention schedule (policy currently says: kept until deleted or service ends), moderation tooling, analytics | **Open** |
 

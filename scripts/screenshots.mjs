@@ -120,7 +120,11 @@ try {
   }
   const shareDialog = page.getByRole("dialog", { name: "우리 마을이 완성됐어요!" });
   await shareDialog.waitFor();
-  check((await shareDialog.locator("img, image").count()) === 0, "share sheet contains no <img>/<image>");
+  check((await shareDialog.locator("img").count()) === 0, "share sheet contains no <img>");
+  check(
+    await shareDialog.locator("image").evaluateAll((ns) => ns.length > 0 && ns.every((n) => n.getAttribute("href")?.startsWith("/assets/"))),
+    "share card images are scene art only (/assets/)",
+  );
   check(!(await shareDialog.innerHTML()).includes("data:image"), "share sheet contains no photo data URL");
   await page.waitForTimeout(400);
   await shot("07-share-complete");

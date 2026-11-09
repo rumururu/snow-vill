@@ -1,5 +1,12 @@
 # Snow Village assets
 
+## Production art (2026-11-10)
+- `source/` — lossless masters generated with ChatGPT image generation from the planning conversation: 3 lit houses (wood/sage/indigo), empty house, tree base/complete, village background. Prompts, processing and consistency checks: [source/PROVENANCE.md](source/PROVENANCE.md).
+- `python3 scripts/build_assets.py` → `public/assets/**.webp` (512px sprites, 1024px background; 297KB total) + `src/lib/asset-geometry.json` (anchors, tile widths and tap-region hulls measured from the alpha channel).
+- Scene: 3×3 isometric grid on the background (tree in the centre cell); layout constants live in `build_assets.py` (`LAYOUT`). Chosen by a visibility search: every house ≥ 93% unoccluded.
+- To replace art: drop a new master in `source/` with the same name, rerun the script, then check `npm test` (tap-region tests) and the screenshots.
+
+
 ## Included
 - [mockups/village-concept.svg](mockups/village-concept.svg): original lightweight vector **concept mockup**, created for this handoff. It is intentionally schematic; not production-ready artwork.
 

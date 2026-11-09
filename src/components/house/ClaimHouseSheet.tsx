@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState, type FormEvent } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { PhotoError, preparePhoto } from "@/lib/image";
@@ -318,6 +319,13 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
           </p>
           {errors.message && <p role="alert" className="text-sm text-[#B5523B]">{errors.message}</p>}
         </div>
+
+        <p className="text-xs leading-relaxed text-night/60">
+          입력한 닉네임·한마디·사진은 이 마을 링크를 가진 사람에게 보여요. 내 집은 언제든 비울 수 있어요.{" "}
+          <Link href="/privacy/" target="_blank" className="underline underline-offset-2">
+            개인정보처리방침
+          </Link>
+        </p>
 
         {simulated && (
         <details className="rounded-xl border border-dashed border-night/25 px-3 py-2 text-sm text-night/80">

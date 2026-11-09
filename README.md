@@ -61,7 +61,7 @@ It walks the full flow (sample → claim with a generated test image → frame �
 
 ## Hosting
 
-**Deployed (beta, 2026-11-09):** https://snow-village.myappmanage.workers.dev — Cloudflare account `Rumururu@gmail.com's Account`, Worker `snow-village`. Custom domain not attached yet.
+**Deployed (beta, 2026-11-10):** **https://snow.mkideabox.com** (custom domain on the `mkideabox.com` zone; fallback https://snow-village.myappmanage.workers.dev) — Cloudflare account `Rumururu@gmail.com's Account`, Worker `snow-village`. Privacy policy: https://snow.mkideabox.com/privacy/ (`src/app/privacy/page.tsx`, linked from the landing page and the claim sheet). CORS: Supabase secret `SNOWVILL_ALLOWED_ORIGINS` lists both production origins + localhost.
 
 The site is a **static export** (`output: "export"`) served by **Cloudflare Workers static assets** (`wrangler.jsonc`, no Worker script) — free and not metered per request. Village pages are `/v/?id=<id>` because static exports cannot serve arbitrary dynamic path segments. `public/_headers` sets the CSP (only this site + the Supabase project), `nosniff`, referrer/permissions policies, `noindex`, and immutable caching for hashed assets.
 
@@ -79,6 +79,7 @@ Shared Supabase project **`mkideabox-games`** (ref `qfhbkfzxhldfycmcwntw`, Seoul
 | Piece | What it does |
 |---|---|
 | `supabase/migrations/…_snowvill_core.sql` | Tables `snowvill_villages/houses/reports/calls` (RLS on, no policies, all grants revoked). Anon functions: `snowvill_create_village`, `snowvill_get_village`, `snowvill_claim_house` (village row lock + `UNIQUE(village_id, slot)`), `snowvill_report`. Validation → 400, per-install rate limits → 429 |
+| `supabase/migrations/…_snowvill_calls_purge.sql` | pg_cron job `snowvill_calls_purge` (daily 03:23 UTC) deletes rate-limit rows older than one day |
 | `supabase/migrations/…_snowvill_photo_bucket.sql` | Private bucket `snowvill-photos` (JPEG only, ≤300KB), no storage policies |
 | `supabase/functions/snowvill-photo` | Edge Function: upload (claim secret only, JPEG ≤1024px, EXIF/COM segments stripped), 2-minute signed URL for viewing, remove house, delete village (photos deleted too) |
 

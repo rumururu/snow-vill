@@ -24,6 +24,7 @@ case "$(q "select count(*) as n from pg_tables where schemaname='public' and tab
   *) echo "core tables exist, core migration skipped" ;;
 esac
 R=$(q "$(cat migrations/20261109100100_snowvill_photo_bucket.sql)"); echo "photo bucket: $R"
+R=$(q "$(cat migrations/20261109120000_snowvill_calls_purge.sql)"); echo "calls purge job: $R"
 
 AFTER=$(q "$HASH")
 [ "$BEFORE" = "$AFTER" ] && echo "other games unchanged ($AFTER)" || { echo "OTHER OBJECTS CHANGED: $BEFORE -> $AFTER"; exit 1; }

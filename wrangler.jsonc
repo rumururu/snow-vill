@@ -4,6 +4,9 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "snow-village",
   "compatibility_date": "2026-11-01",
+  // Production domain (Cloudflare zone mkideabox.com). workers.dev stays on as a fallback.
+  "routes": [{ "pattern": "snow.mkideabox.com", "custom_domain": true }],
+  "workers_dev": true,
   "assets": {
     "directory": "./out",
     "html_handling": "auto-trailing-slash",

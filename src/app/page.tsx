@@ -45,6 +45,10 @@ export default function LandingPage() {
           샘플 마을 둘러보기
         </Link>
         <p className="text-center text-[11px] leading-relaxed text-night/55">
+          <Link href="/privacy/" className="underline underline-offset-2">
+            개인정보처리방침
+          </Link>
+          {" · "}
           {online
             ? "베타 서비스예요. 사진은 집을 눌렀을 때만 보이고, 공유 카드에는 들어가지 않아요."
             : "서버 없이 동작하는 시뮬레이션 모드예요. 데이터는 이 브라우저 탭에만 임시 저장돼요."}

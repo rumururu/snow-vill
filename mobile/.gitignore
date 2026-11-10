@@ -56,3 +56,6 @@ app.*.map.json
 /ios/fastlane/report.xml
 /android/fastlane/report.xml
 /env/prod.json
+
+# fastlane get_provisioning_profile output (regenerated each build)
+*.mobileprovision

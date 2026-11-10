@@ -28,7 +28,7 @@ server `snowvill_product_credits()`).
 | IAP | `6832824105`, consumable, ko "큰 마을" / en-US "Big Village", review note explains where the purchase is (village menu ⋮ → 큰 마을로 키우기) |
 | IAP state | `MISSING_METADATA` until the **review screenshot** (purchase sheet) is attached. The first IAP must be submitted together with the first app version |
 | TestFlight | builds 1 (Flutter placeholder icon), 2 (real icon), 3 (RevenueCat keys) — lane `mobile/ios/fastlane` `beta` |
-| Apple server notifications | **not set yet** — the RevenueCat URL is masked until the RevenueCat account password is entered (Reveal). Then `PATCH /v1/apps/6832823869` with `subscriptionStatusUrl`/`…ForSandbox` and version `V2` (claires-space did the same) |
+| Apple server notifications | **Registered 2026-11-10**: RevenueCat's URL (revealed after the owner entered the RevenueCat password) set via `PATCH /v1/apps/6832823869` for production and sandbox, version V2 (confirmed by GET). The URL token is a secret and is not written down |
 
 Scripts (run from `mobile/`): `tools/store/asc.py` (API helper, key `DGS7ANBS8T`, `.p8` beside the iOS Fastfile, gitignored),
 `tools/store/asc_iaps.py` (idempotent product creation).
@@ -87,7 +87,6 @@ Test data to remove after the refund check: villages "QA IAP test" (capacity 6) 
 
 | To do | Who | Note |
 |---|---|---|
-| Reveal the Apple server notification URL in RevenueCat (password) | owner | then the ASC PATCH in §2 |
 | Connect RTDN (GCP Pub/Sub topic) | Claude/owner | GCP permission setup |
 | Confirm refund reached the server (`refunded_at`), then delete test data | Claude | |
 | iPhone sandbox purchase via TestFlight | Claude | Android round trip done (§6) |

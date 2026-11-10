@@ -161,7 +161,7 @@ abstract class AppLocalizations {
   /// No description provided for @createCapacity.
   ///
   /// In ko, this message translates to:
-  /// **'최대 8명의 친구가 한 집씩 입주할 수 있어요.'**
+  /// **'친구 6명까지 한 집씩 입주할 수 있어요. 큰 마을로 키우면 8명까지 살 수 있어요.'**
   String get createCapacity;
 
   /// No description provided for @createButton.

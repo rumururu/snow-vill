@@ -41,7 +41,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get villageNameHint => 'e.g. Snowflake Village';
 
   @override
-  String get createCapacity => 'Up to 8 friends can each move into a house.';
+  String get createCapacity =>
+      'Up to 6 friends can each move into a house; grow it into a big village for 8.';
 
   @override
   String get createButton => 'Create village';

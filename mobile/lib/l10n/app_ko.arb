@@ -10,7 +10,7 @@
   "privacyPolicy": "개인정보처리방침",
   "createHeading": "우리 마을의 이름은?",
   "villageNameHint": "예: 눈송이 마을",
-  "createCapacity": "최대 8명의 친구가 한 집씩 입주할 수 있어요.",
+  "createCapacity": "친구 6명까지 한 집씩 입주할 수 있어요. 큰 마을로 키우면 8명까지 살 수 있어요.",
   "createButton": "마을 생성하기",
   "creating": "만드는 중…",
   "occupancy": "{count}/{capacity}",

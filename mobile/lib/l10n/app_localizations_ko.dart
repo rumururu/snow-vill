@@ -40,7 +40,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get villageNameHint => '예: 눈송이 마을';
 
   @override
-  String get createCapacity => '최대 8명의 친구가 한 집씩 입주할 수 있어요.';
+  String get createCapacity =>
+      '친구 6명까지 한 집씩 입주할 수 있어요. 큰 마을로 키우면 8명까지 살 수 있어요.';
 
   @override
   String get createButton => '마을 생성하기';

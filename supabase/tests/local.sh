@@ -21,7 +21,7 @@ alter default privileges in schema public grant all on tables to anon, authentic
 alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
 SQL
-for m in migrations/20261109100000_snowvill_core.sql migrations/20261110100000_snowvill_big_village.sql; do
+for m in migrations/20261109100000_snowvill_core.sql migrations/20261110100000_snowvill_big_village.sql migrations/20261111100000_snowvill_expansion.sql; do
   "${PSQL[@]}" -v ON_ERROR_STOP=1 -f "$m" >/dev/null || { echo "migration failed: $m"; exit 1; }
 done
 
@@ -62,7 +62,8 @@ ok "$(j "$R" "'claim_hash' in d['house'] or 'photo_path' in d['house']")" False 
 ok "$(j "$(claim $B 0 "'도윤'" "'sage'" "''")" "d['reason']")" SLOT_TAKEN "same slot → SLOT_TAKEN"
 ok "$(j "$(claim $A 1 "'또'" "'sage'" "''")" "d['reason']")" ALREADY_JOINED "same install twice → ALREADY_JOINED"
 ok "$(sql anon "select snowvill_claim_house('$B', 'nonexistent', 1, 'x', 'wood', '')" | python3 -c 'import json,sys;print(json.load(sys.stdin)["reason"])')" NOT_FOUND "unknown village → NOT_FOUND"
-ok "$(claim $B 8 "'x'" "'wood'" "''")" "ERR:22023" "slot 8 → 22023"
+ok "$(claim $B 60 "'x'" "'wood'" "''")" "ERR:22023" "slot 60 → 22023"
+ok "$(j "$(claim $B 8 "'x'" "'wood'" "''")" "d['reason']")" SLOT_LOCKED "slot 8 in a 6-house village → SLOT_LOCKED"
 ok "$(claim $B -1 "'x'" "'wood'" "''")" "ERR:22023" "slot -1 → 22023"
 ok "$(claim $B 1 "'  '" "'wood'" "''")" "ERR:22023" "blank nickname → 22023"
 ok "$(claim $B 1 "repeat('가',11)" "'wood'" "''")" "ERR:22023" "11-char nickname → 22023"
@@ -74,42 +75,63 @@ for i in 2 3 4 5 6 7; do
   sql anon "select snowvill_claim_house('$U', '$VID', $i, 'n$i', 'sage', '')" >/dev/null
 done
 ok "$(j "$(sql anon "select snowvill_get_village('$VID')")" "len(d['houses'])")" 6 "free village stops at 6 houses"
-ok "$(j "$(claim $C 7 "'늦음'" "'wood'" "''")" "d['reason']")" VILLAGE_FULL "7th claim in a free village → VILLAGE_FULL"
+ok "$(j "$(claim $C 3 "'늦음'" "'wood'" "''")" "d['reason']")" VILLAGE_FULL "7th claim in a free village → VILLAGE_FULL"
 
-echo "2b. big village (paid upgrade via wallet credit)"
+echo "2b. expansion (tiered credits, +3 per step, up to 60)"
 P=55555555-5555-5555-5555-555555555555
-ok "$(j "$(sql anon "select snowvill_wallet('$P')")" "d['credits']")" 0 "empty wallet"
-ok "$(j "$(sql anon "select snowvill_upgrade_village('$P', '$VID')")" "d['reason']")" NO_CREDIT "upgrade without credit → NO_CREDIT"
+w() { sql anon "select snowvill_wallet('$1')"; }
+up() { sql anon "select snowvill_upgrade_village('$1', '$2')"; }
 cp() { sql service_role "select snowvill_credit_purchase('$1', '$2', '$3', 2900, 1.99, 'KRW', 'PLAY_STORE', 'SANDBOX')"; }
-ok "$(j "$(cp $P tx-1 snowvillage_big_village)" "d['credited']")" 1 "webhook credit → 1"
+ok "$(j "$(w $P)" "d['credits'], d['tiers']['1']")" "(0, 0)" "empty wallet"
+ok "$(j "$(up $P $VID)" "d['reason'], d['tier']")" "('NO_CREDIT', 1)" "6-house village needs a tier-1 credit"
+ok "$(j "$(cp $P tx-1 snowvillage_big_village)" "d['credited'], d['tier']")" "(1, 1)" "big_village product → tier 1"
 ok "$(j "$(cp $P tx-1 snowvillage_big_village)" "d['reason']")" DUPLICATE "same transaction again → no double credit"
 ok "$(j "$(cp $P tx-x unknown_product)" "d['reason']")" UNKNOWN_PRODUCT "unknown product credits nothing"
-ok "$(j "$(sql anon "select snowvill_wallet('$P')")" "d['credits']")" 1 "wallet shows 1 credit"
-ok "$(j "$(sql anon "select snowvill_upgrade_village('$P', '$VID')")" "d['ok'], d['capacity']")" "(True, 8)" "spend credit → capacity 8 (gift by a non-member)"
-ok "$(j "$(sql anon "select snowvill_wallet('$P')")" "d['credits']")" 0 "credit spent"
-ok "$(j "$(sql anon "select snowvill_upgrade_village('$P', '$VID')")" "d['reason']")" ALREADY_BIG "second upgrade → ALREADY_BIG"
-for i in 6 7; do
-  U=$(python3 -c "import uuid;print(uuid.uuid4())")
-  ok "$(j "$(sql anon "select snowvill_claim_house('$U', '$VID', $i, 'b$i', 'wood', '')")" "d['ok']")" True "big village accepts slot $i"
+ok "$(j "$(cp $P tx-2 snowvillage_expand_2)" "d['tier']")" 2 "expand_2 → tier 2"
+ok "$(j "$(w $P)" "d['credits'], d['tiers']['1'], d['tiers']['2']")" "(2, 1, 1)" "wallet per tier"
+ok "$(j "$(up $P $VID)" "d['ok'], d['capacity'], d['tier'], d['next_tier']")" "(True, 9, 1, 2)" "spend tier 1 → 9 (gift by a non-member)"
+ok "$(j "$(up $P $VID)" "d['ok'], d['capacity'], d['next_tier']")" "(True, 12, 3)" "spend tier 2 → 12"
+ok "$(j "$(up $P $VID)" "d['reason'], d['tier']")" "('NO_CREDIT', 3)" "12 needs tier 3"
+cp $P tx-3 snowvillage_expand_3 >/dev/null
+ok "$(j "$(up $P $VID)" "d['capacity'], d['next_tier']")" "(15, 4)" "tier 3 → 15"
+for n in $(seq 4 18); do cp $P tx-4-$n snowvillage_expand_4 >/dev/null; done
+for c in 18 21 24 27 30 33 36 39 42 45 48 51 54 57 60; do
+  "${PSQL[@]}" -c "delete from snowvill_calls where install_id='$P'" >/dev/null  # test only: stay under the 10/min upgrade limit
+  ok "$(j "$(up $P $VID)" "d['capacity']")" $c "tier 4 → $c"
 done
-ok "$(j "$(sql anon "select snowvill_get_village('$VID')")" "d['capacity'], len(d['houses'])")" "(8, 8)" "big village full at 8"
-ok "$(j "$(claim $C 3 "'늦음'" "'wood'" "''")" "d['reason']")" VILLAGE_FULL "9th claim → VILLAGE_FULL"
-ok "$(j "$(cp $P tx-2 snowvillage_big_village)" "d['credits']")" 1 "second purchase → 1 credit"
-ok "$(j "$(sql service_role "select snowvill_refund_purchase('tx-2')")" "d['refunded'], d['credits']")" "(1, 0)" "refund unspent → credit removed"
-ok "$(j "$(sql service_role "select snowvill_refund_purchase('tx-2')")" "d['refunded']")" 0 "refund twice → no-op"
-ok "$(j "$(sql service_role "select snowvill_refund_purchase('tx-1')")" "d['credits']")" 0 "refund after spending → wallet stays at 0, upgrade kept"
-ok "$("${PSQL[@]}" -c "select capacity from snowvill_villages where id='$VID'")" 8 "upgrade survives refund"
+"${PSQL[@]}" -c "delete from snowvill_calls where install_id='$P'" >/dev/null
+ok "$(j "$(up $P $VID)" "d['reason']")" MAX_SIZE "60 is the maximum"
+ok "$(j "$(w $P)" "d['tiers']['4']")" 0 "15 tier-4 credits spent"
+for i in $(seq 1 11); do sql anon "select snowvill_upgrade_village('77777777-7777-7777-7777-777777777777', '$VID')" >/dev/null; done
+ok "$(sql anon "select snowvill_upgrade_village('77777777-7777-7777-7777-777777777777', '$VID')")" "ERR:PT429" "upgrade rate limit (10/min) still applies"
+ok "$("${PSQL[@]}" -c "select count(*) from snowvill_upgrades where village_id='$VID'")" 18 "one upgrade row per step"
+for i in 6 30 59; do
+  U=$(python3 -c "import uuid;print(uuid.uuid4())")
+  ok "$(j "$(sql anon "select snowvill_claim_house('$U', '$VID', $i, 'b$i', 'brick', '', 2)")" "d['ok'], d['house']['direction'], d['house']['style']")" "(True, 2, 'brick')" "60-house village accepts slot $i with direction"
+done
+U=$(python3 -c "import uuid;print(uuid.uuid4())")
+ok "$(sql anon "select snowvill_claim_house('$U', '$VID', 7, 'x', 'wood', '', 4)")" "ERR:22023" "direction 4 → 22023"
+ok "$(sql anon "select snowvill_claim_house('$U', '$VID', 7, 'x', 'castle', '', 0)")" "ERR:22023" "unknown style → 22023"
+ok "$(j "$(sql anon "select snowvill_claim_house('$U', '$VID', 7, 'x', 'windmill', '')")" "d['house']['direction']")" 0 "old 6-arg claim still works (direction 0)"
+ok "$(j "$(cp $P tx-r snowvillage_expand_2)" "d['credits']")" 1 "another tier-2 purchase"
+ok "$(j "$(sql service_role "select snowvill_refund_purchase('tx-r')")" "d['refunded'], d['tier'], d['credits']")" "(1, 2, 0)" "refund unspent → tier-2 credit removed"
+ok "$(j "$(sql service_role "select snowvill_refund_purchase('tx-r')")" "d['refunded']")" 0 "refund twice → no-op"
+ok "$(j "$(sql service_role "select snowvill_refund_purchase('tx-1')")" "d['credits']")" 0 "refund after spending → stays at 0"
+ok "$("${PSQL[@]}" -c "select capacity from snowvill_villages where id='$VID'")" 60 "expansion survives refund"
 Q=66666666-6666-6666-6666-666666666666
-cp $P tx-3 snowvillage_big_village >/dev/null
-ok "$(j "$(sql service_role "select snowvill_transfer(array['$P']::uuid[], '$Q')")" "d['moved']")" 1 "transfer moves credits"
-ok "$(j "$(sql anon "select snowvill_wallet('$Q')")" "d['credits']")" 1 "new id has the credit"
+cp $P tx-t1 snowvillage_big_village >/dev/null; cp $P tx-t3 snowvillage_expand_3 >/dev/null
+ok "$(j "$(sql service_role "select snowvill_transfer(array['$P']::uuid[], '$Q')")" "d['moved']")" 2 "transfer moves credits of every tier"
+ok "$(j "$(w $Q)" "d['tiers']['1'], d['tiers']['3']")" "(1, 1)" "new id has both credits"
+ok "$(j "$(w $P)" "d['credits']")" 0 "old id emptied"
 for f in "snowvill_credit_purchase('$P','x','snowvillage_big_village',1,1,'KRW','x','x')" "snowvill_refund_purchase('x')" \
-         "snowvill_transfer(array['$P']::uuid[], '$Q')" "snowvill_product_credits('x')"; do
+         "snowvill_transfer(array['$P']::uuid[], '$Q')" "snowvill_product_credits('x')" "snowvill_product_tier('x')" \
+         "snowvill_step_tier(6::smallint)" "snowvill_valid_style('x')"; do
   ok "$(sql anon "select $f")" "ERR:42501" "anon $f denied"
 done
-for t in snowvill_wallets snowvill_purchases snowvill_upgrades; do
+for t in snowvill_wallets snowvill_purchases snowvill_upgrades snowvill_tier_credits; do
   ok "$(sql anon "select count(*) from $t")" "ERR:42501" "select $t denied"
 done
+ok "$(sql anon "select nextval('snowvill_upgrades_id_seq')")" "ERR:42501" "upgrades sequence denied"
 
 echo "3. concurrent claim of the last free slot"
 R=$(sql anon "select snowvill_create_village('$B', '경쟁 마을')"); V2=$(j "$R" "d['id']")

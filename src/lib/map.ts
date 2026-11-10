@@ -128,7 +128,7 @@ export function visibleLots(village: Pick<Village, "capacity" | "houses">): LotD
 /** Ground radius (tiles) that covers every visible lot with a margin. */
 export function groundRadius(lots: LotDef[]): number {
   const outer = Math.max(0, ...lots.map((l) => l.ring));
-  return RING_RADII[outer] + 2.2;
+  return RING_RADII[outer] + 2.6;
 }
 
 export type MapEntity =
@@ -161,7 +161,7 @@ export function lotsView(village: Pick<Village, "capacity" | "houses">): [number
   const ps = lots.map((l) => project(l.at[0], l.at[1]));
   const xs = ps.map((p) => p.x);
   const ys = ps.map((p) => p.y);
-  const pad = TILE * HOUSE_TILES * 0.6;
+  const pad = TILE * HOUSE_TILES * 0.95; // house sprites are wider than their base tile
   const x0 = Math.min(...xs, -TILE * 2) - pad;
   const x1 = Math.max(...xs, TILE * 2) + pad;
   const y0 = Math.min(...ys, -TILE * 1.2) - TILE * HOUSE_TILES * 1.25; // roofs + name chips above the back lots

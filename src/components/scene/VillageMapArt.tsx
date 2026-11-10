@@ -75,7 +75,7 @@ function rimPines(radius: number): Array<{ i: number; j: number; s: number }> {
   const n = Math.round(radius * 1.1);
   for (let k = 0; k < n; k++) {
     const a = (k / n) * Math.PI * 2 + 0.37;
-    const r = radius - 0.9 + ((k * 7) % 5) * 0.12;
+    const r = radius - 0.45 + ((k * 7) % 5) * 0.08; // on the rim, clear of the outer ring
     const u = r * Math.SQRT2 * Math.cos(a);
     const v = r * Math.SQRT2 * Math.sin(a) * (GROUND_ASPECT / 0.5);
     out.push({ i: (u + v) / 2, j: (v - u) / 2, s: 0.85 + ((k * 13) % 7) * 0.05 });

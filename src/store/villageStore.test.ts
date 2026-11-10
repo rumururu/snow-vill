@@ -49,7 +49,7 @@ describe("simulated (local) village store", () => {
     expect(await store.claimHouse(r.id, 1, { nickname: "나2", style: "wood" })).toEqual({ ok: false, reason: "ALREADY_JOINED" });
   });
 
-  it("free village stops at 6; the (simulated) big-village upgrade allows 8", async () => {
+  it("free village stops at 6; each (simulated) expansion adds 3, up to 60", async () => {
     const store = make();
     const r = await store.createVillage("마을");
     if (!r.ok) throw new Error();
@@ -57,10 +57,15 @@ describe("simulated (local) village store", () => {
     expect(store.simulateFriendClaim(r.id).ok).toBe(false);
     expect(await store.claimHouse(r.id, 6, { nickname: "나", style: "wood" })).toEqual({ ok: false, reason: "VILLAGE_FULL" });
     expect(store.upgradeVillage(r.id)).toEqual({ ok: true });
+    expect(store.getState().villages[r.id].capacity).toBe(9);
     expect(store.simulateFriendClaim(r.id).ok).toBe(true);
-    expect((await store.claimHouse(r.id, 7, { nickname: "나", style: "wood" })).ok).toBe(true);
+    expect((await store.claimHouse(r.id, 8, { nickname: "나", style: "bakery", direction: 3 })).ok).toBe(true);
+    expect(store.simulateFriendClaim(r.id).ok).toBe(true);
     expect(store.simulateFriendClaim(r.id).ok).toBe(false);
-    expect(store.getState().villages[r.id].houses).toHaveLength(8);
+    expect(store.getState().villages[r.id].houses).toHaveLength(9);
+    for (let k = 0; k < 17; k++) store.upgradeVillage(r.id);
+    expect(store.getState().villages[r.id].capacity).toBe(60);
+    expect(store.upgradeVillage(r.id).ok).toBe(false);
   });
 
   it("real (remote) villages are upgraded in the app, not on the web", () => {
@@ -111,7 +116,7 @@ describe("simulated (local) village store", () => {
 // ---------------- remote mode with a fake API ----------------
 
 function house(over: Partial<House> = {}): House {
-  return { id: "h1", slot: 0, nickname: "하늘", style: "wood", photo: null, hasPhoto: false, message: "", createdAt: "2026-12-01T00:00:00Z", ...over };
+  return { id: "h1", slot: 0, nickname: "하늘", style: "wood", direction: 0, photo: null, hasPhoto: false, message: "", createdAt: "2026-12-01T00:00:00Z", ...over };
 }
 
 function fakeApi(over: Partial<RemoteApi> = {}): RemoteApi {

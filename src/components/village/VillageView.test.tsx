@@ -6,26 +6,28 @@ import { createVillageStore } from "@/store/villageStore";
 import { VillageView } from "./VillageView";
 
 function slotButton(slot: number) {
-  const el = document.querySelector<HTMLButtonElement>(`button[data-slot="${slot}"]`);
+  const el = document.querySelector<SVGPolygonElement>(`polygon[role="button"][data-slot="${slot}"]`);
   if (!el) throw new Error(`slot ${slot} button missing`);
   return el;
 }
 
 describe("VillageView (sample village)", () => {
-  it("renders 8 house hotspots and the 3/8 occupancy", () => {
+  it("renders a hotspot per lot (15 + 3 locked) and the 7/15 occupancy", () => {
     renderWithStore(<VillageView villageId="demo" />);
-    expect(screen.getAllByRole("button", { name: /번 (집|빈 집터)/ })).toHaveLength(8);
-    expect(document.querySelectorAll('button[data-state="occupied"]')).toHaveLength(3);
-    expect(screen.getByText("3/8")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /번 (집|빈 집터|집터 \(잠김\))/ })).toHaveLength(18);
+    expect(document.querySelectorAll('polygon[data-state="occupied"]')).toHaveLength(7);
+    expect(document.querySelectorAll('polygon[data-state="locked"]')).toHaveLength(3);
+    expect(document.querySelectorAll('polygon[data-state="empty"]')).toHaveLength(8);
+    expect(screen.getByText("7/15")).toBeInTheDocument();
     expect(screen.getAllByText("시뮬레이션 데이터").length).toBeGreaterThan(0);
   });
 
   it("empty house opens the claim sheet; Esc closes it and returns focus", async () => {
     const user = userEvent.setup();
     renderWithStore(<VillageView villageId="demo" />);
-    const trigger = slotButton(1);
+    const trigger = slotButton(6);
     await user.click(trigger);
-    const dialog = screen.getByRole("dialog", { name: "2번 집터에 내 집 만들기" });
+    const dialog = screen.getByRole("dialog", { name: "7번 집터에 내 집 만들기" });
     expect(dialog).toHaveAttribute("aria-modal", "true");
     expect(within(dialog).getByLabelText(/닉네임/)).toHaveFocus();
     expect(document.getElementById("app-root")).toHaveAttribute("inert");
@@ -40,7 +42,7 @@ describe("VillageView (sample village)", () => {
     const user = userEvent.setup();
     renderWithStore(<VillageView villageId="demo" />);
     await user.click(slotButton(0));
-    const dialog = screen.getByRole("dialog", { name: "하늘의 작은 집" });
+    const dialog = screen.getByRole("dialog", { name: /하늘의/ });
     expect(within(dialog).getByRole("img", { name: "하늘님의 기본 프로필 그림" })).toBeInTheDocument();
     expect(within(dialog).getByText(/올해도 고마웠어/)).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: "부적절한 내용 신고하기" })).toBeInTheDocument();
@@ -61,7 +63,7 @@ describe("VillageView (sample village)", () => {
   it("validates nickname and the 60-character message inline", async () => {
     const user = userEvent.setup();
     renderWithStore(<VillageView villageId="demo" />);
-    await user.click(slotButton(1));
+    await user.click(slotButton(6));
     const dialog = screen.getByRole("dialog");
     await user.click(within(dialog).getByLabelText(/한마디/));
     await user.paste("눈".repeat(61));
@@ -75,15 +77,18 @@ describe("VillageView (sample village)", () => {
   it("claims a house end-to-end and updates the scene", async () => {
     const user = userEvent.setup();
     const { store } = renderWithStore(<VillageView villageId="demo" />);
-    await user.click(slotButton(1));
+    await user.click(slotButton(6));
     await user.type(screen.getByLabelText(/닉네임/), "눈사람");
-    await user.click(screen.getByRole("radio", { name: "세이지" }));
+    await user.click(screen.getByRole("radio", { name: "풍차 집" }));
+    await user.click(screen.getByRole("radio", { name: /오른쪽 뒤/ }));
     await user.click(screen.getByRole("button", { name: "내 집 완성하기" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-    expect(slotButton(1)).toHaveAttribute("data-state", "occupied");
-    expect(screen.getByText("4/8")).toBeInTheDocument();
+    expect(slotButton(6)).toHaveAttribute("data-state", "occupied");
+    expect(screen.getByText("8/15")).toBeInTheDocument();
     expect(screen.getByText("내 집 · 눈사람")).toBeInTheDocument();
-    expect(store.getState().villages.demo.houses.find((h) => h.slot === 1)?.style).toBe("sage");
+    const mine = store.getState().villages.demo.houses.find((h) => h.slot === 6);
+    expect([mine?.style, mine?.direction]).toEqual(["windmill", 2]);
+    expect(document.querySelector('[data-slot="6"][data-house-style="windmill"][data-direction="2"]')).not.toBeNull();
     // Already joined: primary action becomes "내 집 보기".
     expect(screen.getByRole("button", { name: "내 집 보기" })).toBeInTheDocument();
   });
@@ -91,61 +96,60 @@ describe("VillageView (sample village)", () => {
   it("keeps the draft and offers another slot after a simulated collision", async () => {
     const user = userEvent.setup();
     renderWithStore(<VillageView villageId="demo" />);
-    await user.click(slotButton(1));
+    await user.click(slotButton(6));
     await user.type(screen.getByLabelText(/닉네임/), "늦은친구");
     await user.click(screen.getByText("테스트용 시뮬레이션 (프로토타입)"));
     await user.click(screen.getByLabelText("제출 직전에 다른 친구가 이 집터를 차지하기"));
     await user.click(screen.getByRole("button", { name: "내 집 완성하기" }));
     expect(await screen.findByText(/다른 친구가 이 집터에 먼저 입주했어요/)).toBeInTheDocument();
     expect(screen.getByLabelText(/닉네임/)).toHaveValue("늦은친구");
-    await user.click(screen.getByRole("button", { name: "3번 빈 집터로 옮기기" }));
-    expect(screen.getByRole("dialog", { name: "3번 집터에 내 집 만들기" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /번 빈 집터로 옮기기/ }));
+    expect(screen.getByRole("dialog", { name: /번 집터에 내 집 만들기/ })).toBeInTheDocument();
   });
 
   it("full village hides house creation and offers share + new village", () => {
     const store = createVillageStore({ storage: null });
-    for (let i = 0; i < 5; i++) store.simulateFriendClaim("demo");
+    for (let i = 0; i < 8; i++) store.simulateFriendClaim("demo");
     renderWithStore(<VillageView villageId="demo" />, store);
-    expect(screen.getByText("8/8")).toBeInTheDocument();
+    expect(screen.getByText("15/15")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "내 집 만들기" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "공유 카드 만들기" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "새 마을 만들기" })).toHaveAttribute("href", "/create");
+    // A full village that can still grow offers the expansion next to the share card.
+    expect(screen.getByRole("button", { name: "마을 넓히기" })).toBeInTheDocument();
   });
 
-  it("free village: locks lots at 6, offers the big-village upgrade, unlocks after it", async () => {
+  it("free village: 6 lots + 3 locked; expanding adds 3 lots at a time", async () => {
     const user = userEvent.setup();
     const store = createVillageStore({ storage: null });
     const r = await store.createVillage("무료 마을");
     if (!r.ok) throw new Error();
     renderWithStore(<VillageView villageId={r.id} />, store);
     expect(screen.getByTestId("milestone")).toHaveTextContent("친구 4명이 더 입주하면 「선물 썰매」");
+    expect(document.querySelectorAll('polygon[data-state="locked"]')).toHaveLength(3);
     for (let i = 0; i < 6; i++) act(() => void store.simulateFriendClaim(r.id));
     expect(screen.getByText("6/6")).toBeInTheDocument();
-    expect(document.querySelectorAll('button[data-state="locked"]')).toHaveLength(2);
     expect(screen.queryByTestId("milestone")).not.toBeInTheDocument();
     await user.click(slotButton(6));
-    const sheet = screen.getByRole("dialog", { name: "큰 마을로 키우기" });
-    expect(within(sheet).getByText(/무료 마을은 집 6채까지예요/)).toBeInTheDocument();
-    await user.click(within(sheet).getByRole("button", { name: "큰 마을로 키우기 (시뮬레이션)" }));
-    expect(screen.getByText("6/8")).toBeInTheDocument();
-    expect(document.querySelectorAll('button[data-state="locked"]')).toHaveLength(0);
-    expect(screen.getByTestId("milestone")).toHaveTextContent("「오로라 하늘」");
+    const sheet = screen.getByRole("dialog", { name: "마을 넓히기" });
+    expect(within(sheet).getByText(/₩2,900 → 12채 ₩6,900/)).toBeInTheDocument();
+    await user.click(within(sheet).getByRole("button", { name: "9채로 넓히기 (시뮬레이션)" }));
+    expect(screen.getByText("6/9")).toBeInTheDocument();
+    expect(document.querySelectorAll('polygon[data-state="empty"]')).toHaveLength(3);
+    expect(document.querySelectorAll('polygon[data-state="locked"]')).toHaveLength(3);
+    expect(screen.getByTestId("milestone")).toHaveTextContent("「아이스링크」");
   });
 
-  it("decorations appear in the scene as the village grows", () => {
+  it("facilities appear on the map as the village grows", () => {
     const store = createVillageStore({ storage: null });
     renderWithStore(<VillageView villageId="demo" />, store);
-    const props = () => Array.from(document.querySelectorAll("[data-prop]")).map((n) => n.getAttribute("data-prop"));
-    expect(props()).toEqual([]);
-    act(() => void store.simulateFriendClaim("demo"));
-    expect(props()).toEqual(["decor_sled"]);
+    const ids = () => Array.from(document.querySelectorAll("[data-facility]")).map((n) => n.getAttribute("data-facility")).sort();
+    expect(ids()).toEqual(["cathedral", "sled", "snowfamily", "tree"]);
     act(() => void store.simulateFriendClaim("demo"));
     act(() => void store.simulateFriendClaim("demo"));
-    expect(props().sort()).toEqual(["decor_sled", "decor_snowfamily"]);
-    expect(document.querySelector("[data-bg]")?.getAttribute("data-bg")).toBe("base");
-    act(() => void store.simulateFriendClaim("demo"));
-    act(() => void store.simulateFriendClaim("demo"));
-    expect(document.querySelector("[data-bg]")?.getAttribute("data-bg")).toBe("aurora");
+    expect(ids()).toContain("rink");
+    expect(document.querySelector("[data-aurora]")).toBeNull();
+    for (let i = 0; i < 3; i++) act(() => void store.simulateFriendClaim("demo"));
+    expect(ids()).toEqual(expect.arrayContaining(["santa"]));
   });
 
   it("shows a not-found state for unknown villages", () => {

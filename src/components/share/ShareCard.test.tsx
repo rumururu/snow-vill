@@ -20,8 +20,9 @@ describe("photo-free share card", () => {
     const data = toShareCardData(villageWithPhotos());
     expect(JSON.stringify(data)).not.toContain("data:image");
     expect(JSON.stringify(data)).not.toContain("비밀");
-    expect(Object.keys(data).sort()).toEqual(["complete", "slots"]);
-    expect(data.slots.filter((s) => s.style !== null)).toHaveLength(3);
+    expect(Object.keys(data).sort()).toEqual(["capacity", "complete", "houses"]);
+    expect(data.houses).toHaveLength(7);
+    for (const h of data.houses) expect(Object.keys(h).sort()).toEqual(["direction", "slot", "style"]);
   });
 
   it("rendered card contains no raster images, photo data, names or messages", () => {
@@ -56,7 +57,7 @@ describe("photo-free share card", () => {
 
     // The photo itself is only visible after tapping the house.
     await user.click(within(dialog).getByRole("button", { name: "닫기" }));
-    await user.click(document.querySelector<HTMLButtonElement>('button[data-slot="0"]')!);
+    await user.click(document.querySelector<SVGPolygonElement>('polygon[role="button"][data-slot="0"]')!);
     expect(screen.getByTestId("frame-photo")).toHaveAttribute("src", PHOTO);
   });
 });

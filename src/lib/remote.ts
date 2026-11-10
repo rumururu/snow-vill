@@ -3,7 +3,13 @@
  * The browser only calls anon RPC functions and the snowvill-photo Edge Function;
  * tables and the photo bucket are not reachable directly (see supabase/migrations).
  */
-import { isHouseStyle, type House, type HouseStyle, type Village } from "./village";
+import { FREE_CAPACITY, isDirection, isHouseStyle, MAX_CAPACITY, type Direction, type House, type HouseStyle, type Village } from "./village";
+
+/** Server capacity is 6, 9, … 60; anything else (older rows, bad data) falls back to the nearest valid size. */
+function normalizeCapacity(c: unknown): number {
+  const n = typeof c === "number" && Number.isFinite(c) ? Math.round(c) : FREE_CAPACITY;
+  return Math.min(MAX_CAPACITY, Math.max(FREE_CAPACITY, Math.ceil(n / 3) * 3));
+}
 
 export interface RemoteConfig {
   url: string;
@@ -131,13 +137,14 @@ export function createRemoteApi(config: RemoteConfig, fetchImpl: Fetch = (...a) 
       installId: string,
       villageId: string,
       slot: number,
-      input: { nickname: string; style: HouseStyle; message: string },
+      input: { nickname: string; style: HouseStyle; direction: Direction; message: string },
     ): Promise<
       | { ok: true; house: House; claimSecret: string }
-      | { ok: false; reason: "SLOT_TAKEN" | "VILLAGE_FULL" | "NOT_FOUND" | "ALREADY_JOINED" }
+      | { ok: false; reason: "SLOT_TAKEN" | "SLOT_LOCKED" | "VILLAGE_FULL" | "NOT_FOUND" | "ALREADY_JOINED" }
     > {
       const r = await rpc<
-        { ok: true; claim_secret: string; house: RemoteHouse } | { ok: false; reason: "SLOT_TAKEN" | "VILLAGE_FULL" | "NOT_FOUND" | "ALREADY_JOINED" }
+        | { ok: true; claim_secret: string; house: RemoteHouse }
+        | { ok: false; reason: "SLOT_TAKEN" | "SLOT_LOCKED" | "VILLAGE_FULL" | "NOT_FOUND" | "ALREADY_JOINED" }
       >("snowvill_claim_house", {
         p_install_id: installId,
         p_village_id: villageId,
@@ -145,6 +152,7 @@ export function createRemoteApi(config: RemoteConfig, fetchImpl: Fetch = (...a) 
         p_nickname: input.nickname,
         p_style: input.style,
         p_message: input.message,
+        p_direction: input.direction,
       });
       return r.ok ? { ok: true, house: toHouse(r.house), claimSecret: r.claim_secret } : r;
     },
@@ -184,6 +192,7 @@ interface RemoteHouse {
   slot: number;
   nickname: string;
   style: string;
+  direction?: number;
   message: string;
   has_photo: boolean;
   created_at: string;
@@ -202,6 +211,7 @@ function toHouse(h: RemoteHouse): House {
     slot: h.slot,
     nickname: h.nickname,
     style: isHouseStyle(h.style) ? h.style : "wood",
+    direction: isDirection(h.direction) ? h.direction : 0,
     message: h.message ?? "",
     photo: null,
     hasPhoto: Boolean(h.has_photo),
@@ -210,7 +220,7 @@ function toHouse(h: RemoteHouse): House {
 }
 
 function toVillage(v: RemoteVillage): Village {
-  return { id: v.id, name: v.name, createdAt: v.created_at, capacity: v.capacity === 8 ? 8 : 6, houses: (v.houses ?? []).map(toHouse) };
+  return { id: v.id, name: v.name, createdAt: v.created_at, capacity: normalizeCapacity(v.capacity), houses: (v.houses ?? []).map(toHouse) };
 }
 
 /** data:image/jpeg;base64,… → Blob */

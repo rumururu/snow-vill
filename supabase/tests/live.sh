@@ -24,7 +24,7 @@ cleanup() {
   done
   local like="false"
   for v in "${VIDS[@]:-}"; do [ -n "$v" ] && like="$like or name like '$v/%'"; done
-  mq "delete from snowvill_villages where created_by in ('$A','$B','$C','$D'); delete from snowvill_calls where install_id in ('$A','$B','$C','$D'); delete from snowvill_purchases where install_id in ('$A','$B','$C','$D'); delete from snowvill_wallets where install_id in ('$A','$B','$C','$D'); select (select count(*) from snowvill_villages where created_by in ('$A','$B','$C','$D')) as villages, (select count(*) from snowvill_calls where install_id in ('$A','$B','$C','$D')) as calls, (select count(*) from storage.objects where bucket_id='snowvill-photos' and ($like)) as photos"
+  mq "delete from snowvill_villages where created_by in ('$A','$B','$C','$D'); delete from snowvill_calls where install_id in ('$A','$B','$C','$D'); delete from snowvill_purchases where install_id in ('$A','$B','$C','$D'); delete from snowvill_wallets where install_id in ('$A','$B','$C','$D'); delete from snowvill_tier_credits where install_id in ('$A','$B','$C','$D'); select (select count(*) from snowvill_villages where created_by in ('$A','$B','$C','$D')) as villages, (select count(*) from snowvill_calls where install_id in ('$A','$B','$C','$D')) as calls, (select count(*) from storage.objects where bucket_id='snowvill-photos' and ($like)) as photos"
   echo; rm -rf "$W"
 }
 VIDS=()
@@ -73,10 +73,14 @@ ok "$(jb "d['ok']")" True "claim ok"
 H0=$(jb "d['house']['id']"); RES=$(jb "d['claim_secret']")
 ok "$(claim $B 0 도윤 sage '')" 200 "collision request"
 ok "$(jb "d['reason']")" SLOT_TAKEN "same slot → SLOT_TAKEN"
-ok "$(claim $B 8 x wood '')" 400 "slot 8 → 400"
+ok "$(claim $B 60 x wood '')" 400 "slot 60 → 400"
+ok "$(claim $B 8 x wood '')" 200 "slot 8 in a 6-house village (request)"
+ok "$(jb "d['reason']")" SLOT_LOCKED "slot 8 → SLOT_LOCKED"
+ok "$(rpc snowvill_claim_house "$(js "p_install_id=$B" "p_village_id=$VID" "p_slot:=1" "p_nickname=x" "p_style=wood" "p_message=" "p_direction:=4")")" 400 "direction 4 → 400"
 ok "$(claim $B 1 x gold '')" 400 "style gold → 400"
 ok "$(claim $B 1 "$(python3 -c "print('눈'*61)")" wood '')" 400 "61-char nickname → 400"
-ok "$(claim $B 1 도윤 indigo '')" 200 "second friend claims slot 1"
+ok "$(rpc snowvill_claim_house "$(js "p_install_id=$B" "p_village_id=$VID" "p_slot:=1" "p_nickname=도윤" "p_style=windmill" "p_message=" "p_direction:=2")")" 200 "second friend claims slot 1 (windmill, direction 2)"
+ok "$(jb "d['house']['style'], d['house']['direction']")" "('windmill', 2)" "type and direction stored"
 H1=$(jb "d['house']['id']")
 
 echo "2. direct access denied"
@@ -129,11 +133,11 @@ ok "$(rpc snowvill_report "$(js "p_install_id=$C" "p_house_id=$H1" "p_reason=liv
 last=0; for i in 1 2 3 4; do last=$(rpc snowvill_create_village "$(js "p_install_id=$D" "p_name=제한$i")"); [ "$last" = 200 ] && OWNERS+=("$(jb "d['id']"):$(jb "d['owner_secret']")") && VIDS+=("$(jb "d['id']")"); done
 ok "$last" 429 "4th create in a minute → 429"
 
-echo "6b. big village via purchase webhook"
+echo "6b. expansion via purchase webhook (tier 1 → 9, tier 2 → 12)"
 WH="$URL/functions/v1/snowvill-purchase-webhook"
 WAUTH=$(security find-generic-password -a snowvill-webhook-auth -s supabase -w)
 TX="live-test-$(python3 -c 'import uuid;print(uuid.uuid4().hex[:12])')"
-ev() { python3 -c "import json,sys;print(json.dumps({'event':{'type':sys.argv[1],'app_user_id':sys.argv[2],'transaction_id':sys.argv[3],'product_id':'snowvillage_big_village','store':'PLAY_STORE','environment':'SANDBOX','price':1.99,'price_in_purchased_currency':2900,'currency':'KRW','cancel_reason':'CUSTOMER_SUPPORT'}}))" "$1" "$2" "$3"; }
+ev() { python3 -c "import json,sys;print(json.dumps({'event':{'type':sys.argv[1],'app_user_id':sys.argv[2],'transaction_id':sys.argv[3],'product_id':(sys.argv[4] if len(sys.argv)>4 else 'snowvillage_big_village'),'store':'PLAY_STORE','environment':'SANDBOX','price':1.99,'price_in_purchased_currency':2900,'currency':'KRW','cancel_reason':'CUSTOMER_SUPPORT'}}))" "$@"; }
 ok "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$WH" -H 'Content-Type: application/json' -d "$(ev NON_RENEWING_PURCHASE $C $TX)")" 401 "webhook without auth → 401"
 ok "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$WH" -H 'Authorization: wrong' -H 'Content-Type: application/json' -d "$(ev NON_RENEWING_PURCHASE $C $TX)")" 401 "webhook wrong auth → 401"
 ok "$(curl -s -o "$W/wbody" -w '%{http_code}' -X POST "$WH" -H "Authorization: $WAUTH" -H 'Content-Type: application/json' -d "$(ev NON_RENEWING_PURCHASE $C $TX)")" 200 "purchase event accepted"
@@ -143,14 +147,21 @@ ok "$(python3 -c "import json;print(json.load(open('$W/wbody'))['credited'])")" 
 rpc snowvill_get_village "$(js "p_village_id=$VID")" >/dev/null
 ok "$(jb "d['capacity']")" 6 "village starts as free (6)"
 ok "$(rpc snowvill_upgrade_village "$(js "p_install_id=$C" "p_village_id=$VID")")" 200 "upgrade call"
-ok "$(jb "d['ok'], d['capacity']")" "(True, 8)" "upgraded to big village (8)"
+ok "$(jb "d['ok'], d['capacity'], d['next_tier']")" "(True, 9, 2)" "expanded to 9 (next step needs tier 2)"
 rpc snowvill_wallet "$(js "p_install_id=$C")" >/dev/null
 ok "$(jb "d['credits']")" 0 "credit spent"
+rpc snowvill_upgrade_village "$(js "p_install_id=$C" "p_village_id=$VID")" >/dev/null
+ok "$(jb "d['reason'], d['tier']")" "('NO_CREDIT', 2)" "9 → 12 needs a tier-2 credit"
+TX2="$TX-2"
+curl -s -o "$W/wbody" -X POST "$WH" -H "Authorization: $WAUTH" -H 'Content-Type: application/json' -d "$(ev NON_RENEWING_PURCHASE $C $TX2 snowvillage_expand_2)"
+ok "$(python3 -c "import json;d=json.load(open('$W/wbody'));print(d['credited'], d['tier'])")" "1 2" "expand_2 purchase → tier-2 credit"
+rpc snowvill_upgrade_village "$(js "p_install_id=$C" "p_village_id=$VID")" >/dev/null
+ok "$(jb "d['ok'], d['capacity']")" "(True, 12)" "expanded to 12"
 curl -s -o "$W/wbody" -X POST "$WH" -H "Authorization: $WAUTH" -H 'Content-Type: application/json' -d "$(ev CANCELLATION $C $TX)"
 ok "$(python3 -c "import json;print(json.load(open('$W/wbody'))['refunded'])")" 1 "refund event recorded"
 rpc snowvill_get_village "$(js "p_village_id=$VID")" >/dev/null
-ok "$(jb "d['capacity']")" 8 "applied upgrade kept after refund"
-for t in snowvill_wallets snowvill_purchases snowvill_upgrades; do
+ok "$(jb "d['capacity']")" 12 "applied expansion kept after refund"
+for t in snowvill_wallets snowvill_purchases snowvill_upgrades snowvill_tier_credits; do
   code=$(curl -s -o /dev/null -w "%{http_code}" "$URL/rest/v1/$t?select=*" -H "apikey: $ANON" -H "Authorization: Bearer $ANON")
   [ "$code" != 200 ] && ok x x "$t select denied ($code)" || ok "$code" 4xx "$t select denied"
 done

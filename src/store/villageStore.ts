@@ -13,7 +13,8 @@ import {
   claimHouse as claimHouseRule,
   createSampleVillage,
   createVillage as createVillageRule,
-  BIG_CAPACITY,
+  EXPANSION_STEP,
+  MAX_CAPACITY,
   FREE_CAPACITY,
   freeSlots,
   HOUSE_STYLES,
@@ -26,6 +27,10 @@ import {
   type HouseInput,
   type Village,
 } from "@/lib/village";
+import { LOTS } from "@/lib/map";
+
+/** Types a simulated friend picks (legacy colourways excluded). */
+const FRIEND_STYLES = HOUSE_STYLES.filter((x) => x !== "sage" && x !== "indigo");
 
 export const STORAGE_KEY = "snow-village:m0-mock";
 export const IDENTITY_KEY = "snow-village:identity:v1";
@@ -46,7 +51,7 @@ export interface VillageState {
 
 export type StoreClaimResult =
   | { ok: true; house: House; photoError?: string }
-  | { ok: false; reason: "INVALID_SLOT" | "SLOT_TAKEN" | "VILLAGE_FULL" | "NOT_FOUND" | "ALREADY_JOINED" }
+  | { ok: false; reason: "INVALID_SLOT" | "SLOT_TAKEN" | "SLOT_LOCKED" | "VILLAGE_FULL" | "NOT_FOUND" | "ALREADY_JOINED" }
   | { ok: false; reason: "INVALID_INPUT"; errors: FieldErrors }
   | { ok: false; reason: "REMOTE_ERROR"; message: string };
 
@@ -384,7 +389,8 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
         target ?? -1,
         {
           nickname: FRIEND_NAMES[(n * 3 + (target ?? 0)) % FRIEND_NAMES.length],
-          style: HOUSE_STYLES[(target ?? 0) % HOUSE_STYLES.length],
+          style: FRIEND_STYLES[(n * 5 + (target ?? 0)) % FRIEND_STYLES.length],
+          direction: LOTS[target ?? 0]?.facing ?? 0,
           message: FRIEND_MESSAGES[n % FRIEND_MESSAGES.length],
         },
         { id: idGen(), now: now() },
@@ -395,14 +401,15 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
     },
 
     /**
-     * Big-village upgrade. Simulated villages upgrade immediately (demo); real villages are upgraded
-     * from the app after an app-store purchase (the server applies the purchased credit).
+     * Expansion (+3 houses). Simulated villages grow immediately (demo); real villages grow from the
+     * app after an app-store purchase (the server spends the purchased credit).
      */
     upgradeVillage(villageId: string): ActionResult {
       const village = state.villages[villageId];
       if (!village) return { ok: false, message: "마을을 찾을 수 없어요." };
-      if (!isLocal(villageId)) return { ok: false, message: "큰 마을로 키우기는 Snow Village 앱에서 할 수 있어요." };
-      set(withVillage({ ...village, capacity: BIG_CAPACITY }));
+      if (!isLocal(villageId)) return { ok: false, message: "마을 넓히기는 Snow Village 앱에서 할 수 있어요." };
+      if (village.capacity >= MAX_CAPACITY) return { ok: false, message: "이미 가장 큰 마을이에요." };
+      set(withVillage({ ...village, capacity: Math.min(MAX_CAPACITY, village.capacity + EXPANSION_STEP) }));
       return { ok: true };
     },
 

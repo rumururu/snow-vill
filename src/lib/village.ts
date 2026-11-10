@@ -6,29 +6,71 @@
  * these client checks are UX only, never an authorization boundary.
  */
 
-/** Number of lots in the scene (and the paid big village's capacity). */
-export const VILLAGE_CAPACITY = 8;
-/** Free villages hold up to 6 houses; more than 6 is a paid "big village" (owner decision 2026-11-10). */
+/**
+ * Village size (owner decision 2026-11-10, docs/11-village-expansion-plan.md): free villages hold 6
+ * houses; each paid step adds 3, up to 60. The server (snowvill_upgrade_village) is the arbiter.
+ */
 export const FREE_CAPACITY = 6;
-export const BIG_CAPACITY = 8;
+export const EXPANSION_STEP = 3;
+export const MAX_CAPACITY = 60;
+/** Number of lots in the map (the largest possible village). */
+export const VILLAGE_CAPACITY = MAX_CAPACITY;
+
+/** Price tier of the next step for a village of this size (0 = already at the maximum). */
+export function stepTier(capacity: number): 0 | 1 | 2 | 3 | 4 {
+  if (capacity >= MAX_CAPACITY) return 0;
+  if (capacity <= 6) return 1;
+  if (capacity === 9) return 2;
+  if (capacity === 12) return 3;
+  return 4;
+}
+/** Store product per tier (same ids in App Store, Google Play, RevenueCat and the server). */
+export const TIER_PRODUCT: Record<1 | 2 | 3 | 4, string> = {
+  1: "snowvillage_big_village",
+  2: "snowvillage_expand_2",
+  3: "snowvillage_expand_3",
+  4: "snowvillage_expand_4",
+};
+/** Korean list price per tier (the stores show the localized price). */
+export const TIER_PRICE_KRW: Record<1 | 2 | 3 | 4, number> = { 1: 2900, 2: 6900, 3: 12900, 4: 25800 };
 export const VILLAGE_NAME_MAX = 20;
 export const NICKNAME_MAX = 10;
 export const MESSAGE_MAX = 60;
 
-export const HOUSE_STYLES = ["wood", "sage", "indigo"] as const;
+export const HOUSE_STYLES = [
+  "wood", "brick", "bakery", "tower", "gingerbread", "timber", "aframe", "windmill", "greenhouse", "sage", "indigo",
+] as const;
 export type HouseStyle = (typeof HOUSE_STYLES)[number];
 
 export const HOUSE_STYLE_LABEL: Record<HouseStyle, string> = {
-  wood: "나무",
-  sage: "세이지",
-  indigo: "인디고",
+  wood: "통나무집",
+  brick: "벽돌집",
+  bakery: "빵집",
+  tower: "탑 집",
+  gingerbread: "진저브레드 집",
+  timber: "반목조 집",
+  aframe: "산장",
+  windmill: "풍차 집",
+  greenhouse: "온실 집",
+  sage: "세이지 집",
+  indigo: "인디고 집",
 };
+
+/** Door direction: 0 front-left, 1 front-right, 2 back-right, 3 back-left (village-geometry.json). */
+export type Direction = 0 | 1 | 2 | 3;
+export const DIRECTIONS: readonly Direction[] = [0, 1, 2, 3];
+export const DIRECTION_LABEL: Record<Direction, string> = { 0: "왼쪽 앞", 1: "오른쪽 앞", 2: "오른쪽 뒤", 3: "왼쪽 뒤" };
+export function isDirection(v: unknown): v is Direction {
+  return v === 0 || v === 1 || v === 2 || v === 3;
+}
 
 export interface House {
   id: string;
   slot: number;
   nickname: string;
   style: HouseStyle;
+  /** Which way the door faces (chosen when moving in). */
+  direction: Direction;
   /**
    * M0 only: a locally re-encoded data URL kept in this browser session.
    * M1 replaces this with a private storage id served via short-lived signed URLs.
@@ -45,7 +87,7 @@ export interface Village {
   name: string;
   createdAt: string;
   houses: House[];
-  /** 6 (free) or 8 (paid big village). */
+  /** 6 (free), then 9, 12, … 60 after paid expansion steps. */
   capacity: number;
   /** True for the bundled demo village (simulated sample data). */
   isSample?: boolean;
@@ -54,11 +96,12 @@ export interface Village {
 export interface HouseInput {
   nickname: string;
   style: string;
+  direction?: number;
   message?: string;
   photo?: string | null;
 }
 
-export type FieldErrors = Partial<Record<"nickname" | "style" | "message", string>>;
+export type FieldErrors = Partial<Record<"nickname" | "style" | "direction" | "message", string>>;
 
 export type ClaimResult =
   | { ok: true; village: Village; house: House }
@@ -104,14 +147,16 @@ export function validateHouseInput(
   if (!nickname) errors.nickname = "닉네임을 입력해 주세요.";
   else if (charLength(nickname) > NICKNAME_MAX) errors.nickname = `닉네임은 ${NICKNAME_MAX}자 이내로 적어 주세요.`;
 
-  if (!isHouseStyle(input.style)) errors.style = "집 스타일을 골라 주세요.";
+  if (!isHouseStyle(input.style)) errors.style = "집 모양을 골라 주세요.";
+  const direction = input.direction ?? 0;
+  if (!isDirection(direction)) errors.direction = "문 방향을 골라 주세요.";
 
   if (charLength(message) > MESSAGE_MAX) errors.message = `메시지는 ${MESSAGE_MAX}자 이내로 적어 주세요.`;
 
   if (Object.keys(errors).length > 0) return { ok: false, errors };
   return {
     ok: true,
-    value: { nickname, style: input.style as HouseStyle, message, photo: input.photo ?? null },
+    value: { nickname, style: input.style as HouseStyle, direction: direction as Direction, message, photo: input.photo ?? null },
   };
 }
 
@@ -121,8 +166,8 @@ export function createVillage(name: string, id: string, now: Date): Village {
   return { id, name: result.value, createdAt: now.toISOString(), houses: [], capacity: FREE_CAPACITY };
 }
 
-export function isSlotValid(slot: number): boolean {
-  return Number.isInteger(slot) && slot >= 0 && slot < VILLAGE_CAPACITY;
+export function isSlotValid(slot: number, capacity: number = VILLAGE_CAPACITY): boolean {
+  return Number.isInteger(slot) && slot >= 0 && slot < Math.min(capacity, MAX_CAPACITY);
 }
 
 export function houseAt(village: Village, slot: number): House | undefined {
@@ -131,17 +176,18 @@ export function houseAt(village: Village, slot: number): House | undefined {
 
 function emptySlots(village: Village): number[] {
   const taken = new Set(village.houses.map((h) => h.slot));
-  return Array.from({ length: VILLAGE_CAPACITY }, (_, i) => i).filter((i) => !taken.has(i));
+  return Array.from({ length: Math.min(village.capacity, MAX_CAPACITY) }, (_, i) => i).filter((i) => !taken.has(i));
 }
 
-/** Lots that can be claimed now (none once the village reached its capacity). */
+/** Lots that can be claimed now (lots 0…capacity-1 without a house; none once the village is full). */
 export function freeSlots(village: Village): number[] {
   return isFull(village) ? [] : emptySlots(village);
 }
 
-/** Empty lots that need the big-village upgrade (free village at its 6-house limit). */
+/** The next expansion's lots, drawn locked on the map (capacity … capacity+2). */
 export function lockedSlots(village: Village): number[] {
-  return isFull(village) && village.capacity < BIG_CAPACITY ? emptySlots(village) : [];
+  if (village.capacity >= MAX_CAPACITY) return [];
+  return Array.from({ length: EXPANSION_STEP }, (_, i) => village.capacity + i);
 }
 
 /** How many more houses can move in (capacity minus houses) — not the number of empty lots. */
@@ -154,7 +200,7 @@ export function isFull(village: Village): boolean {
 }
 
 export function canUpgrade(village: Village): boolean {
-  return village.capacity < BIG_CAPACITY;
+  return village.capacity < MAX_CAPACITY;
 }
 
 /**
@@ -167,8 +213,8 @@ export function claimHouse(
   input: HouseInput,
   opts: { id: string; now: Date },
 ): ClaimResult {
-  if (!isSlotValid(slot)) return { ok: false, reason: "INVALID_SLOT" };
   if (isFull(village)) return { ok: false, reason: "VILLAGE_FULL" };
+  if (!isSlotValid(slot, village.capacity)) return { ok: false, reason: "INVALID_SLOT" };
   if (houseAt(village, slot)) return { ok: false, reason: "SLOT_TAKEN" };
 
   const validated = validateHouseInput(input);
@@ -191,19 +237,23 @@ export function removeHouse(village: Village, houseId: string): Village {
 
 export const SAMPLE_VILLAGE_ID = "demo";
 
-/** Simulated sample: 3 of 8 houses occupied, no photos (fallback illustrations). */
+/** Simulated sample: a 15-house village with 7 houses, no photos. */
 export function createSampleVillage(now: Date = new Date("2026-12-01T09:00:00+09:00")): Village {
   const at = (minutes: number) => new Date(now.getTime() + minutes * 60_000).toISOString();
   return {
     id: SAMPLE_VILLAGE_ID,
     name: "눈송이 마을 (샘플)",
     createdAt: at(0),
-    capacity: BIG_CAPACITY,
+    capacity: 15,
     isSample: true,
     houses: [
-      { id: "sample-1", slot: 0, nickname: "하늘", style: "wood", photo: null, hasPhoto: false, message: "올해도 고마웠어! 메리 크리스마스 🎄", createdAt: at(1) },
-      { id: "sample-2", slot: 3, nickname: "도윤", style: "indigo", photo: null, hasPhoto: false, message: "따뜻한 겨울 보내자", createdAt: at(30) },
-      { id: "sample-3", slot: 5, nickname: "서연", style: "sage", photo: null, hasPhoto: false, message: "", createdAt: at(95) },
+      { id: "sample-1", slot: 0, nickname: "하늘", style: "brick", direction: 0, photo: null, hasPhoto: false, message: "올해도 고마웠어! 메리 크리스마스 🎄", createdAt: at(1) },
+      { id: "sample-2", slot: 1, nickname: "도윤", style: "bakery", direction: 1, photo: null, hasPhoto: false, message: "따뜻한 겨울 보내자", createdAt: at(30) },
+      { id: "sample-3", slot: 2, nickname: "서연", style: "gingerbread", direction: 2, photo: null, hasPhoto: false, message: "", createdAt: at(95) },
+      { id: "sample-4", slot: 3, nickname: "민준", style: "tower", direction: 3, photo: null, hasPhoto: false, message: "", createdAt: at(120) },
+      { id: "sample-5", slot: 4, nickname: "지우", style: "windmill", direction: 0, photo: null, hasPhoto: false, message: "", createdAt: at(150) },
+      { id: "sample-6", slot: 5, nickname: "하준", style: "greenhouse", direction: 1, photo: null, hasPhoto: false, message: "", createdAt: at(170) },
+      { id: "sample-7", slot: 7, nickname: "유나", style: "aframe", direction: 2, photo: null, hasPhoto: false, message: "", createdAt: at(200) },
     ],
   };
 }

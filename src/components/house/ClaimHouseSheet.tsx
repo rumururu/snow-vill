@@ -4,21 +4,23 @@ import Link from "next/link";
 import { useRef, useState, type FormEvent } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { PhotoError, preparePhoto } from "@/lib/image";
-import { SLOTS } from "@/lib/scene";
+import { LOTS } from "@/lib/map";
 import {
   charLength,
+  DIRECTION_LABEL,
+  DIRECTIONS,
   freeSlots,
   HOUSE_STYLE_LABEL,
   HOUSE_STYLES,
   MESSAGE_MAX,
   NICKNAME_MAX,
   validateHouseInput,
+  type Direction,
   type FieldErrors,
   type House,
   type HouseStyle,
   type Village,
 } from "@/lib/village";
-import { HOUSE_COLORS } from "@/lib/assets";
 import { useVillageStore } from "@/store/VillageStoreProvider";
 import { FallbackAvatar } from "./Avatar";
 import { HousePreview } from "./HousePreview";
@@ -35,8 +37,10 @@ interface ClaimHouseSheetProps {
   latencyMs?: number;
 }
 
-type Draft = { nickname: string; style: HouseStyle; message: string; photo: string | null };
-const EMPTY_DRAFT: Draft = { nickname: "", style: "wood", message: "", photo: null };
+type Draft = { nickname: string; style: HouseStyle; direction: Direction; message: string; photo: string | null };
+const EMPTY_DRAFT: Draft = { nickname: "", style: "brick", direction: 0, message: "", photo: null };
+/** Types offered when moving in (legacy colourways keep rendering but are not offered). */
+const PICKER_STYLES = HOUSE_STYLES.filter((s) => s !== "sage" && s !== "indigo");
 
 /** S04 — claim an empty house. The draft survives close/reopen and failures. */
 export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlot, intro, latencyMs = 450 }: ClaimHouseSheetProps) {
@@ -54,7 +58,13 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
   const nicknameRef = useRef<HTMLInputElement>(null);
 
   const open = slot !== null;
-  const slotDef = slot !== null ? SLOTS[slot] : null;
+  const lot = slot !== null ? LOTS[slot] : null;
+  // New lot → door faces the plaza by default (the friend can change it).
+  const [facingFor, setFacingFor] = useState<number | null>(null);
+  if (lot && facingFor !== lot.slot) {
+    setFacingFor(lot.slot);
+    setDraft((d) => ({ ...d, direction: lot.facing }));
+  }
   const messageLen = charLength(draft.message);
   const nextFree = freeSlots(village).filter((s) => s !== slot);
   const simulated = store.isLocal(village.id);
@@ -141,7 +151,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
     <BottomSheet
       open={open}
       onClose={onClose}
-      title={slotDef ? `${slotDef.slot + 1}번 집터에 내 집 만들기` : "내 집 만들기"}
+      title={lot ? `${lot.slot + 1}번 집터에 내 집 만들기` : "내 집 만들기"}
       initialFocusRef={nicknameRef}
       footer={
         <>
@@ -177,9 +187,9 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
       {intro && <p className="mb-3 rounded-xl bg-glow/25 px-3 py-2 text-sm text-night">{intro}</p>}
       <form id="claim-house-form" onSubmit={handleSubmit} noValidate className="space-y-5" aria-busy={submitting}>
         <div className="flex items-center gap-3">
-          <HousePreview style={draft.style} className="h-28 w-32 shrink-0" />
+          <HousePreview style={draft.style} direction={draft.direction} className="h-28 w-32 shrink-0" />
           <div className="text-sm text-night/80">
-            <p className="font-semibold text-night">{slotDef?.label} 집터</p>
+            <p className="font-semibold text-night">{lot ? `${lot.slot + 1}번` : ""} 집터</p>
             <p>빈 집에 불을 켜주세요. 친구들이 집을 누르면 내 사진 액자가 열려요.</p>
           </div>
         </div>
@@ -212,31 +222,37 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
         </div>
 
         <fieldset>
-          <legend className="mb-2 text-sm font-semibold text-night">집 스타일</legend>
-          <div className="grid grid-cols-3 gap-2">
-            {HOUSE_STYLES.map((style) => (
+          <legend className="mb-2 text-sm font-semibold text-night">집 모양</legend>
+          <div className="grid grid-cols-3 gap-2 min-[400px]:grid-cols-4">
+            {PICKER_STYLES.map((style) => (
               <label
                 key={style}
-                className="relative flex min-h-14 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-transparent bg-white px-2 py-2 text-sm font-medium text-night has-[:checked]:border-night has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-night/30"
+                className="relative flex cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl border-2 border-transparent bg-white px-1 py-1.5 text-xs font-medium text-night has-[:checked]:border-night has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-night/30"
               >
-                <input
-                  type="radio"
-                  name="style"
-                  value={style}
-                  checked={draft.style === style}
-                  onChange={() => update("style", style)}
-                  className="sr-only"
-                />
-                <span
-                  aria-hidden
-                  className="h-6 w-10 rounded-md"
-                  style={{ background: `linear-gradient(135deg, ${HOUSE_COLORS[style].roof} 50%, ${HOUSE_COLORS[style].wall} 50%)` }}
-                />
+                <input type="radio" name="style" value={style} checked={draft.style === style} onChange={() => update("style", style)} className="sr-only" />
+                <HousePreview style={style} className="h-14 w-14" />
                 {HOUSE_STYLE_LABEL[style]}
               </label>
             ))}
           </div>
           {errors.style && <p role="alert" className="mt-1 text-sm text-[#B5523B]">{errors.style}</p>}
+        </fieldset>
+
+        <fieldset>
+          <legend className="mb-2 text-sm font-semibold text-night">문 방향</legend>
+          <div className="grid grid-cols-4 gap-2">
+            {DIRECTIONS.map((d) => (
+              <label
+                key={d}
+                className="relative flex cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl border-2 border-transparent bg-white px-1 py-1.5 text-xs font-medium text-night has-[:checked]:border-night has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-night/30"
+              >
+                <input type="radio" name="direction" value={d} checked={draft.direction === d} onChange={() => update("direction", d)} className="sr-only" />
+                <HousePreview style={draft.style} direction={d} className="h-12 w-12" />
+                {DIRECTION_LABEL[d]}
+                {lot?.facing === d && <span className="text-[10px] text-sage">광장 쪽</span>}
+              </label>
+            ))}
+          </div>
         </fieldset>
 
         <div>

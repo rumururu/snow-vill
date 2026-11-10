@@ -1,17 +1,19 @@
-import { SceneArt } from "@/components/scene/SceneArt";
 import { Snowfall } from "@/components/scene/Snowfall";
-import { HOUSE_STYLES } from "@/lib/village";
+import { VillageMapArt, type MapHouseArt } from "@/components/scene/VillageMapArt";
+import { LOTS } from "@/lib/map";
 
-/** Decorative hero: a mostly lit village (illustrative, no user data). */
-const HERO_SLOTS = [0, 1, 2, 3, 4, 5, 6, 7].map((slot) => ({
+/** Decorative hero: a lively 15-house village (illustrative, no user data). */
+const HERO_STYLES = ["brick", "bakery", "tower", "gingerbread", "timber", "aframe", "windmill", "greenhouse", "wood"] as const;
+const HERO_HOUSES: MapHouseArt[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13].map((slot, k) => ({
   slot,
-  style: slot === 6 ? null : HOUSE_STYLES[slot % 3],
+  style: HERO_STYLES[k % HERO_STYLES.length],
+  direction: LOTS[slot].facing,
 }));
 
 export function LandingHero() {
   return (
-    <div className="relative mx-auto mt-4 aspect-square w-full max-w-[400px] overflow-hidden rounded-3xl">
-      <SceneArt slots={HERO_SLOTS} className="h-full w-full" title="불이 켜진 집들이 모인 겨울 마을 그림" />
+    <div className="relative mx-auto mt-4 w-full max-w-[440px] overflow-hidden rounded-3xl">
+      <VillageMapArt capacity={15} houses={HERO_HOUSES} className="h-auto w-full" title="성당 광장을 둘러싼 겨울 마을 그림" />
       <Snowfall />
     </div>
   );

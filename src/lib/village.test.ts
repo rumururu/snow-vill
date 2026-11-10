@@ -10,7 +10,8 @@ import {
   validateHouseInput,
   validateVillageName,
   VILLAGE_CAPACITY,
-  BIG_CAPACITY,
+  MAX_CAPACITY,
+  stepTier,
   canUpgrade,
   FREE_CAPACITY,
   lockedSlots,
@@ -106,28 +107,40 @@ describe("claimHouse", () => {
     }
     expect(isFull(v)).toBe(true);
     expect(freeSlots(v)).toEqual([]);
-    expect(lockedSlots(v)).toEqual([6, 7]);
+    expect(lockedSlots(v)).toEqual([6, 7, 8]);
     expect(canUpgrade(v)).toBe(true);
     expect(claimHouse(v, 6, input(), opts())).toEqual({ ok: false, reason: "VILLAGE_FULL" });
   });
 
-  it("big village holds 8 houses", () => {
-    let v: Village = { ...emptyVillage(), capacity: BIG_CAPACITY };
+  it("a fully expanded village holds 60 houses", () => {
+    let v: Village = { ...emptyVillage(), capacity: MAX_CAPACITY };
     for (let slot = 0; slot < VILLAGE_CAPACITY; slot++) {
-      const r = claimHouse(v, slot, input(`n${slot}`), opts());
+      const r = claimHouse(v, slot, input(`n${slot % 10}`), opts());
       if (!r.ok) throw new Error(`slot ${slot} failed`);
       v = r.village;
     }
+    expect(v.houses).toHaveLength(60);
     expect(isFull(v)).toBe(true);
     expect(lockedSlots(v)).toEqual([]);
     expect(canUpgrade(v)).toBe(false);
     expect(claimHouse(v, 0, input(), opts())).toEqual({ ok: false, reason: "VILLAGE_FULL" });
   });
 
-  it("rejects slots outside 0..7", () => {
-    for (const slot of [-1, 8, 1.5, Number.NaN]) {
+  it("rejects lots outside the village's capacity", () => {
+    for (const slot of [-1, 6, 59, 1.5, Number.NaN]) {
       expect(claimHouse(emptyVillage(), slot, input(), opts())).toEqual({ ok: false, reason: "INVALID_SLOT" });
     }
+  });
+
+  it("prices each +3 step by size (₩2,900 / 6,900 / 12,900 / then 25,800 up to 60)", () => {
+    expect([6, 9, 12, 15, 18, 57, 60].map(stepTier)).toEqual([1, 2, 3, 4, 4, 4, 0]);
+  });
+
+  it("keeps the chosen door direction and rejects an invalid one", () => {
+    const r = claimHouse(emptyVillage(), 0, { ...input(), direction: 2 }, opts());
+    expect(r.ok && r.house.direction).toBe(2);
+    const bad = claimHouse(emptyVillage(), 0, { ...input(), direction: 4 }, opts());
+    expect(!bad.ok && bad.reason).toBe("INVALID_INPUT");
   });
 
   it("returns field errors for invalid input", () => {
@@ -138,9 +151,10 @@ describe("claimHouse", () => {
 });
 
 describe("sample village", () => {
-  it("is 3/8 occupied with no photos", () => {
+  it("is a 15-house village with 7 houses and no photos", () => {
     const v = createSampleVillage();
-    expect(v.houses).toHaveLength(3);
+    expect(v.capacity).toBe(15);
+    expect(v.houses).toHaveLength(7);
     expect(v.houses.every((h) => h.photo === null)).toBe(true);
     expect(v.isSample).toBe(true);
   });

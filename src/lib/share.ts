@@ -1,22 +1,23 @@
-import type { SceneSlotArt } from "@/components/scene/SceneArt";
-import { SLOTS } from "@/lib/scene";
-import { houseAt, isFull, type Village } from "@/lib/village";
+import type { MapHouseArt } from "@/components/scene/VillageMapArt";
+import { isFull, type Village } from "@/lib/village";
 
 export const SHARE_CARD_WIDTH = 1080;
 export const SHARE_CARD_HEIGHT = 1350;
 
 /**
- * Data allowed on the public share card: slot styles and completion only.
- * No photos, nicknames, messages or counts (docs/09-decisions.md #8).
+ * Data allowed on the public share card: village size, house types/directions and completion only.
+ * No photos, nicknames or messages (docs/09-decisions.md #8).
  */
 export interface ShareCardData {
-  slots: SceneSlotArt[];
+  capacity: number;
+  houses: MapHouseArt[];
   complete: boolean;
 }
 
 export function toShareCardData(village: Village): ShareCardData {
   return {
-    slots: SLOTS.map((s) => ({ slot: s.slot, style: houseAt(village, s.slot)?.style ?? null })),
+    capacity: village.capacity,
+    houses: village.houses.map((h) => ({ slot: h.slot, style: h.style, direction: h.direction })),
     complete: isFull(village),
   };
 }

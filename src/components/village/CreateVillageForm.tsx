@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { VillageScene } from "@/components/scene/VillageScene";
+import { VillageMap } from "@/components/scene/VillageMap";
 import { SimulatedBadge } from "@/components/ui/SimulatedBadge";
-import { BIG_CAPACITY, charLength, FREE_CAPACITY, VILLAGE_NAME_MAX, type Village } from "@/lib/village";
+import { charLength, FREE_CAPACITY, MAX_CAPACITY, VILLAGE_NAME_MAX, type Village } from "@/lib/village";
 import { villagePath } from "@/lib/share";
 import { useVillageStore } from "@/store/VillageStoreProvider";
 
@@ -77,10 +77,10 @@ export function CreateVillageForm() {
         )}
 
         <div className="mt-4 overflow-hidden rounded-3xl" aria-hidden>
-          <VillageScene village={preview} />
+          <VillageMap village={preview} />
         </div>
         <p className="mt-2 text-center text-sm text-night/70">
-          친구 {FREE_CAPACITY}명까지 무료로 한 집씩 입주할 수 있어요. 더 큰 마을({BIG_CAPACITY}채)은 앱에서 키울 수 있어요.
+          친구 {FREE_CAPACITY}명까지 무료로 한 집씩 입주할 수 있어요. 마을은 앱에서 3채씩 {MAX_CAPACITY}채까지 넓힐 수 있어요.
         </p>
 
         <button

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ClaimHouseSheet } from "@/components/house/ClaimHouseSheet";
 import { PhotoFrameSheet } from "@/components/house/PhotoFrameSheet";
-import { VillageScene } from "@/components/scene/VillageScene";
+import { VillageMap } from "@/components/scene/VillageMap";
 import { InviteSheet } from "@/components/share/InviteSheet";
 import { ShareSheet } from "@/components/share/ShareSheet";
 import { BottomSheet } from "@/components/ui/BottomSheet";
@@ -206,13 +206,14 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
           {simulated && <SimulatedBadge />}
         </div>
 
-        <main className="flex flex-1 flex-col justify-center px-1">
-          <VillageScene
+        <main className="flex flex-1 flex-col gap-1 px-1">
+          <VillageMap
             village={village}
             myHouseId={myHouseId}
             igniteSlot={igniteSlot}
             onSelectSlot={openSlot}
-            className="rounded-3xl"
+            fill
+            className="min-h-[360px] flex-1 rounded-3xl"
           />
           {milestone && (
             <p className="mx-4 mb-1 rounded-xl bg-glow/25 px-3 py-1.5 text-center text-xs font-semibold text-night" data-testid="milestone">
@@ -249,7 +250,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
                   onClick={() => setUpgradeOpen(true)}
                   className="min-h-12 rounded-2xl bg-glow font-bold text-night shadow-sm"
                 >
-                  큰 마을로 키우기
+                  마을 넓히기
                 </button>
               ) : (
                 <Link href="/create" className="flex min-h-12 items-center justify-center rounded-2xl bg-white font-semibold text-night">
@@ -330,7 +331,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
         onSimulatedUpgrade={() => {
           const r = store.upgradeVillage(villageId);
           setUpgradeOpen(false);
-          notify(r.ok ? "(시뮬레이션) 큰 마을이 됐어요! 빈 집 2채가 열렸어요." : r.message);
+          notify(r.ok ? "(시뮬레이션) 마을이 넓어졌어요! 집터 3곳이 새로 생겼어요." : r.message);
         }}
       />
       <BottomSheet
@@ -436,7 +437,7 @@ function OverflowMenu({
           </button>
           {onUpgrade && (
             <button type="button" className={item} onClick={run(onUpgrade)}>
-              큰 마을로 키우기
+              마을 넓히기
             </button>
           )}
           {onSimulateFriend && (

@@ -10,6 +10,10 @@ import {
   validateHouseInput,
   validateVillageName,
   VILLAGE_CAPACITY,
+  BIG_CAPACITY,
+  canUpgrade,
+  FREE_CAPACITY,
+  lockedSlots,
   type Village,
 } from "./village";
 
@@ -92,15 +96,31 @@ describe("claimHouse", () => {
     expect(v.houses).toHaveLength(0);
   });
 
-  it("caps the village at 8 houses", () => {
+  it("free village stops at 6 houses and locks the remaining lots", () => {
     let v = emptyVillage();
-    for (let slot = 0; slot < VILLAGE_CAPACITY; slot++) {
+    expect(v.capacity).toBe(FREE_CAPACITY);
+    for (let slot = 0; slot < FREE_CAPACITY; slot++) {
       const r = claimHouse(v, slot, input(`n${slot}`), opts());
       if (!r.ok) throw new Error(`slot ${slot} failed`);
       v = r.village;
     }
     expect(isFull(v)).toBe(true);
     expect(freeSlots(v)).toEqual([]);
+    expect(lockedSlots(v)).toEqual([6, 7]);
+    expect(canUpgrade(v)).toBe(true);
+    expect(claimHouse(v, 6, input(), opts())).toEqual({ ok: false, reason: "VILLAGE_FULL" });
+  });
+
+  it("big village holds 8 houses", () => {
+    let v: Village = { ...emptyVillage(), capacity: BIG_CAPACITY };
+    for (let slot = 0; slot < VILLAGE_CAPACITY; slot++) {
+      const r = claimHouse(v, slot, input(`n${slot}`), opts());
+      if (!r.ok) throw new Error(`slot ${slot} failed`);
+      v = r.village;
+    }
+    expect(isFull(v)).toBe(true);
+    expect(lockedSlots(v)).toEqual([]);
+    expect(canUpgrade(v)).toBe(false);
     expect(claimHouse(v, 0, input(), opts())).toEqual({ ok: false, reason: "VILLAGE_FULL" });
   });
 

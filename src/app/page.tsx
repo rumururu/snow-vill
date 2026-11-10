@@ -24,7 +24,7 @@ export default function LandingPage() {
           우리만의 겨울 마을
         </h1>
         <p className="mt-3 text-base leading-relaxed text-night/75">
-          친구 한 명이 집 한 채. 8채의 작은 집에 불이 켜지면 우리 마을이 완성돼요. 사진은 집을 눌렀을 때만 보여요.
+          친구 한 명이 집 한 채. 친구가 늘수록 썰매·눈사람 가족이 생기고, 큰 마을이 가득 차면 오로라가 떠요. 사진은 집을 눌렀을 때만 보여요.
         </p>
       </section>
 

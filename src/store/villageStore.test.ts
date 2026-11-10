@@ -49,14 +49,24 @@ describe("simulated (local) village store", () => {
     expect(await store.claimHouse(r.id, 1, { nickname: "나2", style: "wood" })).toEqual({ ok: false, reason: "ALREADY_JOINED" });
   });
 
-  it("never exceeds 8 houses even with simulated friends", async () => {
+  it("free village stops at 6; the (simulated) big-village upgrade allows 8", async () => {
     const store = make();
     const r = await store.createVillage("마을");
     if (!r.ok) throw new Error();
-    for (let i = 0; i < 8; i++) expect(store.simulateFriendClaim(r.id).ok).toBe(true);
+    for (let i = 0; i < 6; i++) expect(store.simulateFriendClaim(r.id).ok).toBe(true);
     expect(store.simulateFriendClaim(r.id).ok).toBe(false);
-    expect(await store.claimHouse(r.id, 0, { nickname: "나", style: "wood" })).toEqual({ ok: false, reason: "VILLAGE_FULL" });
+    expect(await store.claimHouse(r.id, 6, { nickname: "나", style: "wood" })).toEqual({ ok: false, reason: "VILLAGE_FULL" });
+    expect(store.upgradeVillage(r.id)).toEqual({ ok: true });
+    expect(store.simulateFriendClaim(r.id).ok).toBe(true);
+    expect((await store.claimHouse(r.id, 7, { nickname: "나", style: "wood" })).ok).toBe(true);
+    expect(store.simulateFriendClaim(r.id).ok).toBe(false);
     expect(store.getState().villages[r.id].houses).toHaveLength(8);
+  });
+
+  it("real (remote) villages are upgraded in the app, not on the web", () => {
+    const store = createVillageStore({ remote: fakeApi() });
+    store.getState().villages.abcdefghjk = { id: "abcdefghjk", name: "x", createdAt: "x", houses: [], capacity: 6 };
+    expect(store.upgradeVillage("abcdefghjk")).toEqual({ ok: false, message: expect.stringContaining("앱") });
   });
 
   it("returns NOT_FOUND for unknown villages and marks them missing on load", async () => {
@@ -108,7 +118,7 @@ function fakeApi(over: Partial<RemoteApi> = {}): RemoteApi {
   const villages = new Map<string, Village>();
   return {
     createVillage: vi.fn(async (_i: string, name: string) => {
-      villages.set("abcdefghjk", { id: "abcdefghjk", name, createdAt: "2026-12-01T00:00:00Z", houses: [] });
+      villages.set("abcdefghjk", { id: "abcdefghjk", name, createdAt: "2026-12-01T00:00:00Z", houses: [], capacity: 6 });
       return { id: "abcdefghjk", ownerSecret: "owner-secret" };
     }),
     getVillage: vi.fn(async (id: string) => villages.get(id) ?? null),
@@ -215,7 +225,7 @@ describe("remote village store", () => {
 
   it("refuses owner actions without the owner secret", async () => {
     const api = fakeApi({
-      getVillage: vi.fn(async () => ({ id: "otherxxxxx", name: "남의 마을", createdAt: "x", houses: [house({ id: "h9" })] })),
+      getVillage: vi.fn(async () => ({ id: "otherxxxxx", name: "남의 마을", createdAt: "x", capacity: 6, houses: [house({ id: "h9" })] })),
     });
     const store = createVillageStore({ remote: api });
     await store.loadVillage("otherxxxxx");

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hitBoxPercent, hitBoxPixels, pointInPolygon, renderOrder, SLOTS, SPRITES, WORLD_SIZE } from "./scene";
+import { backgroundFor, hitBoxPercent, hitBoxPixels, pointInPolygon, PROPS, renderOrder, SLOTS, SPRITES, WORLD_SIZE } from "./scene";
 
 describe("scene geometry", () => {
   it("has 8 deterministic slots inside the 1024 world", () => {
@@ -41,8 +41,21 @@ describe("scene geometry", () => {
     const order = renderOrder();
     const depths = order.map((e) => e.depth);
     expect(depths).toEqual([...depths].sort((a, b) => a - b));
-    const labels = order.map((e) => (e.kind === "tree" ? "tree" : e.slot));
+    const labels = order.map((e) => (e.kind === "tree" ? "tree" : e.kind === "house" ? e.slot : e.prop.sprite));
     expect(labels).toEqual([0, 1, 2, 3, "tree", 4, 5, 6, 7]);
+  });
+
+  it("free decorations unlock by house count: 4 sled, 6 snowman family, 8 aurora", () => {
+    const props = (n: number) => renderOrder(n).flatMap((e) => (e.kind === "prop" ? [e.prop.sprite] : []));
+    expect(props(3)).toEqual([]);
+    expect(props(4)).toEqual(["decor_sled"]);
+    expect(props(6).sort()).toEqual(["decor_sled", "decor_snowfamily"]);
+    expect(backgroundFor(7)).toBe("base");
+    expect(backgroundFor(8)).toBe("aurora");
+    // Props stand in the open front area: in front of every house (painted after them).
+    const order = renderOrder(8);
+    const lastHouse = Math.max(...order.flatMap((e, i) => (e.kind === "house" ? [i] : [])));
+    for (const p of PROPS) expect(order.findIndex((e) => e.kind === "prop" && e.prop === p)).toBeGreaterThan(lastHouse);
   });
 
   it("clip-path polygons and sprites come from measured geometry", () => {

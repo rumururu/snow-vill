@@ -3,7 +3,7 @@
 import { useRef, useState, useSyncExternalStore } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { copyText, inviteUrl, shareOrCopy } from "@/lib/share";
-import { freeSlots, type Village } from "@/lib/village";
+import { remainingHouses, type Village } from "@/lib/village";
 import { useVillageStore } from "@/store/VillageStoreProvider";
 
 const noopSubscribe = () => () => {};
@@ -19,7 +19,7 @@ export function InviteSheet({ village, open, onClose }: { village: Village; open
     () => false,
   );
   const url = origin ? inviteUrl(origin, village.id) : "";
-  const left = freeSlots(village).length;
+  const left = remainingHouses(village);
 
   async function copy() {
     if (await copyText(url)) setStatus("초대 링크를 복사했어요.");

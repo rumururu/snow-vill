@@ -192,6 +192,7 @@ interface RemoteVillage {
   id: string;
   name: string;
   created_at: string;
+  capacity?: number;
   houses: RemoteHouse[];
 }
 
@@ -209,7 +210,7 @@ function toHouse(h: RemoteHouse): House {
 }
 
 function toVillage(v: RemoteVillage): Village {
-  return { id: v.id, name: v.name, createdAt: v.created_at, houses: (v.houses ?? []).map(toHouse) };
+  return { id: v.id, name: v.name, createdAt: v.created_at, capacity: v.capacity === 8 ? 8 : 6, houses: (v.houses ?? []).map(toHouse) };
 }
 
 /** data:image/jpeg;base64,… → Blob */

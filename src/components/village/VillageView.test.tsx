@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { routerMock, renderWithStore } from "@/test/render";
@@ -110,6 +110,42 @@ describe("VillageView (sample village)", () => {
     expect(screen.queryByRole("button", { name: "내 집 만들기" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "공유 카드 만들기" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "새 마을 만들기" })).toHaveAttribute("href", "/create");
+  });
+
+  it("free village: locks lots at 6, offers the big-village upgrade, unlocks after it", async () => {
+    const user = userEvent.setup();
+    const store = createVillageStore({ storage: null });
+    const r = await store.createVillage("무료 마을");
+    if (!r.ok) throw new Error();
+    renderWithStore(<VillageView villageId={r.id} />, store);
+    expect(screen.getByTestId("milestone")).toHaveTextContent("친구 4명이 더 입주하면 「선물 썰매」");
+    for (let i = 0; i < 6; i++) act(() => void store.simulateFriendClaim(r.id));
+    expect(screen.getByText("6/6")).toBeInTheDocument();
+    expect(document.querySelectorAll('button[data-state="locked"]')).toHaveLength(2);
+    expect(screen.queryByTestId("milestone")).not.toBeInTheDocument();
+    await user.click(slotButton(6));
+    const sheet = screen.getByRole("dialog", { name: "큰 마을로 키우기" });
+    expect(within(sheet).getByText(/무료 마을은 집 6채까지예요/)).toBeInTheDocument();
+    await user.click(within(sheet).getByRole("button", { name: "큰 마을로 키우기 (시뮬레이션)" }));
+    expect(screen.getByText("6/8")).toBeInTheDocument();
+    expect(document.querySelectorAll('button[data-state="locked"]')).toHaveLength(0);
+    expect(screen.getByTestId("milestone")).toHaveTextContent("「오로라 하늘」");
+  });
+
+  it("decorations appear in the scene as the village grows", () => {
+    const store = createVillageStore({ storage: null });
+    renderWithStore(<VillageView villageId="demo" />, store);
+    const props = () => Array.from(document.querySelectorAll("[data-prop]")).map((n) => n.getAttribute("data-prop"));
+    expect(props()).toEqual([]);
+    act(() => void store.simulateFriendClaim("demo"));
+    expect(props()).toEqual(["decor_sled"]);
+    act(() => void store.simulateFriendClaim("demo"));
+    act(() => void store.simulateFriendClaim("demo"));
+    expect(props().sort()).toEqual(["decor_sled", "decor_snowfamily"]);
+    expect(document.querySelector("[data-bg]")?.getAttribute("data-bg")).toBe("base");
+    act(() => void store.simulateFriendClaim("demo"));
+    act(() => void store.simulateFriendClaim("demo"));
+    expect(document.querySelector("[data-bg]")?.getAttribute("data-bg")).toBe("aurora");
   });
 
   it("shows a not-found state for unknown villages", () => {

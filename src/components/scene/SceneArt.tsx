@@ -6,7 +6,7 @@
  * Never receives participant photos or names — shared by the interactive scene and the
  * photo-free share card.
  */
-import { BACKGROUND_SRC, renderOrder, SLOTS, SPRITES, spriteRect, TREE_ANCHOR, TREE_TILE_WORLD, WORLD_SIZE } from "@/lib/scene";
+import { BACKGROUNDS, backgroundFor, renderOrder, SLOTS, SPRITES, spriteRect, TREE_ANCHOR, TREE_TILE_WORLD, WORLD_SIZE } from "@/lib/scene";
 import type { HouseStyle } from "@/lib/village";
 
 export interface SceneSlotArt {
@@ -52,6 +52,8 @@ function Sprite({ name, ground, tile, className }: { name: keyof typeof SPRITES;
 
 export function SceneArt({ slots, complete = false, igniteSlot = null, className, title }: SceneArtProps) {
   const styleBySlot = new Map(slots.map((s) => [s.slot, s.style]));
+  const houseCount = slots.filter((s) => s.style !== null).length;
+  const bg = BACKGROUNDS[backgroundFor(houseCount)];
   return (
     <svg
       viewBox={`0 0 ${WORLD_SIZE} ${WORLD_SIZE}`}
@@ -60,8 +62,14 @@ export function SceneArt({ slots, complete = false, igniteSlot = null, className
       aria-label={title ?? "겨울 마을 장면"}
       xmlns="http://www.w3.org/2000/svg"
     >
-      <image href={BACKGROUND_SRC} x={0} y={0} width={WORLD_SIZE} height={WORLD_SIZE} preserveAspectRatio="none" />
-      {renderOrder().map((e) => {
+      <image href={bg.src} x={0} y={0} width={WORLD_SIZE} height={WORLD_SIZE} preserveAspectRatio="none" data-bg={backgroundFor(houseCount)} />
+      {renderOrder(houseCount).map((e) => {
+        if (e.kind === "prop")
+          return (
+            <g key={e.prop.sprite} data-prop={e.prop.sprite}>
+              <Sprite name={e.prop.sprite} ground={e.prop.ground} tile={e.prop.tile} />
+            </g>
+          );
         if (e.kind === "tree")
           return (
             <g key="tree" data-tree={complete ? "complete" : "base"}>
@@ -78,6 +86,8 @@ export function SceneArt({ slots, complete = false, igniteSlot = null, className
           </g>
         );
       })}
+      {/* Foreground layer: front fences, lamps and the snowman stay in front of houses and props. */}
+      <image href={bg.front} x={0} y={0} width={WORLD_SIZE} height={WORLD_SIZE} preserveAspectRatio="none" pointerEvents="none" />
     </svg>
   );
 }

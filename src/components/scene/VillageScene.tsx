@@ -1,7 +1,7 @@
 "use client";
 
 import { hitBoxPercent, MIN_HIT_PX, SLOTS, WORLD_SIZE } from "@/lib/scene";
-import { houseAt, HOUSE_STYLE_LABEL, isFull, type Village } from "@/lib/village";
+import { houseAt, HOUSE_STYLE_LABEL, isFull, lockedSlots, type Village } from "@/lib/village";
 import { SceneArt } from "./SceneArt";
 import { Snowfall } from "./Snowfall";
 
@@ -19,6 +19,7 @@ const pct = (v: number) => `${(v / WORLD_SIZE) * 100}%`;
 export function VillageScene({ village, myHouseId, igniteSlot = null, onSelectSlot, className }: VillageSceneProps) {
   const slots = SLOTS.map((s) => ({ slot: s.slot, style: houseAt(village, s.slot)?.style ?? null }));
   const interactive = Boolean(onSelectSlot);
+  const locked = new Set(lockedSlots(village));
 
   return (
     <div className={`relative aspect-square w-full select-none overflow-hidden ${className ?? ""}`}>
@@ -41,13 +42,15 @@ export function VillageScene({ village, myHouseId, igniteSlot = null, onSelectSl
               const mine = Boolean(house && myHouseId && house.id === myHouseId);
               const label = house
                 ? `${def.slot + 1}번 집, ${house.nickname}의 작은 집 (${HOUSE_STYLE_LABEL[house.style]})${mine ? ", 내 집" : ""} 열기`
-                : `${def.slot + 1}번 빈 집터 (${def.label}), 내 집 만들기`;
+                : locked.has(def.slot)
+                  ? `${def.slot + 1}번 집터 (잠김), 큰 마을로 키우면 입주할 수 있어요`
+                  : `${def.slot + 1}번 빈 집터 (${def.label}), 내 집 만들기`;
               return (
                 <li key={def.slot}>
                   <button
                     type="button"
                     data-slot={def.slot}
-                    data-state={house ? "occupied" : "empty"}
+                    data-state={house ? "occupied" : locked.has(def.slot) ? "locked" : "empty"}
                     aria-label={label}
                     onClick={(e) => onSelectSlot?.(def.slot, e.currentTarget)}
                     className="peer absolute outline-none transition-[filter] hover:brightness-110 focus-visible:bg-white/25 motion-reduce:transition-none"
@@ -85,7 +88,7 @@ export function VillageScene({ village, myHouseId, igniteSlot = null, onSelectSl
                   className="absolute grid h-5 w-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-ivory/90 text-sm font-bold leading-none text-sage shadow ring-1 ring-white/70"
                   style={{ left: pct(def.anchor.x), top: pct(def.hit.y + def.hit.height * 0.24) }}
                 >
-                  +
+                  {locked.has(def.slot) ? "🔒" : "+"}
                 </span>
               );
             })}

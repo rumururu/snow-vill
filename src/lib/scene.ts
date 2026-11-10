@@ -19,7 +19,10 @@ export interface SpriteGeometry {
   hull: number[][];
 }
 export const SPRITES = geometry.sprites as Record<SpriteName, SpriteGeometry>;
-export const BACKGROUND_SRC = geometry.background.src;
+export type BackgroundKey = keyof typeof geometry.backgrounds;
+/** Each background has a foreground layer (front fences, lamps, snowman) drawn over houses and props. */
+export const BACKGROUNDS = geometry.backgrounds as Record<BackgroundKey, { src: string; front: string }>;
+export const BACKGROUND_SRC = BACKGROUNDS.base.src;
 const L = geometry.layout;
 
 export interface Point {
@@ -93,17 +96,44 @@ export const SLOTS: readonly SlotDef[] = CELLS.map(([i, j, position, label], slo
 export const TREE_ANCHOR = cellCenter(0, 0);
 export const TREE_TILE_WORLD = TILE_WORLD * L.treeScale;
 
-export type SceneEntity = { kind: "house"; slot: number; depth: number } | { kind: "tree"; depth: number };
+/** Free decorations unlocked by the number of houses (4 → sled, 6 → snowman family, 8 → aurora). */
+export interface PropDef {
+  sprite: SpriteName;
+  ground: Point;
+  tile: number;
+  minHouses: number;
+}
+export const PROPS: PropDef[] = geometry.decor.props.map((p) => ({
+  sprite: p.sprite as SpriteName,
+  ground: { x: p.ground[0] * WORLD_SIZE, y: p.ground[1] * WORLD_SIZE },
+  tile: p.tile * WORLD_SIZE,
+  minHouses: p.minHouses,
+}));
+export const AURORA_MIN_HOUSES = geometry.decor.aurora.minHouses;
 
-/** Painter's order: rear → front by ground anchor y, ties broken by x. */
-export function renderOrder(): SceneEntity[] {
+export function backgroundFor(houseCount: number): BackgroundKey {
+  return houseCount >= AURORA_MIN_HOUSES ? "aurora" : "base";
+}
+
+export type SceneEntity =
+  | { kind: "house"; slot: number; depth: number }
+  | { kind: "tree"; depth: number }
+  | { kind: "prop"; prop: PropDef; depth: number };
+
+/** Painter's order: rear → front by ground anchor y, ties broken by x. Props appear once unlocked. */
+export function renderOrder(houseCount = 0): SceneEntity[] {
   const items: Array<SceneEntity & { x: number }> = [
     ...SLOTS.map((s) => ({ kind: "house" as const, slot: s.slot, depth: s.anchor.y, x: s.anchor.x })),
     { kind: "tree" as const, depth: TREE_ANCHOR.y, x: TREE_ANCHOR.x },
+    ...PROPS.filter((p) => houseCount >= p.minHouses).map((prop) => ({ kind: "prop" as const, prop, depth: prop.ground.y, x: prop.ground.x })),
   ];
   items.sort((a, b) => a.depth - b.depth || a.x - b.x);
-  return items.map((item) =>
-    item.kind === "tree" ? { kind: "tree", depth: item.depth } : { kind: "house", slot: item.slot, depth: item.depth },
+  return items.map((i): SceneEntity =>
+    i.kind === "house"
+      ? { kind: "house", slot: i.slot, depth: i.depth }
+      : i.kind === "tree"
+        ? { kind: "tree", depth: i.depth }
+        : { kind: "prop", prop: i.prop, depth: i.depth },
   );
 }
 

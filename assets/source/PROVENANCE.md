@@ -10,6 +10,8 @@ Design intent: original assets whose *mood and level of finish* follow the third
 Consistency checks (alpha-mask IoU vs master, threshold ≥ 0.90; edge shift ≤ 3%):
 sage 0.983 / 0.5%, indigo 0.986 / 0.5%, empty 0.968 / 1.0%, tree base vs complete 0.970 / 0.3%.
 
+Added 2026-11-10 (same chat): `background_aurora.webp` (edit of the background; pixel alignment vs original measured, best shift (0,0)), `decor_sled.webp`, `decor_snowfamily.webp` (free decorations unlocked by house count). `build_assets.py` also cuts a **foreground layer** (`*_front.webp`: everything outside the fence on the front side) from each background so front fences/lamps/snowman are drawn over houses and props.
+
 Delivery files are produced by `scripts/build_assets.py` → `public/assets/` + `src/lib/asset-geometry.json`.
 
 ## Prompts (verbatim, in order)
@@ -71,3 +73,24 @@ Delivery files are produced by `scripts/build_assets.py` → `public/assets/` + 
 - 앞서 만든 집·트리와 같은 미니어처 디오라마 3D 렌더 스타일, 같은 2:1 아이소메트릭 카메라와 조명. 전체가 하나의 둥근 눈 덮인 디오라마 섬처럼 보이면 좋아
 - 집들의 따뜻한 창문 불빛이 돋보이도록 배경은 차분한 푸른 저녁 톤으로
 - 정사각형, 배경은 투명하지 않게 꽉 채운 이미지, 글자 없음
+
+### Prompt 8
+이제 유료 "겨울 축제 꾸미기 팩"에 들어갈 에셋을 만들 거야. 첫 번째는 방금 만든 마을 배경의 특별 버전이야. 방금 만든 마을 배경 이미지를 그대로 편집해줘.
+- 구도, 카메라, 섬 모양, 울타리·가로등·눈사람·나무의 위치와 크기, 가운데 빈 눈밭 영역은 원본과 완전히 똑같이 유지 (집을 올릴 자리가 어긋나면 안 돼)
+- 바꾸는 것: 하늘에 초록·보랏빛 오로라가 은은하게 흐르게, 별을 조금 더, 울타리를 따라 따뜻한 전구 조명줄을 걸고, 가로등 불빛을 조금 더 따뜻하게
+- 가운데 눈밭에는 여전히 아무것도 그리지 마
+- 정사각형, 꽉 찬 배경 이미지, 글자 없음
+
+### Prompt 9
+오로라 배경 아주 좋아. 이제 같은 꾸미기 팩에 들어갈 소품 두 개 중 첫 번째를 만들어줘: "선물 가득한 썰매".
+- 앞서 만든 집·트리와 같은 미니어처 디오라마 3D 렌더 스타일, 같은 2:1 아이소메트릭 카메라 각도와 따뜻한 조명
+- 빨간 나무 썰매에 리본 묶인 선물 상자들이 수북이 쌓여 있고, 썰매 앞에 작은 랜턴, 바닥에 얇은 눈 둔덕
+- 크기는 집 한 채의 절반 정도로 보이게, 정사각형 캔버스 가운데, 여백 넉넉히
+- 진짜 투명 배경 PNG(체크무늬 그림 없이), 그림자·땅·배경 없음, 글자 없음
+
+### Prompt 10
+썰매 좋아. 두 번째 소품: "눈사람 가족".
+- 같은 미니어처 디오라마 3D 렌더 스타일, 같은 2:1 아이소메트릭 카메라와 조명
+- 크기가 다른 눈사람 세 명(아빠·엄마·아이)이 나란히, 각자 색이 다른 털모자와 목도리(호박색·세이지·인디고), 아이 눈사람은 작은 선물 상자를 안고 있음, 발밑에 얇은 눈 둔덕 하나
+- 크기는 집 한 채의 절반 정도로 보이게, 정사각형 캔버스 가운데, 여백 넉넉히
+- 진짜 투명 배경 PNG(체크무늬 그림 없이), 땅·배경 없음, 글자 없음

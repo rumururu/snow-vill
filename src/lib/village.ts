@@ -6,7 +6,11 @@
  * these client checks are UX only, never an authorization boundary.
  */
 
+/** Number of lots in the scene (and the paid big village's capacity). */
 export const VILLAGE_CAPACITY = 8;
+/** Free villages hold up to 6 houses; more than 6 is a paid "big village" (owner decision 2026-11-10). */
+export const FREE_CAPACITY = 6;
+export const BIG_CAPACITY = 8;
 export const VILLAGE_NAME_MAX = 20;
 export const NICKNAME_MAX = 10;
 export const MESSAGE_MAX = 60;
@@ -41,6 +45,8 @@ export interface Village {
   name: string;
   createdAt: string;
   houses: House[];
+  /** 6 (free) or 8 (paid big village). */
+  capacity: number;
   /** True for the bundled demo village (simulated sample data). */
   isSample?: boolean;
 }
@@ -112,7 +118,7 @@ export function validateHouseInput(
 export function createVillage(name: string, id: string, now: Date): Village {
   const result = validateVillageName(name);
   if (!result.ok) throw new Error(result.error);
-  return { id, name: result.value, createdAt: now.toISOString(), houses: [] };
+  return { id, name: result.value, createdAt: now.toISOString(), houses: [], capacity: FREE_CAPACITY };
 }
 
 export function isSlotValid(slot: number): boolean {
@@ -123,13 +129,32 @@ export function houseAt(village: Village, slot: number): House | undefined {
   return village.houses.find((h) => h.slot === slot);
 }
 
-export function freeSlots(village: Village): number[] {
+function emptySlots(village: Village): number[] {
   const taken = new Set(village.houses.map((h) => h.slot));
   return Array.from({ length: VILLAGE_CAPACITY }, (_, i) => i).filter((i) => !taken.has(i));
 }
 
+/** Lots that can be claimed now (none once the village reached its capacity). */
+export function freeSlots(village: Village): number[] {
+  return isFull(village) ? [] : emptySlots(village);
+}
+
+/** Empty lots that need the big-village upgrade (free village at its 6-house limit). */
+export function lockedSlots(village: Village): number[] {
+  return isFull(village) && village.capacity < BIG_CAPACITY ? emptySlots(village) : [];
+}
+
+/** How many more houses can move in (capacity minus houses) — not the number of empty lots. */
+export function remainingHouses(village: Village): number {
+  return Math.max(village.capacity - village.houses.length, 0);
+}
+
 export function isFull(village: Village): boolean {
-  return village.houses.length >= VILLAGE_CAPACITY;
+  return village.houses.length >= village.capacity;
+}
+
+export function canUpgrade(village: Village): boolean {
+  return village.capacity < BIG_CAPACITY;
 }
 
 /**
@@ -173,6 +198,7 @@ export function createSampleVillage(now: Date = new Date("2026-12-01T09:00:00+09
     id: SAMPLE_VILLAGE_ID,
     name: "눈송이 마을 (샘플)",
     createdAt: at(0),
+    capacity: BIG_CAPACITY,
     isSample: true,
     houses: [
       { id: "sample-1", slot: 0, nickname: "하늘", style: "wood", photo: null, hasPhoto: false, message: "올해도 고마웠어! 메리 크리스마스 🎄", createdAt: at(1) },

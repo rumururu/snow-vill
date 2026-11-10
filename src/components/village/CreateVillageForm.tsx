@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { VillageScene } from "@/components/scene/VillageScene";
 import { SimulatedBadge } from "@/components/ui/SimulatedBadge";
-import { charLength, VILLAGE_CAPACITY, VILLAGE_NAME_MAX, type Village } from "@/lib/village";
+import { BIG_CAPACITY, charLength, FREE_CAPACITY, VILLAGE_NAME_MAX, type Village } from "@/lib/village";
 import { villagePath } from "@/lib/share";
 import { useVillageStore } from "@/store/VillageStoreProvider";
 
@@ -18,7 +18,7 @@ export function CreateVillageForm() {
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const preview: Village = { id: "preview", name: name.trim() || "우리 마을", createdAt: PREVIEW_DATE, houses: [] };
+  const preview: Village = { id: "preview", name: name.trim() || "우리 마을", createdAt: PREVIEW_DATE, houses: [], capacity: FREE_CAPACITY };
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -80,7 +80,7 @@ export function CreateVillageForm() {
           <VillageScene village={preview} />
         </div>
         <p className="mt-2 text-center text-sm text-night/70">
-          최대 {VILLAGE_CAPACITY}명의 친구가 한 집씩 입주할 수 있어요.
+          친구 {FREE_CAPACITY}명까지 무료로 한 집씩 입주할 수 있어요. 더 큰 마을({BIG_CAPACITY}채)은 앱에서 키울 수 있어요.
         </p>
 
         <button

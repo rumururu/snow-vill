@@ -24,7 +24,7 @@ cleanup() {
   done
   local like="false"
   for v in "${VIDS[@]:-}"; do [ -n "$v" ] && like="$like or name like '$v/%'"; done
-  mq "delete from snowvill_villages where created_by in ('$A','$B','$C','$D'); delete from snowvill_calls where install_id in ('$A','$B','$C','$D'); select (select count(*) from snowvill_villages where created_by in ('$A','$B','$C','$D')) as villages, (select count(*) from snowvill_calls where install_id in ('$A','$B','$C','$D')) as calls, (select count(*) from storage.objects where bucket_id='snowvill-photos' and ($like)) as photos"
+  mq "delete from snowvill_villages where created_by in ('$A','$B','$C','$D'); delete from snowvill_calls where install_id in ('$A','$B','$C','$D'); delete from snowvill_purchases where install_id in ('$A','$B','$C','$D'); delete from snowvill_wallets where install_id in ('$A','$B','$C','$D'); select (select count(*) from snowvill_villages where created_by in ('$A','$B','$C','$D')) as villages, (select count(*) from snowvill_calls where install_id in ('$A','$B','$C','$D')) as calls, (select count(*) from storage.objects where bucket_id='snowvill-photos' and ($like)) as photos"
   echo; rm -rf "$W"
 }
 VIDS=()
@@ -128,6 +128,32 @@ echo "6. report + rate limit"
 ok "$(rpc snowvill_report "$(js "p_install_id=$C" "p_house_id=$H1" "p_reason=live test")")" 204 "report accepted"
 last=0; for i in 1 2 3 4; do last=$(rpc snowvill_create_village "$(js "p_install_id=$D" "p_name=제한$i")"); [ "$last" = 200 ] && OWNERS+=("$(jb "d['id']"):$(jb "d['owner_secret']")") && VIDS+=("$(jb "d['id']")"); done
 ok "$last" 429 "4th create in a minute → 429"
+
+echo "6b. big village via purchase webhook"
+WH="$URL/functions/v1/snowvill-purchase-webhook"
+WAUTH=$(security find-generic-password -a snowvill-webhook-auth -s supabase -w)
+TX="live-test-$(python3 -c 'import uuid;print(uuid.uuid4().hex[:12])')"
+ev() { python3 -c "import json,sys;print(json.dumps({'event':{'type':sys.argv[1],'app_user_id':sys.argv[2],'transaction_id':sys.argv[3],'product_id':'snowvillage_big_village','store':'PLAY_STORE','environment':'SANDBOX','price':1.99,'price_in_purchased_currency':2900,'currency':'KRW','cancel_reason':'CUSTOMER_SUPPORT'}}))" "$1" "$2" "$3"; }
+ok "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$WH" -H 'Content-Type: application/json' -d "$(ev NON_RENEWING_PURCHASE $C $TX)")" 401 "webhook without auth → 401"
+ok "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$WH" -H 'Authorization: wrong' -H 'Content-Type: application/json' -d "$(ev NON_RENEWING_PURCHASE $C $TX)")" 401 "webhook wrong auth → 401"
+ok "$(curl -s -o "$W/wbody" -w '%{http_code}' -X POST "$WH" -H "Authorization: $WAUTH" -H 'Content-Type: application/json' -d "$(ev NON_RENEWING_PURCHASE $C $TX)")" 200 "purchase event accepted"
+ok "$(python3 -c "import json;print(json.load(open('$W/wbody'))['credited'])")" 1 "credited 1"
+curl -s -o "$W/wbody" -X POST "$WH" -H "Authorization: $WAUTH" -H 'Content-Type: application/json' -d "$(ev NON_RENEWING_PURCHASE $C $TX)"
+ok "$(python3 -c "import json;print(json.load(open('$W/wbody'))['credited'])")" 0 "redelivered event → no double credit"
+rpc snowvill_get_village "$(js "p_village_id=$VID")" >/dev/null
+ok "$(jb "d['capacity']")" 6 "village starts as free (6)"
+ok "$(rpc snowvill_upgrade_village "$(js "p_install_id=$C" "p_village_id=$VID")")" 200 "upgrade call"
+ok "$(jb "d['ok'], d['capacity']")" "(True, 8)" "upgraded to big village (8)"
+rpc snowvill_wallet "$(js "p_install_id=$C")" >/dev/null
+ok "$(jb "d['credits']")" 0 "credit spent"
+curl -s -o "$W/wbody" -X POST "$WH" -H "Authorization: $WAUTH" -H 'Content-Type: application/json' -d "$(ev CANCELLATION $C $TX)"
+ok "$(python3 -c "import json;print(json.load(open('$W/wbody'))['refunded'])")" 1 "refund event recorded"
+rpc snowvill_get_village "$(js "p_village_id=$VID")" >/dev/null
+ok "$(jb "d['capacity']")" 8 "applied upgrade kept after refund"
+for t in snowvill_wallets snowvill_purchases snowvill_upgrades; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" "$URL/rest/v1/$t?select=*" -H "apikey: $ANON" -H "Authorization: Bearer $ANON")
+  [ "$code" != 200 ] && ok x x "$t select denied ($code)" || ok "$code" 4xx "$t select denied"
+done
 
 echo "7. delete village"
 ok "$(fncall "$(js "action=delete_village" "install_id=$B" "village_id=$VID" "secret=$(python3 -c "print('C'*32)")")")" 403 "non-owner cannot delete village"

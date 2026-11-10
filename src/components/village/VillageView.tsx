@@ -11,7 +11,9 @@ import { ShareSheet } from "@/components/share/ShareSheet";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { SimulatedBadge } from "@/components/ui/SimulatedBadge";
 import { villagePath } from "@/lib/share";
-import { freeSlots, houseAt, isFull, SAMPLE_VILLAGE_ID, VILLAGE_CAPACITY, type House } from "@/lib/village";
+import { nextMilestone } from "@/lib/milestones";
+import { canUpgrade, freeSlots, houseAt, isFull, lockedSlots, remainingHouses, SAMPLE_VILLAGE_ID, type House } from "@/lib/village";
+import { UpgradeSheet } from "./UpgradeSheet";
 import { useVillageState, useVillageStore } from "@/store/VillageStoreProvider";
 
 function prefersReducedMotion() {
@@ -27,6 +29,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
   const simulated = store.isLocal(villageId);
   const [refreshFailed, setRefreshFailed] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -124,11 +127,17 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
 
   const full = isFull(village);
   const free = freeSlots(village);
+  const upgradable = full && canUpgrade(village);
+  const milestone = nextMilestone(village.houses.length, village.capacity);
 
   function openSlot(slot: number) {
     const house = houseAt(village!, slot);
     if (house) {
       setFrameHouseId(house.id);
+      return;
+    }
+    if (lockedSlots(village!).includes(slot)) {
+      setUpgradeOpen(true);
       return;
     }
     if (myHouse) {
@@ -148,8 +157,8 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
         : `${house.nickname}님의 집에 불이 켜졌어요!`,
     );
     setTimeout(() => setIgniteSlot(null), 1200);
-    const nowFull = store.getState().villages[villageId]?.houses.length === VILLAGE_CAPACITY;
-    if (nowFull) setTimeout(() => setShareOpen(true), prefersReducedMotion() ? 0 : 900);
+    const after = store.getState().villages[villageId];
+    if (after && isFull(after)) setTimeout(() => setShareOpen(true), prefersReducedMotion() ? 0 : 900);
   }
 
   function simulateFriend() {
@@ -187,10 +196,10 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
           <p className="flex items-center gap-2 text-sm font-semibold text-night" aria-live="polite">
             <span className="rounded-full bg-white px-3 py-1 shadow-sm">
               <span className="sr-only">입주한 집 </span>
-              {village.houses.length}/{VILLAGE_CAPACITY}
+              {village.houses.length}/{village.capacity}
             </span>
             <span className="font-normal text-night/70">
-              {full ? "마을이 완성됐어요" : village.houses.length === 0 ? "빈 집에 불을 켜주세요" : `빈 집 ${free.length}채`}
+              {full ? "마을이 완성됐어요" : village.houses.length === 0 ? "빈 집에 불을 켜주세요" : `${remainingHouses(village)}채 더 입주할 수 있어요`}
             </span>
           </p>
           {simulated && <SimulatedBadge />}
@@ -204,6 +213,11 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
             onSelectSlot={openSlot}
             className="rounded-3xl"
           />
+          {milestone && (
+            <p className="mx-4 mb-1 rounded-xl bg-glow/25 px-3 py-1.5 text-center text-xs font-semibold text-night" data-testid="milestone">
+              친구 {milestone.remaining}명이 더 입주하면 「{milestone.label}」이(가) 생겨요 🎁
+            </p>
+          )}
           <p className="px-4 text-center text-xs text-night/60">
             {full ? "집을 눌러 친구들의 사진 액자를 열어 보세요." : "불 켜진 집을 누르면 사진 액자가, 빈 집을 누르면 내 집 만들기가 열려요."}
           </p>
@@ -228,9 +242,19 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
               <button type="button" onClick={() => setShareOpen(true)} className="min-h-12 rounded-2xl bg-night font-bold text-ivory">
                 공유 카드 만들기
               </button>
-              <Link href="/create" className="flex min-h-12 items-center justify-center rounded-2xl bg-white font-semibold text-night">
-                새 마을 만들기
-              </Link>
+              {upgradable ? (
+                <button
+                  type="button"
+                  onClick={() => setUpgradeOpen(true)}
+                  className="min-h-12 rounded-2xl bg-glow font-bold text-night shadow-sm"
+                >
+                  큰 마을로 키우기
+                </button>
+              ) : (
+                <Link href="/create" className="flex min-h-12 items-center justify-center rounded-2xl bg-white font-semibold text-night">
+                  새 마을 만들기
+                </Link>
+              )}
             </>
           ) : (
             <>
@@ -297,6 +321,17 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
       />
       <InviteSheet village={village} open={inviteOpen} onClose={() => setInviteOpen(false)} />
       <ShareSheet village={village} open={shareOpen} onClose={() => setShareOpen(false)} />
+      <UpgradeSheet
+        village={village}
+        open={upgradeOpen}
+        simulated={simulated}
+        onClose={() => setUpgradeOpen(false)}
+        onSimulatedUpgrade={() => {
+          const r = store.upgradeVillage(villageId);
+          setUpgradeOpen(false);
+          notify(r.ok ? "(시뮬레이션) 큰 마을이 됐어요! 빈 집 2채가 열렸어요." : r.message);
+        }}
+      />
       <BottomSheet
         open={deleteOpen}
         onClose={() => {

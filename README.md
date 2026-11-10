@@ -61,7 +61,7 @@ It walks the full flow (sample → claim with a generated test image → frame �
 
 ## Flutter app (iOS / Android)
 
-`app/` — store companion app sharing the same backend and art; villages are shared with the web. Store billing (RevenueCat) for decorating packs is the next phase. See [app/README.md](app/README.md).
+`mobile/` — store companion app sharing the same backend and art; villages are shared with the web. Store billing (RevenueCat) for decorating packs is the next phase. See [mobile/README.md](mobile/README.md).
 
 ## Hosting
 

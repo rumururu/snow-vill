@@ -21,7 +21,7 @@ SRC = ROOT / "assets" / "source"
 OUT = ROOT / "public" / "assets"
 GEOMETRY = ROOT / "src" / "lib" / "asset-geometry.json"
 # The Flutter app bundles the same files (assets must live inside the Flutter package).
-APP_ASSETS = ROOT / "app" / "assets" / "art"
+APP_ASSETS = ROOT / "mobile" / "assets" / "art"
 
 SPRITE_SIZE = 512
 BACKGROUND_SIZE = 1024
@@ -32,11 +32,26 @@ SPRITES = {
     "house_empty": ("houses", "house"),
     "tree_base": ("decor", "tree"),
     "tree_complete": ("decor", "tree"),
+    "decor_sled": ("decor", "prop"),
+    "decor_snowfamily": ("decor", "prop"),
 }
-# Village layout on the background (measured on background_snow at 1254px; see docs/05-art-direction.md).
-# 3×3 isometric grid: centre cell = tree, 8 cells = houses. Chosen by scripts' visibility search:
-# every house ≥ 93% unoccluded with tile 230px, spacing = tile width, tree base = 0.70 × tile.
-LAYOUT = {"center": [627 / 1254, 660 / 1254], "tileWidth": 230 / 1254, "spacing": 230 / 1254, "treeScale": 0.70}
+# Inner fence boundary of the village (measured on background_snow at 1254px; background_aurora is a
+# pixel-aligned edit, best shift (0,0)). Clockwise: back, right, front (fences' meeting point), left.
+FIELD = [(593, 322), (1220, 598), (627, 1045), (40, 590)]
+# 3×3 isometric grid inside FIELD (scripts: every tile corner ≥ 30px inside the fence, every house
+# ≥ 88% unoccluded): tile 210px, spacing 0.9 × tile, centre (615, 620), tree base = 0.70 × tile.
+LAYOUT = {"center": [615 / 1254, 620 / 1254], "tileWidth": 210 / 1254, "spacing": 189 / 1254, "treeScale": 0.70}
+# Free decorations unlocked by house count (owner decision 2026-11-10): 4 → sled, 6 → snowman family,
+# 8 (paid big village, full) → aurora background. Prop spots/size chosen by search: bases ≥ 10px inside
+# the fence, every house still ≥ 88% visible with props in front.
+DECOR = {
+    "props": [
+        {"sprite": "decor_sled", "ground": [475 / 1254, 850 / 1254], "tile": 160 / 1254, "minHouses": 4},
+        {"sprite": "decor_snowfamily", "ground": [755 / 1254, 850 / 1254], "tile": 160 / 1254, "minHouses": 6},
+    ],
+    "aurora": {"minHouses": 8},
+}
+BACKGROUNDS = {"base": "background_snow", "aurora": "background_aurora"}
 
 
 def alpha_mask(im: Image.Image) -> np.ndarray:
@@ -107,8 +122,11 @@ def main() -> None:
         im = Image.open(SRC / f"{name}.webp").convert("RGBA")
         mask = alpha_mask(im)
         w, h = im.size
-        cx, cy, tile = widest_row(mask, 0.5 if kind == "house" else 0.85)
         ys, xs = np.where(mask)
+        # Houses: base tile is the widest row in the lower half. Trees/props: the snow mound at the
+        # bottom 20% of the opaque area (their foliage/bodies are wider higher up).
+        start = 0.5 if kind == "house" else (ys.max() - 0.2 * (ys.max() - ys.min())) / h
+        cx, cy, tile = widest_row(mask, start)
         out_dir = OUT / folder
         out_dir.mkdir(parents=True, exist_ok=True)
         out = out_dir / f"{name}.webp"
@@ -122,12 +140,33 @@ def main() -> None:
         }
         print(f"{name:18s} {out.stat().st_size // 1024:4d} KB  anchor={geometry['sprites'][name]['anchor']} hull={len(geometry['sprites'][name]['hull'])} pts")
 
-    bg = Image.open(SRC / "background_snow.webp").convert("RGB")
-    out = OUT / "village" / "background_snow.webp"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    bg.resize((BACKGROUND_SIZE, BACKGROUND_SIZE), Image.LANCZOS).save(out, "WEBP", quality=80, method=6)
-    geometry["background"] = {"src": "/assets/village/background_snow.webp"}
-    print(f"background_snow    {out.stat().st_size // 1024:4d} KB")
+    # Backgrounds: full image + a foreground layer = everything outside the fence on the front side
+    # (below the left–right corner line). Drawn over houses/props so front fences, lamps and the
+    # snowman stay in front. Geometric (not colour-based) so snow caps on posts are included.
+    src_n = 1254
+    front_mask = Image.new("L", (src_n, src_n), 0)
+    from PIL import ImageDraw, ImageFilter
+    d = ImageDraw.Draw(front_mask)
+    left, right = FIELD[3], FIELD[1]
+    d.rectangle([0, 0, src_n, src_n], fill=255)
+    d.polygon(FIELD, fill=0)                                       # inside the fence: not foreground
+    d.polygon([(0, 0), (src_n, 0), (src_n, right[1]), right, left, (0, left[1])], fill=0)  # back half
+    front_mask = front_mask.filter(ImageFilter.GaussianBlur(1.5))
+    geometry["backgrounds"] = {}
+    for key, name in BACKGROUNDS.items():
+        bg = Image.open(SRC / f"{name}.webp").convert("RGB")
+        out = OUT / "village" / f"{name}.webp"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        bg.resize((BACKGROUND_SIZE, BACKGROUND_SIZE), Image.LANCZOS).save(out, "WEBP", quality=80, method=6)
+        fg = bg.convert("RGBA")
+        fg.putalpha(front_mask)
+        fg_out = OUT / "village" / f"{name}_front.webp"
+        fg.resize((BACKGROUND_SIZE, BACKGROUND_SIZE), Image.LANCZOS).save(fg_out, "WEBP", quality=82, method=6)
+        geometry["backgrounds"][key] = {"src": f"/assets/village/{name}.webp", "front": f"/assets/village/{name}_front.webp"}
+        print(f"{name:18s} {out.stat().st_size // 1024:4d} KB  front {fg_out.stat().st_size // 1024} KB")
+    geometry["background"] = {"src": geometry["backgrounds"]["base"]["src"]}
+    geometry["field"] = [[round(x / src_n, 4), round(y / src_n, 4)] for x, y in FIELD]
+    geometry["decor"] = DECOR
 
     GEOMETRY.write_text(json.dumps(geometry, indent=2) + "\n")
     if APP_ASSETS.parent.parent.exists():

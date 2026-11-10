@@ -13,6 +13,8 @@ import {
   claimHouse as claimHouseRule,
   createSampleVillage,
   createVillage as createVillageRule,
+  BIG_CAPACITY,
+  FREE_CAPACITY,
   freeSlots,
   HOUSE_STYLES,
   removeHouse as removeHouseRule,
@@ -119,7 +121,7 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
         const villages = Object.fromEntries(
           Object.entries(saved.villages ?? {})
             .filter(([id]) => isLocal(id))
-            .map(([id, v]) => [id, { ...v, houses: v.houses.map((h) => ({ ...h, hasPhoto: h.hasPhoto ?? Boolean(h.photo) })) }]),
+            .map(([id, v]) => [id, { ...v, capacity: v.capacity ?? FREE_CAPACITY, houses: v.houses.map((h) => ({ ...h, hasPhoto: h.hasPhoto ?? Boolean(h.photo) })) }]),
         );
         state = {
           ...state,
@@ -223,7 +225,7 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
         identity = { ...identity, owners: { ...identity.owners, [id]: ownerSecret } };
         saveIdentity();
         set({
-          ...withVillage({ id, name: valid.value, createdAt: now().toISOString(), houses: [] }),
+          ...withVillage({ id, name: valid.value, createdAt: now().toISOString(), houses: [], capacity: FREE_CAPACITY }),
           ownedVillages: [...state.ownedVillages, id],
         });
         return { ok: true, id };
@@ -390,6 +392,18 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
       if (!result.ok) return result;
       set(withVillage(result.village));
       return { ok: true, house: result.house };
+    },
+
+    /**
+     * Big-village upgrade. Simulated villages upgrade immediately (demo); real villages are upgraded
+     * from the app after an app-store purchase (the server applies the purchased credit).
+     */
+    upgradeVillage(villageId: string): ActionResult {
+      const village = state.villages[villageId];
+      if (!village) return { ok: false, message: "마을을 찾을 수 없어요." };
+      if (!isLocal(villageId)) return { ok: false, message: "큰 마을로 키우기는 Snow Village 앱에서 할 수 있어요." };
+      set(withVillage({ ...village, capacity: BIG_CAPACITY }));
+      return { ok: true };
     },
 
     resetSample() {

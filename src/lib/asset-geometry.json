@@ -1,11 +1,11 @@
 {
   "layout": {
     "center": [
-      0.5,
-      0.5263157894736842
+      0.4904306220095694,
+      0.4944178628389155
     ],
-    "tileWidth": 0.18341307814992025,
-    "spacing": 0.18341307814992025,
+    "tileWidth": 0.1674641148325359,
+    "spacing": 0.1507177033492823,
     "treeScale": 0.7
   },
   "sprites": {
@@ -325,7 +325,7 @@
       "src": "/assets/decor/tree_complete.webp",
       "anchor": [
         0.5004,
-        0.8493
+        0.8453
       ],
       "tileWidth": 0.5207,
       "bbox": [
@@ -372,9 +372,182 @@
           0.875
         ]
       ]
+    },
+    "decor_sled": {
+      "src": "/assets/decor/decor_sled.webp",
+      "anchor": [
+        0.4813,
+        0.7201
+      ],
+      "tileWidth": 0.634,
+      "bbox": [
+        0.1579,
+        0.1818,
+        0.8389,
+        0.8557
+      ],
+      "hull": [
+        [
+          0.1562,
+          0.7383
+        ],
+        [
+          0.1797,
+          0.6016
+        ],
+        [
+          0.25,
+          0.3984
+        ],
+        [
+          0.4961,
+          0.207
+        ],
+        [
+          0.6094,
+          0.1836
+        ],
+        [
+          0.8086,
+          0.3945
+        ],
+        [
+          0.8359,
+          0.6875
+        ],
+        [
+          0.7891,
+          0.7227
+        ],
+        [
+          0.4727,
+          0.8516
+        ],
+        [
+          0.3242,
+          0.8242
+        ],
+        [
+          0.1758,
+          0.7656
+        ]
+      ]
+    },
+    "decor_snowfamily": {
+      "src": "/assets/decor/decor_snowfamily.webp",
+      "anchor": [
+        0.4952,
+        0.6898
+      ],
+      "tileWidth": 0.638,
+      "bbox": [
+        0.1738,
+        0.2018,
+        0.815,
+        0.8126
+      ],
+      "hull": [
+        [
+          0.1758,
+          0.4453
+        ],
+        [
+          0.2383,
+          0.2266
+        ],
+        [
+          0.2734,
+          0.2031
+        ],
+        [
+          0.7227,
+          0.2812
+        ],
+        [
+          0.7578,
+          0.3203
+        ],
+        [
+          0.8125,
+          0.6914
+        ],
+        [
+          0.7734,
+          0.7383
+        ],
+        [
+          0.5625,
+          0.8047
+        ],
+        [
+          0.4492,
+          0.8086
+        ],
+        [
+          0.2969,
+          0.7656
+        ],
+        [
+          0.1758,
+          0.6914
+        ]
+      ]
     }
   },
   "background": {
     "src": "/assets/village/background_snow.webp"
+  },
+  "backgrounds": {
+    "base": {
+      "src": "/assets/village/background_snow.webp",
+      "front": "/assets/village/background_snow_front.webp"
+    },
+    "aurora": {
+      "src": "/assets/village/background_aurora.webp",
+      "front": "/assets/village/background_aurora_front.webp"
+    }
+  },
+  "field": [
+    [
+      0.4729,
+      0.2568
+    ],
+    [
+      0.9729,
+      0.4769
+    ],
+    [
+      0.5,
+      0.8333
+    ],
+    [
+      0.0319,
+      0.4705
+    ]
+  ],
+  "decor": {
+    "props": [
+      {
+        "sprite": "decor_sled",
+        "ground": [
+          0.3787878787878788,
+          0.6778309409888357
+        ],
+        "tile": 0.12759170653907495,
+        "minHouses": 4
+      },
+      {
+        "sprite": "decor_snowfamily",
+        "ground": [
+          0.60207336523126,
+          0.6778309409888357
+        ],
+        "tile": 0.12759170653907495,
+        "minHouses": 6
+      }
+    ],
+    "aurora": {
+      "minHouses": 8
+    }
   }
 }

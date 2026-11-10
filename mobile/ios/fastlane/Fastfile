@@ -28,12 +28,22 @@ platform :ios do
     get_provisioning_profile(api_key: key, app_identifier: APP_ID, provisioning_name: PROFILE, ignore_profiles_with_different_name: true)
     build_number = (latest_testflight_build_number(api_key: key, app_identifier: APP_ID, initial_build_number: 0) + 1).to_s
     Dir.chdir(MOBILE) do
-      sh("flutter clean")
-      sh("flutter pub get")
-      sh("flutter build ipa --release --build-number=#{build_number} --dart-define-from-file=env/prod.json --export-options-plist=ios/ExportOptions.plist")
+      # fastlane's bundled Ruby env breaks CocoaPods ("installed but broken"); same fix as nametree.
+      clean = "env -u GEM_HOME -u GEM_PATH -u BUNDLE_BIN_PATH -u BUNDLE_GEMFILE -u RUBYOPT -u RUBYLIB PATH=/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin:#{File.dirname(`which flutter`.strip)}"
+      sh("#{clean} flutter clean")
+      sh("#{clean} flutter pub get")
+      sh("#{clean} flutter build ipa --release --build-number=#{build_number} --dart-define-from-file=env/prod.json --export-options-plist=ios/ExportOptions.plist")
     end
     ipa = Dir[File.join(MOBILE, "build/ios/ipa/*.ipa")].first
     UI.user_error!("ipa not found") unless ipa
-    upload_to_testflight(api_key: key, ipa: ipa, skip_waiting_for_build_processing: true)
+    begin
+      upload_to_testflight(api_key: key, ipa: ipa, skip_waiting_for_build_processing: true)
+    rescue StandardError => e
+      # altool prints "UPLOAD SUCCEEDED" and then a harmless resume-file log line on stderr, which fastlane
+      # reports as a failure. Treat only that exact case as success (verified 2026-11-10: builds 1 and 2 arrived).
+      raise e unless e.message.include?("CDUploaderStateInfoResumeFilePath")
+      UI.important("altool resume-file notice ignored for build #{build_number}")
+      UI.important("Processing takes a few minutes; confirm with: python3 tools/store/asc.py GET \"/v1/builds?filter[app]=6832823869\"")
+    end
   end
 end

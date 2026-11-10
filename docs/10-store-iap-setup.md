@@ -51,14 +51,14 @@ Lane: `mobile/android/fastlane` `internal` (`draft:true` was needed while the ap
 |---|---|
 | Project | "Snow Village" `projeb9d0302` (dashboard `projects/eb9d0302`), category Social Networking |
 | App Store app | `appa64e95d869` "Snow Village (iOS)". In-App Purchase key and ASC API key = account team key `DGS7ANBS8T`, both **Valid credentials** |
-| Play app | `app158a473529` "Snow Village (Android)". Service account JSON uploaded, **Valid credentials** (after the Play permission grant above) |
+| Play app | `app158a473529` "Snow Village (Android)". Service account JSON = the **company ldm service account** (`fastlane-play-store-deploy@project-da4ee1b7-…`, account-level Play admin, Pub/Sub admin on the RTDN project) — the same credential the other RevenueCat apps use. Valid credentials. (The quick-cable key worked for validation after the Play grant, but RevenueCat only lists Pub/Sub topics from the key's own GCP project, so RTDN needs the ldm key) |
 | Products | iOS `prodfa2b1e56ee`, Play `prod6b9a86684b` (both consumable `snowvillage_big_village`) |
 | Entitlement | none (consumable credit counted by the server wallet) |
 | Offering | `default` `ofrnga4d4c51bc6` (current), package `pkgecc8b0777c5` lookup_key = product id, both products attached |
 | Webhook | `whintgre12bd5d2fe714ce9a01feb1a79a57b25` → `https://qfhbkfzxhldfycmcwntw.supabase.co/functions/v1/snowvill-purchase-webhook`, production + sandbox, all events, Authorization = keychain `snowvill-webhook-auth` (service `supabase`) = Supabase secret `SNOWVILL_WEBHOOK_AUTH` |
 | Public SDK keys | in `mobile/env/prod.json` (`REVENUECAT_IOS_KEY` `appl_…`, `REVENUECAT_ANDROID_KEY` `goog_…`; public values but the file is gitignored with the Supabase anon key) |
 | v2 secret key | `claude-setup-v2`: project configuration read & write, customer information read only. Keychain account `snowvillage-revenuecat-secret`, service `revenuecat`. Lower it to read-only once setup is final (claires-space/ldm did) |
-| Google developer notifications (RTDN) | **not connected**: the service account's GCP project (`quick-cable-…`) has no Pub/Sub topic, so RevenueCat lists none. Needs a topic + Play publisher permission in GCP (ldm used `projects/project-da4ee1b7-…/topics/Play-Store-Notifications` with its own service account) |
+| Google developer notifications (RTDN) | **Connected 2026-11-10** to the shared topic `projects/project-da4ee1b7-3fcf-4373-815/topics/Play-Store-Notifications` (RevenueCat created its subscription). Play Console app → 수익 창출 설정: real-time notifications on, same topic, "정기 결제, 무효화된 구매, 모든 일회성 제품". Play test notification received (13:17 UTC). A temporary Pub/Sub admin grant to the quick-cable key on that project was removed again (`gcloud … remove-iam-policy-binding`) |
 
 Query: `GET https://api.revenuecat.com/v2/projects/projeb9d0302/{apps|products|offerings}` (Bearer = keychain key above).
 
@@ -87,8 +87,7 @@ Test data to remove after the refund check: villages "QA IAP test" (capacity 6) 
 
 | To do | Who | Note |
 |---|---|---|
-| Connect RTDN (GCP Pub/Sub topic) | Claude/owner | GCP permission setup |
-| Confirm refund reached the server (`refunded_at`), then delete test data | Claude | |
+| Refund round trip with RTDN on: the first refund (`GPA.3371-0939-…`) was issued **before** RTDN was connected, so its notification was lost (`refunded_at` still null). Buy once more, refund, confirm `refunded_at`; then delete test data | Claude | needs a free phone with the tester account (M205N / G525N; the Note9 has no Google account) |
 | iPhone sandbox purchase via TestFlight | Claude | Android round trip done (§6) |
 | ASC review screenshot for the IAP, store listings, Play app content forms, data safety | Claude | before submitting for review |
 | Lower the RevenueCat v2 key to read-only | Claude | after setup |

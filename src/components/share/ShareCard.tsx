@@ -38,7 +38,7 @@ export const ShareCard = forwardRef<SVGSVGElement, { data: ShareCardData; classN
       <text x="540" y="200" textAnchor="middle" fontFamily={FONT} fontSize="64" fontWeight="800" fill={PALETTE.indigo}>
         {data.complete ? "우리 마을이 완성됐어요!" : "우리 마을에 불이 켜지고 있어요"}
       </text>
-      <VillageMapArt capacity={data.capacity} houses={data.houses} frame={{ x: 48, y: 250, width: 984, height: 984 }} title="마을 장면" />
+      <VillageMapArt openHalves={data.openHalves} houses={data.houses} ghosts={false} frame={{ x: 48, y: 250, width: 984, height: 984 }} title="마을 장면" />
       <text x="540" y="1290" textAnchor="middle" fontFamily={FONT} fontSize="34" fill={PALETTE.indigo} opacity=".75">
         친구들과 만드는 우리만의 겨울 마을 ❄
       </text>

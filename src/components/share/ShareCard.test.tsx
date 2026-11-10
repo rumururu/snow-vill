@@ -20,7 +20,7 @@ describe("photo-free share card", () => {
     const data = toShareCardData(villageWithPhotos());
     expect(JSON.stringify(data)).not.toContain("data:image");
     expect(JSON.stringify(data)).not.toContain("비밀");
-    expect(Object.keys(data).sort()).toEqual(["capacity", "complete", "houses"]);
+    expect(Object.keys(data).sort()).toEqual(["complete", "houses", "openHalves"]);
     expect(data.houses).toHaveLength(7);
     for (const h of data.houses) expect(Object.keys(h).sort()).toEqual(["direction", "slot", "style"]);
   });

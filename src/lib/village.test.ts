@@ -107,13 +107,13 @@ describe("claimHouse", () => {
     }
     expect(isFull(v)).toBe(true);
     expect(freeSlots(v)).toEqual([]);
-    expect(lockedSlots(v)).toEqual([6, 7, 8]);
+    expect(lockedSlots(v)).toHaveLength(54); // every lot outside district 0
     expect(canUpgrade(v)).toBe(true);
     expect(claimHouse(v, 6, input(), opts())).toEqual({ ok: false, reason: "VILLAGE_FULL" });
   });
 
   it("a fully expanded village holds 60 houses", () => {
-    let v: Village = { ...emptyVillage(), capacity: MAX_CAPACITY };
+    let v: Village = { ...emptyVillage(), capacity: MAX_CAPACITY, openHalves: (1 << 20) - 1 };
     for (let slot = 0; slot < VILLAGE_CAPACITY; slot++) {
       const r = claimHouse(v, slot, input(`n${slot % 10}`), opts());
       if (!r.ok) throw new Error(`slot ${slot} failed`);

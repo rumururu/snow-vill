@@ -13,9 +13,11 @@ import {
   claimHouse as claimHouseRule,
   createSampleVillage,
   createVillage as createVillageRule,
-  EXPANSION_STEP,
+  capacityOf,
   MAX_CAPACITY,
+  openNextHalf,
   FREE_CAPACITY,
+  FREE_OPEN_HALVES,
   freeSlots,
   HOUSE_STYLES,
   removeHouse as removeHouseRule,
@@ -230,7 +232,7 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
         identity = { ...identity, owners: { ...identity.owners, [id]: ownerSecret } };
         saveIdentity();
         set({
-          ...withVillage({ id, name: valid.value, createdAt: now().toISOString(), houses: [], capacity: FREE_CAPACITY }),
+          ...withVillage({ id, name: valid.value, createdAt: now().toISOString(), houses: [], capacity: FREE_CAPACITY, openHalves: FREE_OPEN_HALVES }),
           ownedVillages: [...state.ownedVillages, id],
         });
         return { ok: true, id };
@@ -404,12 +406,14 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
      * Expansion (+3 houses). Simulated villages grow immediately (demo); real villages grow from the
      * app after an app-store purchase (the server spends the purchased credit).
      */
-    upgradeVillage(villageId: string): ActionResult {
+    upgradeVillage(villageId: string, district: number): ActionResult {
       const village = state.villages[villageId];
       if (!village) return { ok: false, message: "마을을 찾을 수 없어요." };
       if (!isLocal(villageId)) return { ok: false, message: "마을 넓히기는 Snow Village 앱에서 할 수 있어요." };
       if (village.capacity >= MAX_CAPACITY) return { ok: false, message: "이미 가장 큰 마을이에요." };
-      set(withVillage({ ...village, capacity: Math.min(MAX_CAPACITY, village.capacity + EXPANSION_STEP) }));
+      const open = openNextHalf(village.openHalves, district);
+      if (open === null) return { ok: false, message: "이 동네는 이미 다 열렸어요." };
+      set(withVillage({ ...village, openHalves: open, capacity: capacityOf(open) }));
       return { ok: true };
     },
 

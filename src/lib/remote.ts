@@ -3,7 +3,13 @@
  * The browser only calls anon RPC functions and the snowvill-photo Edge Function;
  * tables and the photo bucket are not reachable directly (see supabase/migrations).
  */
-import { FREE_CAPACITY, isDirection, isHouseStyle, MAX_CAPACITY, type Direction, type House, type HouseStyle, type Village } from "./village";
+import { capacityOf, FREE_CAPACITY, halvesForCapacity, isDirection, isHouseStyle, MAX_CAPACITY, type Direction, type House, type HouseStyle, type Village } from "./village";
+
+/** Opened district halves from the server (falls back to halves in order for older responses). */
+function districtsOf(v: RemoteVillage): { capacity: number; openHalves: number } {
+  const open = typeof v.open_halves === "number" && v.open_halves > 0 ? v.open_halves : halvesForCapacity(normalizeCapacity(v.capacity));
+  return { capacity: capacityOf(open), openHalves: open };
+}
 
 /** Server capacity is 6, 9, … 60; anything else (older rows, bad data) falls back to the nearest valid size. */
 function normalizeCapacity(c: unknown): number {
@@ -202,6 +208,7 @@ interface RemoteVillage {
   name: string;
   created_at: string;
   capacity?: number;
+  open_halves?: number;
   houses: RemoteHouse[];
 }
 
@@ -220,7 +227,7 @@ function toHouse(h: RemoteHouse): House {
 }
 
 function toVillage(v: RemoteVillage): Village {
-  return { id: v.id, name: v.name, createdAt: v.created_at, capacity: normalizeCapacity(v.capacity), houses: (v.houses ?? []).map(toHouse) };
+  return { id: v.id, name: v.name, createdAt: v.created_at, ...districtsOf(v), houses: (v.houses ?? []).map(toHouse) };
 }
 
 /** data:image/jpeg;base64,… → Blob */

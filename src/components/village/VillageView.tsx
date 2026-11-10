@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ClaimHouseSheet } from "@/components/house/ClaimHouseSheet";
 import { PhotoFrameSheet } from "@/components/house/PhotoFrameSheet";
 import { VillageMap } from "@/components/scene/VillageMap";
+import { DISTRICTS, LOTS } from "@/lib/map";
 import { InviteSheet } from "@/components/share/InviteSheet";
 import { ShareSheet } from "@/components/share/ShareSheet";
 import { BottomSheet } from "@/components/ui/BottomSheet";
@@ -29,7 +30,12 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
   const simulated = store.isLocal(villageId);
   const [refreshFailed, setRefreshFailed] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpenState] = useState(false);
+  const [upgradeDistrict, setUpgradeDistrict] = useState<number | null>(null);
+  const setUpgradeOpen = (open: boolean, district: number | null = null) => {
+    setUpgradeDistrict(district);
+    setUpgradeOpenState(open);
+  };
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -137,7 +143,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
       return;
     }
     if (lockedSlots(village!).includes(slot)) {
-      setUpgradeOpen(true);
+      setUpgradeOpen(true, LOTS[slot]?.district ?? null);
       return;
     }
     if (myHouse) {
@@ -212,6 +218,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
             myHouseId={myHouseId}
             igniteSlot={igniteSlot}
             onSelectSlot={openSlot}
+            onSelectDistrict={(d) => setUpgradeOpen(true, d)}
             fill
             className="min-h-[360px] flex-1 rounded-3xl"
           />
@@ -326,12 +333,13 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
       <UpgradeSheet
         village={village}
         open={upgradeOpen}
+        district={upgradeDistrict}
         simulated={simulated}
         onClose={() => setUpgradeOpen(false)}
-        onSimulatedUpgrade={() => {
-          const r = store.upgradeVillage(villageId);
+        onSimulatedUpgrade={(d) => {
+          const r = store.upgradeVillage(villageId, d);
           setUpgradeOpen(false);
-          notify(r.ok ? "(시뮬레이션) 마을이 넓어졌어요! 집터 3곳이 새로 생겼어요." : r.message);
+          notify(r.ok ? `(시뮬레이션) ${DISTRICTS[d].name.ko}에 집터 3곳이 열렸어요!` : r.message);
         }}
       />
       <BottomSheet

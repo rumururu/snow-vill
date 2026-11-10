@@ -9,14 +9,14 @@ export const SHARE_CARD_HEIGHT = 1350;
  * No photos, nicknames or messages (docs/09-decisions.md #8).
  */
 export interface ShareCardData {
-  capacity: number;
+  openHalves: number;
   houses: MapHouseArt[];
   complete: boolean;
 }
 
 export function toShareCardData(village: Village): ShareCardData {
   return {
-    capacity: village.capacity,
+    openHalves: village.openHalves,
     houses: village.houses.map((h) => ({ slot: h.slot, style: h.style, direction: h.direction })),
     complete: isFull(village),
   };

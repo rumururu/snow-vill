@@ -118,38 +118,36 @@ describe("VillageView (sample village)", () => {
     expect(screen.getByRole("button", { name: "마을 넓히기" })).toBeInTheDocument();
   });
 
-  it("free village: 6 lots + 3 locked; expanding adds 3 lots at a time", async () => {
+  it("free village: district 0 only; expanding opens 3 lots of the district the buyer picks", async () => {
     const user = userEvent.setup();
     const store = createVillageStore({ storage: null });
     const r = await store.createVillage("무료 마을");
     if (!r.ok) throw new Error();
     renderWithStore(<VillageView villageId={r.id} />, store);
-    expect(screen.getByTestId("milestone")).toHaveTextContent("친구 4명이 더 입주하면 「선물 썰매」");
-    expect(document.querySelectorAll('polygon[data-state="locked"]')).toHaveLength(3);
+    expect(document.querySelectorAll('polygon[data-state="empty"]')).toHaveLength(6);
+    expect(document.querySelectorAll('polygon[data-state="closed"]')).toHaveLength(9);
     for (let i = 0; i < 6; i++) act(() => void store.simulateFriendClaim(r.id));
     expect(screen.getByText("6/6")).toBeInTheDocument();
-    expect(screen.queryByTestId("milestone")).not.toBeInTheDocument();
-    await user.click(slotButton(6));
+    // Tap the closed Santa district on the map → the sheet opens with it selected.
+    await user.click(document.querySelector('polygon[data-district="2"]')!);
     const sheet = screen.getByRole("dialog", { name: "마을 넓히기" });
+    expect(within(sheet).getByRole("radio", { name: /산타 동네/ })).toBeChecked();
     expect(within(sheet).getByText(/₩2,900 → 12채 ₩6,900/)).toBeInTheDocument();
-    await user.click(within(sheet).getByRole("button", { name: "9채로 넓히기 (시뮬레이션)" }));
+    await user.click(within(sheet).getByRole("button", { name: "산타 동네 열기 (시뮬레이션)" }));
     expect(screen.getByText("6/9")).toBeInTheDocument();
-    expect(document.querySelectorAll('polygon[data-state="empty"]')).toHaveLength(3);
+    expect(Array.from(document.querySelectorAll('polygon[data-state="empty"]')).map((n) => n.getAttribute("data-slot")).sort()).toEqual(["12", "13", "14"]);
+    expect(document.querySelector('[data-facility="landmark_santa"]')).not.toBeNull();
+    // The Santa district's second half stays locked until it is opened too.
     expect(document.querySelectorAll('polygon[data-state="locked"]')).toHaveLength(3);
-    expect(screen.getByTestId("milestone")).toHaveTextContent("「아이스링크」");
   });
 
-  it("facilities appear on the map as the village grows", () => {
+  it("facilities come with their districts", () => {
     const store = createVillageStore({ storage: null });
     renderWithStore(<VillageView villageId="demo" />, store);
     const ids = () => Array.from(document.querySelectorAll("[data-facility]")).map((n) => n.getAttribute("data-facility")).sort();
-    expect(ids()).toEqual(["cathedral", "sled", "snowfamily", "tree"]);
-    act(() => void store.simulateFriendClaim("demo"));
-    act(() => void store.simulateFriendClaim("demo"));
-    expect(ids()).toContain("rink");
+    // Sample: districts 0 (snowman family), 1 (rink) and half of 2 (Santa) are open.
+    expect(ids()).toEqual(["cathedral", "decor_snowfamily", "landmark_rink", "landmark_santa", "tree"]);
     expect(document.querySelector("[data-aurora]")).toBeNull();
-    for (let i = 0; i < 3; i++) act(() => void store.simulateFriendClaim("demo"));
-    expect(ids()).toEqual(expect.arrayContaining(["santa"]));
   });
 
   it("shows a not-found state for unknown villages", () => {

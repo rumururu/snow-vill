@@ -1,16 +1,295 @@
 {
- "version": 2,
+ "version": 4,
  "legacyStyles": [
   "sage",
   "indigo"
  ],
  "maxHouses": 60,
- "rings": [
-  5.6,
-  8.2,
-  10.8
+ "groundAspect": 0.5,
+ "plotTiles": 8.2,
+ "plazaPlot": "plot_plaza",
+ "plaza": [
+  {
+   "id": "cathedral",
+   "sprite": "landmark_cathedral",
+   "at": [
+    -0.4,
+    -0.4
+   ],
+   "tiles": 3.4
+  },
+  {
+   "id": "tree",
+   "sprite": "tree_complete",
+   "at": [
+    2.1,
+    2.1
+   ],
+   "tiles": 1.2
+  }
  ],
- "groundAspect": 0.75,
+ "districts": [
+  {
+   "index": 0,
+   "id": "snowflake",
+   "name": {
+    "ko": "눈송이 동네",
+    "en": "Snowflake Lane"
+   },
+   "at": [
+    8.399999999999999,
+    0.0
+   ],
+   "grid": [
+    1,
+    0
+   ],
+   "plot": "plot_wood",
+   "size": 8.2,
+   "facility": {
+    "sprite": "decor_snowfamily",
+    "at": [
+     8.399999999999999,
+     0.0
+    ],
+    "tiles": 1.2
+   }
+  },
+  {
+   "index": 1,
+   "id": "rink",
+   "name": {
+    "ko": "링크 동네",
+    "en": "Ice Rink Lane"
+   },
+   "at": [
+    0.0,
+    8.399999999999999
+   ],
+   "grid": [
+    0,
+    1
+   ],
+   "plot": "plot_picket",
+   "size": 8.2,
+   "facility": {
+    "sprite": "landmark_rink",
+    "at": [
+     0.0,
+     8.399999999999999
+    ],
+    "tiles": 2.4
+   }
+  },
+  {
+   "index": 2,
+   "id": "santa",
+   "name": {
+    "ko": "산타 동네",
+    "en": "Santa's Lane"
+   },
+   "at": [
+    8.399999999999999,
+    8.399999999999999
+   ],
+   "grid": [
+    1,
+    1
+   ],
+   "plot": "plot_stone",
+   "size": 8.2,
+   "facility": {
+    "sprite": "landmark_santa",
+    "at": [
+     8.399999999999999,
+     8.399999999999999
+    ],
+    "tiles": 2.3
+   }
+  },
+  {
+   "index": 3,
+   "id": "rudolph",
+   "name": {
+    "ko": "루돌프 동네",
+    "en": "Rudolph Lane"
+   },
+   "at": [
+    -8.399999999999999,
+    0.0
+   ],
+   "grid": [
+    -1,
+    0
+   ],
+   "plot": "plot_wood",
+   "size": 8.2,
+   "facility": {
+    "sprite": "landmark_rudolph",
+    "at": [
+     -8.399999999999999,
+     0.0
+    ],
+    "tiles": 1.3
+   }
+  },
+  {
+   "index": 4,
+   "id": "sled",
+   "name": {
+    "ko": "썰매 동네",
+    "en": "Sled Lane"
+   },
+   "at": [
+    0.0,
+    -8.399999999999999
+   ],
+   "grid": [
+    0,
+    -1
+   ],
+   "plot": "plot_picket",
+   "size": 8.2,
+   "facility": {
+    "sprite": "decor_sled",
+    "at": [
+     0.0,
+     -8.399999999999999
+    ],
+    "tiles": 1.3
+   }
+  },
+  {
+   "index": 5,
+   "id": "forest",
+   "name": {
+    "ko": "숲속 동네",
+    "en": "Forest Lane"
+   },
+   "at": [
+    8.399999999999999,
+    -8.399999999999999
+   ],
+   "grid": [
+    1,
+    -1
+   ],
+   "plot": "plot_stone",
+   "size": 8.2,
+   "facility": {
+    "sprite": "prop_pines",
+    "at": [
+     8.399999999999999,
+     -8.399999999999999
+    ],
+    "tiles": 1.6
+   }
+  },
+  {
+   "index": 6,
+   "id": "lantern",
+   "name": {
+    "ko": "등불 동네",
+    "en": "Lantern Lane"
+   },
+   "at": [
+    -8.399999999999999,
+    8.399999999999999
+   ],
+   "grid": [
+    -1,
+    1
+   ],
+   "plot": "plot_wood",
+   "size": 8.2,
+   "facility": {
+    "sprite": "prop_lamp",
+    "at": [
+     -8.399999999999999,
+     8.399999999999999
+    ],
+    "tiles": 1.1
+   }
+  },
+  {
+   "index": 7,
+   "id": "starlight",
+   "name": {
+    "ko": "별빛 동네",
+    "en": "Starlight Lane"
+   },
+   "at": [
+    -8.399999999999999,
+    -8.399999999999999
+   ],
+   "grid": [
+    -1,
+    -1
+   ],
+   "plot": "plot_picket",
+   "size": 8.2,
+   "facility": {
+    "sprite": "prop_pines",
+    "at": [
+     -8.399999999999999,
+     -8.399999999999999
+    ],
+    "tiles": 1.4
+   }
+  },
+  {
+   "index": 8,
+   "id": "hill",
+   "name": {
+    "ko": "언덕 동네",
+    "en": "Hill Lane"
+   },
+   "at": [
+    16.799999999999997,
+    0.0
+   ],
+   "grid": [
+    2,
+    0
+   ],
+   "plot": "plot_stone",
+   "size": 8.2,
+   "facility": {
+    "sprite": "prop_pines",
+    "at": [
+     16.799999999999997,
+     0.0
+    ],
+    "tiles": 1.5
+   }
+  },
+  {
+   "index": 9,
+   "id": "lake",
+   "name": {
+    "ko": "호숫가 동네",
+    "en": "Lakeside Lane"
+   },
+   "at": [
+    0.0,
+    16.799999999999997
+   ],
+   "grid": [
+    0,
+    2
+   ],
+   "plot": "plot_wood",
+   "size": 8.2,
+   "facility": {
+    "sprite": "prop_lamp",
+    "at": [
+     0.0,
+     16.799999999999997
+    ],
+    "tiles": 1.1
+   }
+  }
+ ],
  "houses": {
   "wood": {
    "label": {
@@ -160,7 +439,8 @@
      0.1484,
      0.7891
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "house_wood_lit": {
    "src": "/assets/v2/house/house_wood_lit.webp",
@@ -224,63 +504,8 @@
      0.1094,
      0.793
     ]
-   ]
-  },
-  "house_brick_b": {
-   "src": "/assets/v2/house/house_brick_b.webp",
-   "anchor": [
-    0.4996,
-    0.7592
    ],
-   "tileWidth": 0.7137,
-   "bbox": [
-    0.1427,
-    0.0327,
-    0.8565,
-    0.937
-   ],
-   "hull": [
-    [
-     0.1445,
-     0.7422
-    ],
-    [
-     0.1758,
-     0.4414
-    ],
-    [
-     0.2773,
-     0.0586
-    ],
-    [
-     0.332,
-     0.0312
-    ],
-    [
-     0.6289,
-     0.1758
-    ],
-    [
-     0.8203,
-     0.457
-    ],
-    [
-     0.8516,
-     0.7812
-    ],
-    [
-     0.5156,
-     0.9297
-    ],
-    [
-     0.4648,
-     0.9336
-    ],
-    [
-     0.1641,
-     0.7891
-    ]
-   ]
+   "aspect": 1.0
   },
   "house_brick_a": {
    "src": "/assets/v2/house/house_brick_a.webp",
@@ -340,59 +565,65 @@
      0.1484,
      0.7969
     ]
-   ]
-  },
-  "house_bakery_b": {
-   "src": "/assets/v2/house/house_bakery_b.webp",
-   "anchor": [
-    0.4984,
-    0.7608
    ],
-   "tileWidth": 0.7241,
+   "aspect": 1.0
+  },
+  "house_brick_b": {
+   "src": "/assets/v2/house/house_brick_b.webp",
+   "anchor": [
+    0.4996,
+    0.7592
+   ],
+   "tileWidth": 0.7137,
    "bbox": [
-    0.1364,
-    0.0175,
-    0.8604,
-    0.9338
+    0.1427,
+    0.0327,
+    0.8565,
+    0.937
    ],
    "hull": [
     [
-     0.1367,
-     0.75
+     0.1445,
+     0.7422
     ],
     [
-     0.25,
-     0.0352
-    ],
-    [
-     0.3008,
-     0.0195
-    ],
-    [
-     0.6406,
-     0.1758
-    ],
-    [
-     0.8125,
+     0.1758,
      0.4414
     ],
     [
+     0.2773,
+     0.0586
+    ],
+    [
+     0.332,
+     0.0312
+    ],
+    [
+     0.6289,
+     0.1758
+    ],
+    [
+     0.8203,
+     0.457
+    ],
+    [
      0.8516,
-     0.7852
+     0.7812
     ],
     [
-     0.5273,
-     0.9219
-    ],
-    [
-     0.4648,
+     0.5156,
      0.9297
     ],
     [
-     0.1445,
-     0.7852
+     0.4648,
+     0.9336
+    ],
+    [
+     0.1641,
+     0.7891
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "house_bakery_a": {
    "src": "/assets/v2/house/house_bakery_a.webp",
@@ -452,59 +683,61 @@
      0.1406,
      0.7852
     ]
-   ]
-  },
-  "house_tower_b": {
-   "src": "/assets/v2/house/house_tower_b.webp",
-   "anchor": [
-    0.5004,
-    0.7624
    ],
-   "tileWidth": 0.7217,
+   "aspect": 1.0
+  },
+  "house_bakery_b": {
+   "src": "/assets/v2/house/house_bakery_b.webp",
+   "anchor": [
+    0.4984,
+    0.7608
+   ],
+   "tileWidth": 0.7241,
    "bbox": [
-    0.1396,
-    0.0279,
-    0.8612,
-    0.941
+    0.1364,
+    0.0175,
+    0.8604,
+    0.9338
    ],
    "hull": [
     [
-     0.1406,
-     0.7422
+     0.1367,
+     0.75
     ],
     [
-     0.1992,
-     0.0742
+     0.25,
+     0.0352
     ],
     [
-     0.3086,
-     0.0273
+     0.3008,
+     0.0195
     ],
     [
-     0.6875,
-     0.0977
+     0.6406,
+     0.1758
     ],
     [
-     0.8008,
-     0.4805
+     0.8125,
+     0.4414
     ],
     [
-     0.8555,
-     0.7812
+     0.8516,
+     0.7852
     ],
     [
-     0.5625,
-     0.918
+     0.5273,
+     0.9219
     ],
     [
-     0.4727,
-     0.9375
+     0.4648,
+     0.9297
     ],
     [
-     0.1602,
-     0.793
+     0.1445,
+     0.7852
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "house_tower_a": {
    "src": "/assets/v2/house/house_tower_a.webp",
@@ -568,55 +801,61 @@
      0.1367,
      0.8125
     ]
-   ]
-  },
-  "house_gingerbread_a": {
-   "src": "/assets/v2/house/house_gingerbread_a.webp",
-   "anchor": [
-    0.4988,
-    0.7648
    ],
-   "tileWidth": 0.7265,
+   "aspect": 1.0
+  },
+  "house_tower_b": {
+   "src": "/assets/v2/house/house_tower_b.webp",
+   "anchor": [
+    0.5004,
+    0.7624
+   ],
+   "tileWidth": 0.7217,
    "bbox": [
-    0.1356,
-    0.0136,
-    0.862,
-    0.9394
+    0.1396,
+    0.0279,
+    0.8612,
+    0.941
    ],
    "hull": [
     [
-     0.1367,
-     0.7539
+     0.1406,
+     0.7422
     ],
     [
-     0.168,
-     0.457
+     0.1992,
+     0.0742
     ],
     [
-     0.332,
-     0.2188
+     0.3086,
+     0.0273
     ],
     [
-     0.7227,
-     0.0156
+     0.6875,
+     0.0977
     ],
     [
-     0.7656,
-     0.0234
+     0.8008,
+     0.4805
     ],
     [
      0.8555,
-     0.7852
+     0.7812
     ],
     [
-     0.4805,
+     0.5625,
+     0.918
+    ],
+    [
+     0.4727,
      0.9375
     ],
     [
      0.1602,
-     0.8008
+     0.793
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "house_gingerbread_b": {
    "src": "/assets/v2/house/house_gingerbread_b.webp",
@@ -668,55 +907,57 @@
      0.1406,
      0.8047
     ]
-   ]
-  },
-  "house_timber_a": {
-   "src": "/assets/v2/house/house_timber_a.webp",
-   "anchor": [
-    0.5,
-    0.8014
    ],
-   "tileWidth": 0.7337,
+   "aspect": 1.0
+  },
+  "house_gingerbread_a": {
+   "src": "/assets/v2/house/house_gingerbread_a.webp",
+   "anchor": [
+    0.4988,
+    0.7648
+   ],
+   "tileWidth": 0.7265,
    "bbox": [
-    0.1332,
-    0.0056,
-    0.8668,
-    0.9825
+    0.1356,
+    0.0136,
+    0.862,
+    0.9394
    ],
    "hull": [
     [
-     0.1328,
-     0.793
+     0.1367,
+     0.7539
     ],
     [
-     0.1445,
-     0.3984
+     0.168,
+     0.457
     ],
     [
-     0.3047,
-     0.1445
+     0.332,
+     0.2188
     ],
     [
-     0.707,
-     0.0039
-    ],
-    [
-     0.7383,
+     0.7227,
      0.0156
     ],
     [
-     0.8594,
-     0.8242
+     0.7656,
+     0.0234
     ],
     [
-     0.4844,
-     0.9805
+     0.8555,
+     0.7852
     ],
     [
-     0.1445,
-     0.832
+     0.4805,
+     0.9375
+    ],
+    [
+     0.1602,
+     0.8008
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "house_timber_b": {
    "src": "/assets/v2/house/house_timber_b.webp",
@@ -772,7 +1013,57 @@
      0.1445,
      0.8242
     ]
-   ]
+   ],
+   "aspect": 1.0
+  },
+  "house_timber_a": {
+   "src": "/assets/v2/house/house_timber_a.webp",
+   "anchor": [
+    0.5,
+    0.8014
+   ],
+   "tileWidth": 0.7337,
+   "bbox": [
+    0.1332,
+    0.0056,
+    0.8668,
+    0.9825
+   ],
+   "hull": [
+    [
+     0.1328,
+     0.793
+    ],
+    [
+     0.1445,
+     0.3984
+    ],
+    [
+     0.3047,
+     0.1445
+    ],
+    [
+     0.707,
+     0.0039
+    ],
+    [
+     0.7383,
+     0.0156
+    ],
+    [
+     0.8594,
+     0.8242
+    ],
+    [
+     0.4844,
+     0.9805
+    ],
+    [
+     0.1445,
+     0.832
+    ]
+   ],
+   "aspect": 1.0
   },
   "house_aframe_a": {
    "src": "/assets/v2/house/house_aframe_a.webp",
@@ -828,7 +1119,8 @@
      0.125,
      0.8242
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "house_aframe_b": {
    "src": "/assets/v2/house/house_aframe_b.webp",
@@ -880,7 +1172,8 @@
      0.125,
      0.8203
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "house_windmill_a": {
    "src": "/assets/v2/house/house_windmill_a.webp",
@@ -924,7 +1217,8 @@
      0.2227,
      0.8125
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "house_windmill_b": {
    "src": "/assets/v2/house/house_windmill_b.webp",
@@ -980,7 +1274,8 @@
      0.1484,
      0.832
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "house_greenhouse_b": {
    "src": "/assets/v2/house/house_greenhouse_b.webp",
@@ -1036,7 +1331,8 @@
      0.1211,
      0.8242
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "house_greenhouse_a": {
    "src": "/assets/v2/house/house_greenhouse_a.webp",
@@ -1096,7 +1392,8 @@
      0.1133,
      0.8477
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "house_sage_lit": {
    "src": "/assets/v2/house/house_sage_lit.webp",
@@ -1160,7 +1457,8 @@
      0.1055,
      0.793
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "house_indigo_lit": {
    "src": "/assets/v2/house/house_indigo_lit.webp",
@@ -1224,7 +1522,8 @@
      0.1055,
      0.793
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "landmark_cathedral": {
    "src": "/assets/v2/facility/landmark_cathedral.webp",
@@ -1296,7 +1595,8 @@
      0.0977,
      0.8867
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "tree_complete": {
    "src": "/assets/v2/facility/tree_complete.webp",
@@ -1348,67 +1648,8 @@
      0.2422,
      0.875
     ]
-   ]
-  },
-  "decor_sled": {
-   "src": "/assets/v2/facility/decor_sled.webp",
-   "anchor": [
-    0.4972,
-    0.7073
    ],
-   "tileWidth": 0.6419,
-   "bbox": [
-    0.1579,
-    0.1818,
-    0.8389,
-    0.8557
-   ],
-   "hull": [
-    [
-     0.1562,
-     0.7383
-    ],
-    [
-     0.1797,
-     0.6016
-    ],
-    [
-     0.25,
-     0.3984
-    ],
-    [
-     0.4961,
-     0.207
-    ],
-    [
-     0.6094,
-     0.1836
-    ],
-    [
-     0.8086,
-     0.3945
-    ],
-    [
-     0.8359,
-     0.6875
-    ],
-    [
-     0.7891,
-     0.7227
-    ],
-    [
-     0.4727,
-     0.8516
-    ],
-    [
-     0.3242,
-     0.8242
-    ],
-    [
-     0.1758,
-     0.7656
-    ]
-   ]
+   "aspect": 1.0
   },
   "decor_snowfamily": {
    "src": "/assets/v2/facility/decor_snowfamily.webp",
@@ -1468,7 +1709,8 @@
      0.1758,
      0.6914
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "landmark_rink": {
    "src": "/assets/v2/facility/landmark_rink.webp",
@@ -1548,7 +1790,8 @@
      0.0,
      0.6367
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "landmark_santa": {
    "src": "/assets/v2/facility/landmark_santa.webp",
@@ -1612,7 +1855,8 @@
      0.0273,
      0.832
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "landmark_rudolph": {
    "src": "/assets/v2/facility/landmark_rudolph.webp",
@@ -1672,7 +1916,69 @@
      0.1758,
      0.8516
     ]
-   ]
+   ],
+   "aspect": 1.0
+  },
+  "decor_sled": {
+   "src": "/assets/v2/facility/decor_sled.webp",
+   "anchor": [
+    0.4972,
+    0.7073
+   ],
+   "tileWidth": 0.6419,
+   "bbox": [
+    0.1579,
+    0.1818,
+    0.8389,
+    0.8557
+   ],
+   "hull": [
+    [
+     0.1562,
+     0.7383
+    ],
+    [
+     0.1797,
+     0.6016
+    ],
+    [
+     0.25,
+     0.3984
+    ],
+    [
+     0.4961,
+     0.207
+    ],
+    [
+     0.6094,
+     0.1836
+    ],
+    [
+     0.8086,
+     0.3945
+    ],
+    [
+     0.8359,
+     0.6875
+    ],
+    [
+     0.7891,
+     0.7227
+    ],
+    [
+     0.4727,
+     0.8516
+    ],
+    [
+     0.3242,
+     0.8242
+    ],
+    [
+     0.1758,
+     0.7656
+    ]
+   ],
+   "aspect": 1.0
   },
   "prop_pines": {
    "src": "/assets/v2/prop/prop_pines.webp",
@@ -1736,7 +2042,8 @@
      0.1289,
      0.8125
     ]
-   ]
+   ],
+   "aspect": 1.0
   },
   "prop_lamp": {
    "src": "/assets/v2/prop/prop_lamp.webp",
@@ -1788,81 +2095,226 @@
      0.3633,
      0.9219
     ]
-   ]
+   ],
+   "aspect": 1.0
+  },
+  "plot_wood": {
+   "src": "/assets/v2/plot/plot_wood.webp",
+   "anchor": [
+    0.4997,
+    0.5344
+   ],
+   "tileWidth": 0.9262,
+   "bbox": [
+    0.0366,
+    0.0101,
+    0.9628,
+    0.9684
+   ],
+   "hull": [
+    [
+     0.0352,
+     0.5312
+    ],
+    [
+     0.0742,
+     0.3789
+    ],
+    [
+     0.125,
+     0.2852
+    ],
+    [
+     0.5,
+     0.0117
+    ],
+    [
+     0.8633,
+     0.2852
+    ],
+    [
+     0.918,
+     0.3906
+    ],
+    [
+     0.9609,
+     0.5352
+    ],
+    [
+     0.957,
+     0.5664
+    ],
+    [
+     0.918,
+     0.6055
+    ],
+    [
+     0.4961,
+     0.9648
+    ],
+    [
+     0.0625,
+     0.5938
+    ],
+    [
+     0.0391,
+     0.5703
+    ]
+   ],
+   "aspect": 0.5
+  },
+  "plot_picket": {
+   "src": "/assets/v2/plot/plot_picket.webp",
+   "anchor": [
+    0.4997,
+    0.5366
+   ],
+   "tileWidth": 0.9273,
+   "bbox": [
+    0.0361,
+    0.0056,
+    0.9634,
+    0.9741
+   ],
+   "hull": [
+    [
+     0.0352,
+     0.5312
+    ],
+    [
+     0.0977,
+     0.3125
+    ],
+    [
+     0.4922,
+     0.0039
+    ],
+    [
+     0.8867,
+     0.3086
+    ],
+    [
+     0.9609,
+     0.543
+    ],
+    [
+     0.9375,
+     0.5898
+    ],
+    [
+     0.4961,
+     0.9727
+    ],
+    [
+     0.0703,
+     0.6016
+    ],
+    [
+     0.0391,
+     0.5703
+    ]
+   ],
+   "aspect": 0.5
+  },
+  "plot_stone": {
+   "src": "/assets/v2/plot/plot_stone.webp",
+   "anchor": [
+    0.5,
+    0.5197
+   ],
+   "tileWidth": 0.9233,
+   "bbox": [
+    0.0383,
+    0.0169,
+    0.9617,
+    0.9549
+   ],
+   "hull": [
+    [
+     0.0391,
+     0.5078
+    ],
+    [
+     0.0859,
+     0.3086
+    ],
+    [
+     0.5,
+     0.0156
+    ],
+    [
+     0.8906,
+     0.2969
+    ],
+    [
+     0.957,
+     0.5508
+    ],
+    [
+     0.4961,
+     0.9531
+    ],
+    [
+     0.0508,
+     0.5664
+    ]
+   ],
+   "aspect": 0.5
+  },
+  "plot_plaza": {
+   "src": "/assets/v2/plot/plot_plaza.webp",
+   "anchor": [
+    0.498,
+    0.5209
+   ],
+   "tileWidth": 0.9239,
+   "bbox": [
+    0.0361,
+    0.0045,
+    0.96,
+    0.9605
+   ],
+   "hull": [
+    [
+     0.0352,
+     0.5156
+    ],
+    [
+     0.125,
+     0.2578
+    ],
+    [
+     0.5,
+     0.0039
+    ],
+    [
+     0.8555,
+     0.2578
+    ],
+    [
+     0.918,
+     0.3984
+    ],
+    [
+     0.957,
+     0.5508
+    ],
+    [
+     0.4922,
+     0.957
+    ],
+    [
+     0.0664,
+     0.582
+    ],
+    [
+     0.0352,
+     0.5469
+    ]
+   ],
+   "aspect": 0.5
   }
  },
- "facilities": [
-  {
-   "id": "cathedral",
-   "sprite": "landmark_cathedral",
-   "at": [
-    0.0,
-    0.0
-   ],
-   "tiles": 3.2,
-   "minHouses": 0
-  },
-  {
-   "id": "tree",
-   "sprite": "tree_complete",
-   "at": [
-    0.2,
-    3.2
-   ],
-   "tiles": 1.1,
-   "minHouses": 0
-  },
-  {
-   "id": "sled",
-   "sprite": "decor_sled",
-   "at": [
-    2.5,
-    2.4
-   ],
-   "tiles": 0.9,
-   "minHouses": 4
-  },
-  {
-   "id": "snowfamily",
-   "sprite": "decor_snowfamily",
-   "at": [
-    -2.4,
-    2.6
-   ],
-   "tiles": 0.9,
-   "minHouses": 6
-  },
-  {
-   "id": "rink",
-   "sprite": "landmark_rink",
-   "at": [
-    -3.4,
-    0.2
-   ],
-   "tiles": 2.6,
-   "minHouses": 9
-  },
-  {
-   "id": "santa",
-   "sprite": "landmark_santa",
-   "at": [
-    3.3,
-    -0.6
-   ],
-   "tiles": 2.0,
-   "minHouses": 12
-  },
-  {
-   "id": "rudolph",
-   "sprite": "landmark_rudolph",
-   "at": [
-    0.3,
-    -3.3
-   ],
-   "tiles": 1.0,
-   "minHouses": 15
-  }
- ],
  "auroraMinHouses": 18,
  "props": {
   "pines": "prop_pines",
@@ -1870,544 +2322,604 @@
  },
  "lots": [
   {
+   "slot": 0,
+   "district": 0,
+   "half": 0,
    "at": [
-    3.96,
-    -3.96
+    6.05,
+    2.35
    ],
-   "ring": 0,
-   "facing": 0,
-   "slot": 0
+   "facing": 2
   },
   {
+   "slot": 1,
+   "district": 0,
+   "half": 0,
    "at": [
-    -6.145,
-    0.991
+    6.05,
+    -2.35
    ],
-   "ring": 0,
-   "facing": 1,
-   "slot": 1
+   "facing": 0
   },
   {
+   "slot": 2,
+   "district": 0,
+   "half": 0,
    "at": [
-    6.672,
-    4.91
+    8.4,
+    2.35
    ],
-   "ring": 0,
-   "facing": 3,
-   "slot": 2
+   "facing": 2
   },
   {
+   "slot": 3,
+   "district": 0,
+   "half": 1,
    "at": [
-    -4.91,
-    -6.672
+    8.4,
+    -2.35
    ],
-   "ring": 0,
-   "facing": 0,
-   "slot": 3
+   "facing": 0
   },
   {
+   "slot": 4,
+   "district": 0,
+   "half": 1,
    "at": [
-    -0.991,
-    6.145
+    10.75,
+    2.35
    ],
-   "ring": 0,
-   "facing": 2,
-   "slot": 4
+   "facing": 2
   },
   {
+   "slot": 5,
+   "district": 0,
+   "half": 1,
    "at": [
-    6.145,
-    -0.991
+    10.75,
+    -2.35
    ],
-   "ring": 0,
-   "facing": 3,
-   "slot": 5
+   "facing": 0
   },
   {
+   "slot": 6,
+   "district": 1,
+   "half": 0,
    "at": [
-    -7.113,
-    -2.175
+    2.35,
+    6.05
    ],
-   "ring": 0,
-   "facing": 1,
-   "slot": 6
+   "facing": 3
   },
   {
+   "slot": 7,
+   "district": 1,
+   "half": 0,
    "at": [
-    4.91,
-    6.672
+    -2.35,
+    6.05
    ],
-   "ring": 0,
-   "facing": 2,
-   "slot": 7
+   "facing": 1
   },
   {
+   "slot": 8,
+   "district": 1,
+   "half": 0,
    "at": [
-    0.991,
-    -6.145
+    2.35,
+    8.4
    ],
-   "ring": 0,
-   "facing": 0,
-   "slot": 8
+   "facing": 3
   },
   {
+   "slot": 9,
+   "district": 1,
+   "half": 1,
    "at": [
-    -3.96,
-    3.96
+    -2.35,
+    8.4
    ],
-   "ring": 0,
-   "facing": 1,
-   "slot": 9
+   "facing": 1
   },
   {
+   "slot": 10,
+   "district": 1,
+   "half": 1,
    "at": [
-    7.113,
-    2.175
+    2.35,
+    10.75
    ],
-   "ring": 0,
-   "facing": 3,
-   "slot": 10
+   "facing": 3
   },
   {
+   "slot": 11,
+   "district": 1,
+   "half": 1,
    "at": [
-    2.175,
-    7.113
+    -2.35,
+    10.75
    ],
-   "ring": 0,
-   "facing": 2,
-   "slot": 11
+   "facing": 1
   },
   {
+   "slot": 12,
+   "district": 2,
+   "half": 0,
    "at": [
-    -2.175,
-    -7.113
+    6.05,
+    10.75
    ],
-   "ring": 0,
-   "facing": 0,
-   "slot": 12
+   "facing": 1
   },
   {
+   "slot": 13,
+   "district": 2,
+   "half": 0,
    "at": [
-    -6.672,
-    -4.91
+    6.05,
+    6.05
    ],
-   "ring": 0,
-   "facing": 1,
-   "slot": 13
+   "facing": 0
   },
   {
+   "slot": 14,
+   "district": 2,
+   "half": 0,
    "at": [
-    7.087,
-    -4.366
+    8.4,
+    10.75
    ],
-   "ring": 1,
-   "facing": 3,
-   "slot": 14
+   "facing": 2
   },
   {
+   "slot": 15,
+   "district": 2,
+   "half": 1,
    "at": [
-    -10.25,
-    -2.05
+    8.4,
+    6.05
    ],
-   "ring": 1,
-   "facing": 1,
-   "slot": 15
+   "facing": 0
   },
   {
+   "slot": 16,
+   "district": 2,
+   "half": 1,
    "at": [
-    9.497,
-    7.683
+    10.75,
+    10.75
    ],
-   "ring": 1,
-   "facing": 3,
-   "slot": 16
+   "facing": 2
   },
   {
+   "slot": 17,
+   "district": 2,
+   "half": 1,
    "at": [
-    -2.05,
-    -10.25
+    10.75,
+    6.05
    ],
-   "ring": 1,
-   "facing": 0,
-   "slot": 17
+   "facing": 0
   },
   {
+   "slot": 18,
+   "district": 3,
+   "half": 0,
    "at": [
-    -4.366,
-    7.087
+    -6.05,
+    -2.35
    ],
-   "ring": 1,
-   "facing": 2,
-   "slot": 18
+   "facing": 0
   },
   {
+   "slot": 19,
+   "district": 3,
+   "half": 0,
    "at": [
-    9.115,
-    -1.218
+    -6.05,
+    2.35
    ],
-   "ring": 1,
-   "facing": 3,
-   "slot": 19
+   "facing": 2
   },
   {
+   "slot": 20,
+   "district": 3,
+   "half": 0,
    "at": [
-    -9.497,
-    -7.683
+    -8.4,
+    -2.35
    ],
-   "ring": 1,
-   "facing": 1,
-   "slot": 20
+   "facing": 0
   },
   {
+   "slot": 21,
+   "district": 3,
+   "half": 1,
    "at": [
-    5.117,
-    10.382
+    -8.4,
+    2.35
    ],
-   "ring": 1,
-   "facing": 2,
-   "slot": 21
+   "facing": 2
   },
   {
+   "slot": 22,
+   "district": 3,
+   "half": 1,
    "at": [
-    1.218,
-    -9.115
+    -10.75,
+    -2.35
    ],
-   "ring": 1,
-   "facing": 0,
-   "slot": 22
+   "facing": 0
   },
   {
+   "slot": 23,
+   "district": 3,
+   "half": 1,
    "at": [
-    -9.115,
-    1.218
+    -10.75,
+    2.35
    ],
-   "ring": 1,
-   "facing": 1,
-   "slot": 23
+   "facing": 2
   },
   {
+   "slot": 24,
+   "district": 4,
+   "half": 0,
    "at": [
-    10.382,
-    5.117
+    -2.35,
+    -6.05
    ],
-   "ring": 1,
-   "facing": 3,
-   "slot": 24
+   "facing": 1
   },
   {
+   "slot": 25,
+   "district": 4,
+   "half": 0,
    "at": [
-    -7.683,
-    -9.497
+    2.35,
+    -6.05
    ],
-   "ring": 1,
-   "facing": 0,
-   "slot": 25
+   "facing": 3
   },
   {
+   "slot": 26,
+   "district": 4,
+   "half": 0,
    "at": [
-    -1.218,
-    9.115
+    -2.35,
+    -8.4
    ],
-   "ring": 1,
-   "facing": 2,
-   "slot": 26
+   "facing": 1
   },
   {
+   "slot": 27,
+   "district": 4,
+   "half": 1,
    "at": [
-    -10.382,
-    -5.117
+    2.35,
+    -8.4
    ],
-   "ring": 1,
-   "facing": 1,
-   "slot": 27
+   "facing": 3
   },
   {
+   "slot": 28,
+   "district": 4,
+   "half": 1,
    "at": [
-    7.683,
-    9.497
+    -2.35,
+    -10.75
    ],
-   "ring": 1,
-   "facing": 2,
-   "slot": 28
+   "facing": 1
   },
   {
+   "slot": 29,
+   "district": 4,
+   "half": 1,
    "at": [
-    -7.087,
-    4.366
+    2.35,
+    -10.75
    ],
-   "ring": 1,
-   "facing": 1,
-   "slot": 29
+   "facing": 3
   },
   {
+   "slot": 30,
+   "district": 5,
+   "half": 0,
    "at": [
-    10.25,
-    2.05
+    6.05,
+    -6.05
    ],
-   "ring": 1,
-   "facing": 3,
-   "slot": 30
+   "facing": 1
   },
   {
+   "slot": 31,
+   "district": 5,
+   "half": 0,
    "at": [
-    2.05,
-    10.25
+    6.05,
+    -10.75
    ],
-   "ring": 1,
-   "facing": 2,
-   "slot": 31
+   "facing": 0
   },
   {
+   "slot": 32,
+   "district": 5,
+   "half": 0,
    "at": [
-    4.366,
-    -7.087
+    8.4,
+    -6.05
    ],
-   "ring": 1,
-   "facing": 0,
-   "slot": 32
+   "facing": 2
   },
   {
+   "slot": 33,
+   "district": 5,
+   "half": 1,
    "at": [
-    -5.117,
-    -10.382
+    8.4,
+    -10.75
    ],
-   "ring": 1,
-   "facing": 0,
-   "slot": 33
+   "facing": 0
   },
   {
+   "slot": 34,
+   "district": 5,
+   "half": 1,
    "at": [
-    7.637,
-    -7.637
+    10.75,
+    -6.05
    ],
-   "ring": 2,
-   "facing": 0,
-   "slot": 34
+   "facing": 2
   },
   {
+   "slot": 35,
+   "district": 5,
+   "half": 1,
    "at": [
-    -13.312,
-    -1.88
+    10.75,
+    -10.75
    ],
-   "ring": 2,
-   "facing": 1,
-   "slot": 35
+   "facing": 0
   },
   {
+   "slot": 36,
+   "district": 6,
+   "half": 0,
    "at": [
-    12.292,
-    10.451
+    -6.05,
+    6.05
    ],
-   "ring": 2,
-   "facing": 3,
-   "slot": 36
+   "facing": 0
   },
   {
+   "slot": 37,
+   "district": 6,
+   "half": 0,
    "at": [
-    -5.089,
-    -13.766
+    -6.05,
+    10.75
    ],
-   "ring": 2,
-   "facing": 0,
-   "slot": 37
+   "facing": 2
   },
   {
+   "slot": 38,
+   "district": 6,
+   "half": 0,
    "at": [
-    -4.673,
-    10.156
+    -8.4,
+    6.05
    ],
-   "ring": 2,
-   "facing": 2,
-   "slot": 38
+   "facing": 0
   },
   {
+   "slot": 39,
+   "district": 6,
+   "half": 1,
    "at": [
-    12.085,
-    -1.439
+    -8.4,
+    10.75
    ],
-   "ring": 2,
-   "facing": 3,
-   "slot": 39
+   "facing": 2
   },
   {
+   "slot": 40,
+   "district": 6,
+   "half": 1,
    "at": [
-    -13.419,
-    -8.003
+    -10.75,
+    6.05
    ],
-   "ring": 2,
-   "facing": 1,
-   "slot": 40
+   "facing": 0
   },
   {
+   "slot": 41,
+   "district": 6,
+   "half": 1,
    "at": [
-    8.003,
-    13.419
+    -10.75,
+    10.75
    ],
-   "ring": 2,
-   "facing": 2,
-   "slot": 41
+   "facing": 1
   },
   {
+   "slot": 42,
+   "district": 7,
+   "half": 0,
    "at": [
-    1.439,
-    -12.085
+    -6.05,
+    -10.75
    ],
-   "ring": 2,
-   "facing": 0,
-   "slot": 42
+   "facing": 0
   },
   {
+   "slot": 43,
+   "district": 7,
+   "half": 0,
    "at": [
-    -10.156,
-    4.673
+    -6.05,
+    -6.05
    ],
-   "ring": 2,
-   "facing": 1,
-   "slot": 43
+   "facing": 2
   },
   {
+   "slot": 44,
+   "district": 7,
+   "half": 0,
    "at": [
-    13.766,
-    5.089
+    -8.4,
+    -10.75
    ],
-   "ring": 2,
-   "facing": 3,
-   "slot": 44
+   "facing": 0
   },
   {
+   "slot": 45,
+   "district": 7,
+   "half": 1,
    "at": [
-    -10.451,
-    -12.292
+    -8.4,
+    -6.05
    ],
-   "ring": 2,
-   "facing": 0,
-   "slot": 45
+   "facing": 2
   },
   {
+   "slot": 46,
+   "district": 7,
+   "half": 1,
    "at": [
-    1.88,
-    13.312
+    -10.75,
+    -10.75
    ],
-   "ring": 2,
-   "facing": 2,
-   "slot": 46
+   "facing": 0
   },
   {
+   "slot": 47,
+   "district": 7,
+   "half": 1,
    "at": [
-    10.451,
-    12.292
+    -10.75,
+    -6.05
    ],
-   "ring": 2,
-   "facing": 2,
-   "slot": 47
+   "facing": 1
   },
   {
+   "slot": 48,
+   "district": 8,
+   "half": 0,
    "at": [
-    -1.88,
-    -13.312
+    14.45,
+    2.35
    ],
-   "ring": 2,
-   "facing": 0,
-   "slot": 48
+   "facing": 2
   },
   {
+   "slot": 49,
+   "district": 8,
+   "half": 0,
    "at": [
-    -7.637,
-    7.637
+    14.45,
+    -2.35
    ],
-   "ring": 2,
-   "facing": 1,
-   "slot": 49
+   "facing": 0
   },
   {
+   "slot": 50,
+   "district": 8,
+   "half": 0,
    "at": [
-    13.312,
-    1.88
+    16.8,
+    2.35
    ],
-   "ring": 2,
-   "facing": 3,
-   "slot": 50
+   "facing": 2
   },
   {
+   "slot": 51,
+   "district": 8,
+   "half": 1,
    "at": [
-    -12.292,
-    -10.451
+    16.8,
+    -2.35
    ],
-   "ring": 2,
-   "facing": 1,
-   "slot": 51
+   "facing": 0
   },
   {
+   "slot": 52,
+   "district": 8,
+   "half": 1,
    "at": [
-    5.089,
-    13.766
+    19.15,
+    2.35
    ],
-   "ring": 2,
-   "facing": 2,
-   "slot": 52
+   "facing": 3
   },
   {
+   "slot": 53,
+   "district": 8,
+   "half": 1,
    "at": [
-    4.673,
-    -10.156
+    19.15,
+    -2.35
    ],
-   "ring": 2,
-   "facing": 0,
-   "slot": 53
+   "facing": 3
   },
   {
+   "slot": 54,
+   "district": 9,
+   "half": 0,
    "at": [
-    -12.085,
-    1.439
+    2.35,
+    14.45
    ],
-   "ring": 2,
-   "facing": 1,
-   "slot": 54
+   "facing": 3
   },
   {
+   "slot": 55,
+   "district": 9,
+   "half": 0,
    "at": [
-    13.419,
-    8.003
+    -2.35,
+    14.45
    ],
-   "ring": 2,
-   "facing": 3,
-   "slot": 55
+   "facing": 1
   },
   {
+   "slot": 56,
+   "district": 9,
+   "half": 0,
    "at": [
-    -8.003,
-    -13.419
+    2.35,
+    16.8
    ],
-   "ring": 2,
-   "facing": 0,
-   "slot": 56
+   "facing": 3
   },
   {
+   "slot": 57,
+   "district": 9,
+   "half": 1,
    "at": [
-    -1.439,
-    12.085
+    -2.35,
+    16.8
    ],
-   "ring": 2,
-   "facing": 2,
-   "slot": 57
+   "facing": 1
   },
   {
+   "slot": 58,
+   "district": 9,
+   "half": 1,
    "at": [
-    10.156,
-    -4.673
+    2.35,
+    19.15
    ],
-   "ring": 2,
-   "facing": 3,
-   "slot": 58
+   "facing": 2
   },
   {
+   "slot": 59,
+   "district": 9,
+   "half": 1,
    "at": [
-    -13.766,
-    -5.089
+    -2.35,
+    19.15
    ],
-   "ring": 2,
-   "facing": 1,
-   "slot": 59
+   "facing": 2
   }
  ],
  "rinkFrames": [

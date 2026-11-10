@@ -1,33 +1,31 @@
 "use client";
 
 /**
- * Expandable village art (SVG): sky, snow ground sized to the village, ring paths, edge pines,
- * facilities unlocked by house count, houses facing their chosen direction, and empty / locked lots
- * drawn on the ground (dashed outline + "+", no grey houses). Never shows photos; names only when
- * `names` is set (the share card passes none).
+ * Village art (SVG): the cathedral plaza island in the middle, district islands ("동네") joined to it by
+ * paths, a faint outline + name for districts that are not open yet, facilities, houses facing their
+ * chosen direction, and empty lots drawn on the ground (dashed outline + "+"; no grey houses).
+ * Never shows photos; names only when `names` is set (the share card passes none).
  */
 import { useEffect, useState } from "react";
 import {
   AURORA_MIN_HOUSES,
-  groundEllipse,
-  groundRadius,
-  GROUND_ASPECT,
+  DISTRICTS,
   HOUSE_TILES,
   houseView,
-  lotsView,
   LOTS,
+  lotsView,
   mapOrder,
   placeSprite,
+  PLAZA_PLOT,
+  PLOT_TILES,
   project,
-  RING_RADII,
   RINK_FRAMES,
   SPRITES,
   TILE,
   tileDiamond,
-  visibleLots,
   type Point,
 } from "@/lib/map";
-import type { Direction, HouseStyle } from "@/lib/village";
+import { districtState, type Direction, type HouseStyle } from "@/lib/village";
 
 export interface MapHouseArt {
   slot: number;
@@ -38,12 +36,14 @@ export interface MapHouseArt {
 }
 
 interface Props {
-  capacity: number;
+  openHalves: number;
   houses: MapHouseArt[];
-  /** viewBox [x, y, w, h] in world units; defaults to fitting the whole village. */
+  /** viewBox [x, y, w, h] in world units; defaults to framing the opened districts. */
   view?: [number, number, number, number];
   /** Show name chips over houses. */
   names?: boolean;
+  /** Show closed districts as outlines with their names. */
+  ghosts?: boolean;
   igniteSlot?: number | null;
   className?: string;
   title?: string;
@@ -53,9 +53,8 @@ interface Props {
 
 const pts = (p: Point[]) => p.map((q) => `${q.x.toFixed(1)},${q.y.toFixed(1)}`).join(" ");
 
-
-export function defaultView(capacity: number, houses: { slot: number }[] = []): [number, number, number, number] {
-  return lotsView({ capacity, houses: houses as never });
+export function defaultView(openHalves: number): [number, number, number, number] {
+  return lotsView({ openHalves });
 }
 
 function useRinkFrame(): string | null {
@@ -69,78 +68,81 @@ function useRinkFrame(): string | null {
   return RINK_FRAMES.length ? RINK_FRAMES[i] : null;
 }
 
-/** Deterministic pine positions around the ground rim (outside the outermost visible ring). */
-function rimPines(radius: number): Array<{ i: number; j: number; s: number }> {
-  const out: Array<{ i: number; j: number; s: number }> = [];
-  const n = Math.round(radius * 1.1);
-  for (let k = 0; k < n; k++) {
-    const a = (k / n) * Math.PI * 2 + 0.37;
-    const r = radius - 0.45 + ((k * 7) % 5) * 0.08; // on the rim, clear of the outer ring
-    const u = r * Math.SQRT2 * Math.cos(a);
-    const v = r * Math.SQRT2 * Math.sin(a) * (GROUND_ASPECT / 0.5);
-    out.push({ i: (u + v) / 2, j: (v - u) / 2, s: 0.85 + ((k * 13) % 7) * 0.05 });
-  }
-  return out;
-}
-
-/** Deterministic stars, hills and snowfield around the village plateau. */
-function Backdrop({ ry, vb }: { ry: number; vb: [number, number, number, number] }) {
-  const horizon = -ry * 0.62;
+function Backdrop({ vb }: { vb: [number, number, number, number] }) {
   const left = vb[0] - vb[2];
   const right = vb[0] + vb[2] * 2;
+  const horizon = vb[1] + vb[3] * 0.22;
   const stars = Array.from({ length: 70 }, (_, k) => ({
-    x: vb[0] + ((k * 7919) % 1000) / 1000 * vb[2],
-    y: vb[1] + ((k * 104729) % 1000) / 1000 * Math.max(10, horizon - vb[1] - 30),
-    r: 1.2 + ((k * 31) % 5) * 0.5,
+    x: vb[0] + (((k * 7919) % 1000) / 1000) * vb[2],
+    y: vb[1] + (((k * 104729) % 1000) / 1000) * Math.max(10, horizon - vb[1] - 20),
+    r: 1.4 + ((k * 31) % 5) * 0.6,
   }));
   const hill = (base: number, amp: number, phase: number) => {
-    const pts: string[] = [];
+    const p: string[] = [];
     for (let x = left; x <= right; x += 40) {
-      const y = base - amp * (0.55 + 0.45 * Math.sin(x / 170 + phase) * Math.cos(x / 410 + phase * 2));
-      pts.push(`${x.toFixed(0)},${y.toFixed(0)}`);
+      const y = base - amp * (0.55 + 0.45 * Math.sin(x / 190 + phase) * Math.cos(x / 430 + phase * 2));
+      p.push(`${x.toFixed(0)},${y.toFixed(0)}`);
     }
-    return `M ${left},${base + 400} L ${pts.join(" L ")} L ${right},${base + 400} Z`;
+    return `M ${left},${base + 400} L ${p.join(" L ")} L ${right},${base + 400} Z`;
   };
   return (
     <g pointerEvents="none" aria-hidden>
       {stars.map((st, k) => (
         <circle key={k} cx={st.x} cy={st.y} r={st.r} fill="#FFFFFF" opacity={0.35 + (k % 4) * 0.15} />
       ))}
-      <path d={hill(horizon, 150, 0.4)} fill="#3B4C74" />
-      <path d={hill(horizon + 40, 95, 1.7)} fill="#56688F" />
-      {/* Snowfield from the horizon down past the bottom of the view. */}
-      <rect x={left} y={horizon + 60} width={right - left} height={Math.max(200, vb[1] + vb[3] - horizon) + 400} fill="url(#sv-field)" />
+      <path d={hill(horizon, 160, 0.4)} fill="#3B4C74" />
+      <path d={hill(horizon + 45, 100, 1.7)} fill="#56688F" />
+      <rect x={left} y={horizon + 70} width={right - left} height={Math.abs(vb[3]) * 4} fill="url(#sv-field)" />
     </g>
   );
 }
 
-export function VillageMapArt({ capacity, houses, view, names = false, igniteSlot = null, className, title, frame }: Props) {
+/** A fenced snowy plot (art). Closed districts: faded, with the district name and a lock. */
+function Plot({ sprite, at, ghost, label, index }: { sprite: string; at: [number, number]; ghost: boolean; label?: string; index: number }) {
+  const r = placeSprite(sprite, at[0], at[1], PLOT_TILES);
+  const c = project(at[0], at[1]);
+  return (
+    <g data-plot={index} data-district-ghost={ghost ? index : undefined} pointerEvents="none" opacity={ghost ? 0.38 : 1}>
+      <image href={SPRITES[sprite].src} x={r.x} y={r.y} width={r.width} height={r.height} preserveAspectRatio="none"
+        style={ghost ? { filter: "grayscale(0.6) brightness(1.08)" } : undefined} />
+      {ghost && label && (
+        <g transform={`translate(${c.x} ${c.y})`} opacity={2.4}>
+          <rect x={-112} y={-27} width={224} height={54} rx={27} fill="#1C284A" opacity="0.85" />
+          <text x={0} y={10} textAnchor="middle" fontSize={28} fontWeight={700} fill="#F6F0E4">
+            🔒 {label}
+          </text>
+        </g>
+      )}
+    </g>
+  );
+}
+
+export function VillageMapArt({ openHalves, houses, view, names = false, ghosts = true, igniteSlot = null, className, title, frame }: Props) {
   const rinkFrame = useRinkFrame();
   const bySlot = new Map(houses.map((h) => [h.slot, h]));
-  const village = { capacity, houses: houses as never[] } as { capacity: number; houses: { slot: number }[] };
-  const lots = visibleLots(village as never);
-  const radius = groundRadius(lots);
-  const { rx, ry } = groundEllipse(radius);
-  const vb = view ?? defaultView(capacity, houses);
+  const village = { openHalves, houses: houses as never[] };
+  const vb = view ?? defaultView(openHalves);
   const aurora = houses.length >= AURORA_MIN_HOUSES;
-  const outerRing = Math.max(0, ...lots.map((l) => l.ring));
   const order = mapOrder(village as never);
-  const pines = rimPines(radius);
-  const pinesBack = pines.filter((p) => p.i + p.j < 0);
-  const pinesFront = pines.filter((p) => p.i + p.j >= 0);
+  const open = DISTRICTS.filter((d) => districtState(openHalves, d.index) > 0);
+  const closed = DISTRICTS.filter((d) => districtState(openHalves, d.index) === 0);
+  // Second halves still closed inside an open district: dashed, locked lots.
+  const halfLocked = LOTS.filter((l) => districtState(openHalves, l.district) === 1 && l.half === 1);
 
-  const pine = (p: { i: number; j: number; s: number }, k: number) => {
-    const r = placeSprite("prop_pines", p.i, p.j, p.s);
-    return <image key={`pine-${k}`} href={SPRITES.prop_pines.src} x={r.x} y={r.y} width={r.width} height={r.height} preserveAspectRatio="none" />;
-  };
+  const layered = order.map((e) => ({ kind: "entity" as const, e, depth: e.depth }));
 
   return (
     <svg viewBox={vb.join(" ")} {...frame} className={className} role="img" aria-label={title ?? "겨울 마을 지도"} xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="sv-sky" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#1C284A" />
-          <stop offset="0.55" stopColor="#3A4E7A" />
+          <stop offset="0.6" stopColor="#3A4E7A" />
           <stop offset="1" stopColor="#7C8DB0" />
+        </linearGradient>
+        <linearGradient id="sv-field" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#B7C5DA" />
+          <stop offset="0.12" stopColor="#D3DDEA" />
+          <stop offset="1" stopColor="#E9EFF6" />
         </linearGradient>
         <linearGradient id="sv-aurora" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="#5FE3B0" stopOpacity="0" />
@@ -148,55 +150,62 @@ export function VillageMapArt({ capacity, houses, view, names = false, igniteSlo
           <stop offset="0.7" stopColor="#8FB7FF" stopOpacity="0.45" />
           <stop offset="1" stopColor="#C58CFF" stopOpacity="0" />
         </linearGradient>
-        <linearGradient id="sv-field" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#B7C5DA" />
-          <stop offset="0.25" stopColor="#DDE6F0" />
-          <stop offset="1" stopColor="#F3F6FA" />
-        </linearGradient>
-        <radialGradient id="sv-snow" cx="0.5" cy="0.45" r="0.6">
+        <radialGradient id="sv-snow" cx="0.5" cy="0.42" r="0.62">
           <stop offset="0" stopColor="#FFFFFF" />
-          <stop offset="0.8" stopColor="#EEF3F8" />
-          <stop offset="1" stopColor="#D5DEEA" />
+          <stop offset="0.8" stopColor="#F1F5FA" />
+          <stop offset="1" stopColor="#DCE4EE" />
         </radialGradient>
       </defs>
-      {/* Sky fills whatever the camera shows. */}
       <rect x={vb[0] - 4000} y={vb[1] - 4000} width={vb[2] + 8000} height={vb[3] + 8000} fill="url(#sv-sky)" />
+      <Backdrop vb={vb} />
       {aurora && (
         <path
-          d={`M ${-rx * 1.3} ${-ry - TILE * 1.2} C ${-rx * 0.4} ${-ry - TILE * 2.6}, ${rx * 0.3} ${-ry - TILE * 0.6}, ${rx * 1.3} ${-ry - TILE * 2.2} L ${rx * 1.3} ${-ry - TILE * 1.4} C ${rx * 0.3} ${-ry + TILE * 0.1}, ${-rx * 0.4} ${-ry - TILE * 1.9}, ${-rx * 1.3} ${-ry - TILE * 0.5} Z`}
+          d={`M ${vb[0]} ${vb[1] + vb[3] * 0.12} C ${vb[0] + vb[2] * 0.3} ${vb[1] - vb[3] * 0.02}, ${vb[0] + vb[2] * 0.6} ${vb[1] + vb[3] * 0.2}, ${vb[0] + vb[2]} ${vb[1] + vb[3] * 0.05} L ${vb[0] + vb[2]} ${vb[1] + vb[3] * 0.13} C ${vb[0] + vb[2] * 0.6} ${vb[1] + vb[3] * 0.28}, ${vb[0] + vb[2] * 0.3} ${vb[1] + vb[3] * 0.06}, ${vb[0]} ${vb[1] + vb[3] * 0.2} Z`}
           fill="url(#sv-aurora)"
           data-aurora
         />
       )}
-      {/* Backdrop: stars, two layers of distant snowy hills at the horizon, and a snowfield that runs
-          to the bottom of the view, so a tall phone screen never shows an empty sky below the village. */}
-      <Backdrop ry={ry} vb={vb} />
-      {/* Snow ground: a soft shadow lip, the disc, and faint ring paths. */}
-      <ellipse cx={0} cy={TILE * 0.12} rx={rx * 1.01} ry={ry * 1.05} fill="#9FB0C8" opacity="0.55" />
-      <ellipse cx={0} cy={0} rx={rx} ry={ry} fill="url(#sv-snow)" data-ground={radius.toFixed(1)} />
-      {RING_RADII.slice(0, outerRing + 1).map((r, k) => {
-        const e = groundEllipse(r - 1.05);
-        return <ellipse key={k} cx={0} cy={0} rx={e.rx} ry={e.ry} fill="none" stroke="#D7E1EC" strokeWidth={TILE * 0.18} opacity="0.55" />;
+      {/* Plots back → front (the board is drawn under every house and facility). */}
+      {[{ index: -1, at: [0, 0] as [number, number], plot: PLAZA_PLOT, ghost: false, label: undefined as string | undefined },
+        ...open.map((d) => ({ index: d.index, at: d.at, plot: d.plot, ghost: false, label: undefined as string | undefined })),
+        ...(ghosts ? closed.map((d) => ({ index: d.index, at: d.at, plot: d.plot, ghost: true, label: d.name.ko })) : [])]
+        .sort((a, b) => a.at[0] + a.at[1] - (b.at[0] + b.at[1]))
+        .map((p) => (
+          <Plot key={`plot${p.index}`} sprite={p.plot} at={p.at} ghost={p.ghost} label={p.label} index={p.index} />
+        ))}
+      {halfLocked.map((l) => {
+        const c = project(l.at[0], l.at[1]);
+        return (
+          <g key={`hl${l.slot}`} data-lot={l.slot} data-state="locked" opacity={0.6}>
+            <polygon points={pts(tileDiamond(l.at[0], l.at[1], HOUSE_TILES * 0.62))} fill="#B8C4D6" fillOpacity={0.25} stroke="#7D8CA6" strokeWidth={2.4}
+              strokeDasharray="8 7" />
+            <text x={c.x} y={c.y + 9} textAnchor="middle" fontSize={26}>
+              🔒
+            </text>
+          </g>
+        );
       })}
-      {pinesBack.map(pine)}
-      {order.map((e) => {
+      {layered.map((item) => {
+        const e = item.e;
         if (e.kind === "facility") {
           const f = e.facility;
-          const href = f.id === "rink" && rinkFrame ? rinkFrame : SPRITES[f.sprite].src;
+          const href = f.sprite === "landmark_rink" && rinkFrame ? rinkFrame : SPRITES[f.sprite].src;
           const r = placeSprite(f.sprite, f.at[0], f.at[1], f.tiles);
-          return <image key={f.id} href={href} x={r.x} y={r.y} width={r.width} height={r.height} preserveAspectRatio="none" data-facility={f.id} />;
+          return (
+            <image key={f.id} href={href} x={r.x} y={r.y} width={r.width} height={r.height} preserveAspectRatio="none"
+              data-facility={f.id === "cathedral" || f.id === "tree" ? f.id : f.sprite} />
+          );
         }
         const lot = LOTS[e.slot];
         const [i, j] = lot.at;
         if (e.kind === "lot") {
-          const locked = e.slot >= capacity;
           const c = project(i, j);
           return (
-            <g key={`lot-${e.slot}`} data-lot={e.slot} data-state={locked ? "locked" : "empty"} opacity={locked ? 0.55 : 1}>
-              <polygon points={pts(tileDiamond(i, j, HOUSE_TILES * 0.62))} fill={locked ? "#B8C4D6" : "#FFFFFF"} fillOpacity={locked ? 0.25 : 0.45}
-                stroke={locked ? "#7D8CA6" : "#708B82"} strokeWidth={2.2} strokeDasharray="7 6" strokeLinejoin="round" />
-              <text x={c.x} y={c.y + 7} textAnchor="middle" fontSize={locked ? 26 : 34} fontWeight={800} fill={locked ? "#7D8CA6" : "#708B82"}>
-                {locked ? "🔒" : "+"}
+            <g key={`lot-${e.slot}`} data-lot={e.slot} data-state="empty">
+              <polygon points={pts(tileDiamond(i, j, HOUSE_TILES * 0.62))} fill="#FFFFFF" fillOpacity={0.45} stroke="#708B82" strokeWidth={2.4}
+                strokeDasharray="8 7" strokeLinejoin="round" />
+              <text x={c.x} y={c.y + 10} textAnchor="middle" fontSize={34} fontWeight={800} fill="#708B82">
+                +
               </text>
             </g>
           );
@@ -205,24 +214,13 @@ export function VillageMapArt({ capacity, houses, view, names = false, igniteSlo
         const v = houseView(h.style, h.direction);
         const r = placeSprite(v.sprite, i, j, HOUSE_TILES);
         const ax = r.x + SPRITES[v.sprite].anchor[0] * r.width;
-        const igniting = igniteSlot === e.slot;
         return (
           <g key={`h-${e.slot}`} data-slot={e.slot} data-house-style={h.style} data-direction={h.direction}>
-            <image
-              href={SPRITES[v.sprite].src}
-              x={r.x}
-              y={r.y}
-              width={r.width}
-              height={r.height}
-              preserveAspectRatio="none"
-              transform={v.mirror ? `translate(${2 * ax} 0) scale(-1 1)` : undefined}
-              className={igniting ? "sv-ignite" : undefined}
-            />
+            <image href={SPRITES[v.sprite].src} x={r.x} y={r.y} width={r.width} height={r.height} preserveAspectRatio="none"
+              transform={v.mirror ? `translate(${2 * ax} 0) scale(-1 1)` : undefined} className={igniteSlot === e.slot ? "sv-ignite" : undefined} />
           </g>
         );
       })}
-      {pinesFront.map(pine)}
-      {/* Name chips on roofs: drawn last so neighbours never cover them. */}
       {names &&
         houses.map((h) => {
           const lot = LOTS[h.slot];

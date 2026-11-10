@@ -16,6 +16,42 @@ export const MAX_CAPACITY = 60;
 /** Number of lots in the map (the largest possible village). */
 export const VILLAGE_CAPACITY = MAX_CAPACITY;
 
+/** Districts ("동네") of 6 lots; lots of district d are slots d*6 … d*6+5, opened in halves of 3. */
+export const DISTRICT_COUNT = 10;
+export const DISTRICT_SIZE = 6;
+/** Free village: district 0, both halves. */
+export const FREE_OPEN_HALVES = 0b11;
+
+export function halfOf(slot: number): number {
+  return Math.floor(slot / EXPANSION_STEP);
+}
+export function isHalfOpen(openHalves: number, slot: number): boolean {
+  return Number.isInteger(slot) && slot >= 0 && slot < MAX_CAPACITY && ((openHalves >> halfOf(slot)) & 1) === 1;
+}
+/** 0 = closed, 1 = first half open, 2 = fully open. */
+export function districtState(openHalves: number, district: number): 0 | 1 | 2 {
+  const bits = (openHalves >> (2 * district)) & 3;
+  return bits === 3 ? 2 : bits ? 1 : 0;
+}
+/** openHalves after opening the next half of `district` (same as the server), or null when it is full. */
+export function openNextHalf(openHalves: number, district: number): number | null {
+  if (!Number.isInteger(district) || district < 0 || district >= DISTRICT_COUNT) return null;
+  const a = 2 * district;
+  if (((openHalves >> a) & 1) === 0) return openHalves | (1 << a);
+  if (((openHalves >> (a + 1)) & 1) === 0) return openHalves | (1 << (a + 1));
+  return null;
+}
+export function capacityOf(openHalves: number): number {
+  let n = 0;
+  for (let b = openHalves; b; b &= b - 1) n++;
+  return n * EXPANSION_STEP;
+}
+/** Halves in district order up to `capacity` (old rows / bad data fallback). */
+export function halvesForCapacity(capacity: number): number {
+  const n = Math.max(2, Math.min(MAX_CAPACITY / EXPANSION_STEP, Math.round(capacity / EXPANSION_STEP)));
+  return (1 << n) - 1;
+}
+
 /** Price tier of the next step for a village of this size (0 = already at the maximum). */
 export function stepTier(capacity: number): 0 | 1 | 2 | 3 | 4 {
   if (capacity >= MAX_CAPACITY) return 0;
@@ -87,8 +123,10 @@ export interface Village {
   name: string;
   createdAt: string;
   houses: House[];
-  /** 6 (free), then 9, 12, … 60 after paid expansion steps. */
+  /** 6 (free), then 9, 12, … 60 after paid expansion steps (= 3 × opened halves). */
   capacity: number;
+  /** Opened district halves (bit 2d = first half of district d, 2d+1 = second half). */
+  openHalves: number;
   /** True for the bundled demo village (simulated sample data). */
   isSample?: boolean;
 }
@@ -163,7 +201,7 @@ export function validateHouseInput(
 export function createVillage(name: string, id: string, now: Date): Village {
   const result = validateVillageName(name);
   if (!result.ok) throw new Error(result.error);
-  return { id, name: result.value, createdAt: now.toISOString(), houses: [], capacity: FREE_CAPACITY };
+  return { id, name: result.value, createdAt: now.toISOString(), houses: [], capacity: FREE_CAPACITY, openHalves: FREE_OPEN_HALVES };
 }
 
 export function isSlotValid(slot: number, capacity: number = VILLAGE_CAPACITY): boolean {
@@ -174,9 +212,14 @@ export function houseAt(village: Village, slot: number): House | undefined {
   return village.houses.find((h) => h.slot === slot);
 }
 
+/** Every opened lot (slots of opened halves), in slot order. */
+export function openSlots(village: Pick<Village, "openHalves">): number[] {
+  return Array.from({ length: MAX_CAPACITY }, (_, i) => i).filter((i) => isHalfOpen(village.openHalves, i));
+}
+
 function emptySlots(village: Village): number[] {
   const taken = new Set(village.houses.map((h) => h.slot));
-  return Array.from({ length: Math.min(village.capacity, MAX_CAPACITY) }, (_, i) => i).filter((i) => !taken.has(i));
+  return openSlots(village).filter((i) => !taken.has(i));
 }
 
 /** Lots that can be claimed now (lots 0…capacity-1 without a house; none once the village is full). */
@@ -184,10 +227,9 @@ export function freeSlots(village: Village): number[] {
   return isFull(village) ? [] : emptySlots(village);
 }
 
-/** The next expansion's lots, drawn locked on the map (capacity … capacity+2). */
-export function lockedSlots(village: Village): number[] {
-  if (village.capacity >= MAX_CAPACITY) return [];
-  return Array.from({ length: EXPANSION_STEP }, (_, i) => village.capacity + i);
+/** Lots not yet opened (closed districts or second halves). */
+export function lockedSlots(village: Pick<Village, "openHalves">): number[] {
+  return Array.from({ length: MAX_CAPACITY }, (_, i) => i).filter((i) => !isHalfOpen(village.openHalves, i));
 }
 
 /** How many more houses can move in (capacity minus houses) — not the number of empty lots. */
@@ -214,7 +256,7 @@ export function claimHouse(
   opts: { id: string; now: Date },
 ): ClaimResult {
   if (isFull(village)) return { ok: false, reason: "VILLAGE_FULL" };
-  if (!isSlotValid(slot, village.capacity)) return { ok: false, reason: "INVALID_SLOT" };
+  if (!isHalfOpen(village.openHalves, slot)) return { ok: false, reason: "INVALID_SLOT" };
   if (houseAt(village, slot)) return { ok: false, reason: "SLOT_TAKEN" };
 
   const validated = validateHouseInput(input);
@@ -245,6 +287,8 @@ export function createSampleVillage(now: Date = new Date("2026-12-01T09:00:00+09
     name: "눈송이 마을 (샘플)",
     createdAt: at(0),
     capacity: 15,
+    // Districts 0 and 1 fully open, district 2 (Santa) half open.
+    openHalves: 0b11111,
     isSample: true,
     houses: [
       { id: "sample-1", slot: 0, nickname: "하늘", style: "brick", direction: 0, photo: null, hasPhoto: false, message: "올해도 고마웠어! 메리 크리스마스 🎄", createdAt: at(1) },

@@ -52,61 +52,84 @@ HOUSES = {
 }
 LEGACY_STYLES = ["sage", "indigo"]
 
-# Facilities: sprite, ground spot (tile units, plaza centre = 0,0), footprint in tiles (the measured base
-# width is scaled to this), unlock house count. Spots ring the plaza inside the first house ring.
-FACILITIES = [
-    {"id": "cathedral", "sprite": "landmark_cathedral", "at": [0.0, 0.0], "tiles": 3.2, "minHouses": 0},
-    {"id": "tree", "sprite": "tree_complete", "at": [0.2, 3.2], "tiles": 1.1, "minHouses": 0},
-    {"id": "sled", "sprite": "decor_sled", "at": [2.5, 2.4], "tiles": 0.9, "minHouses": 4},
-    {"id": "snowfamily", "sprite": "decor_snowfamily", "at": [-2.4, 2.6], "tiles": 0.9, "minHouses": 6},
-    {"id": "rink", "sprite": "landmark_rink", "at": [-3.4, 0.2], "tiles": 2.6, "minHouses": 9},
-    {"id": "santa", "sprite": "landmark_santa", "at": [3.3, -0.6], "tiles": 2.0, "minHouses": 12},
-    {"id": "rudolph", "sprite": "landmark_rudolph", "at": [0.3, -3.3], "tiles": 1.0, "minHouses": 15},
+# Layout (owner decision 2026-11-11): fenced snowy plots (ChatGPT art, same look as the first village
+# background) laid edge to edge like a board around the plaza plot. Every plot has a fence opening in the
+# middle of each side, so neighbours connect. A district plot holds a 3×3 grid: houses on the 4 corners and
+# the 2 side cells across the plaza axis, the district facility in the centre; the 2 cells on the plaza axis
+# stay free as the walkway. Lots of district d are slots d*6 … d*6+5; the first half (d*6+0..2) are the
+# 3 houses nearest the plaza.
+GROUND_ASPECT = 0.5                  # plain isometric (plots are drawn art, not ovals)
+PLOT_TILES = 8.2                    # plot width in ground tiles (the art's diamond)
+PLOT_GAP = 0.2                       # snow walkway between plots
+CELL = 2.35                          # 3×3 grid pitch inside a plot
+PLAZA = [
+    {"id": "cathedral", "sprite": "landmark_cathedral", "at": [-0.4, -0.4], "tiles": 3.4},
+    {"id": "tree", "sprite": "tree_complete", "at": [2.1, 2.1], "tiles": 1.2},
 ]
+PLOT_SPRITES = ["plot_wood", "plot_picket", "plot_stone"]
+PLAZA_PLOT = "plot_plaza"
+# id, name (ko), name (en), facility sprite, facility size in tiles
+DISTRICTS = [
+    ("snowflake", "눈송이 동네", "Snowflake Lane", "decor_snowfamily", 1.2),
+    ("rink", "링크 동네", "Ice Rink Lane", "landmark_rink", 2.4),
+    ("santa", "산타 동네", "Santa's Lane", "landmark_santa", 2.3),
+    ("rudolph", "루돌프 동네", "Rudolph Lane", "landmark_rudolph", 1.3),
+    ("sled", "썰매 동네", "Sled Lane", "decor_sled", 1.3),
+    ("forest", "숲속 동네", "Forest Lane", "prop_pines", 1.6),
+    ("lantern", "등불 동네", "Lantern Lane", "prop_lamp", 1.1),
+    ("starlight", "별빛 동네", "Starlight Lane", "prop_pines", 1.4),
+    ("hill", "언덕 동네", "Hill Lane", "prop_pines", 1.5),
+    ("lake", "호숫가 동네", "Lakeside Lane", "prop_lamp", 1.1),
+]
+# Plot grid cells (gi, gj) per district; +i+j is toward the viewer. District 0 sits right in front of the
+# plaza (front-right), then the plaza's other neighbours, nearest first.
+GRID = [(1, 0), (0, 1), (1, 1), (-1, 0), (0, -1), (1, -1), (-1, 1), (-1, -1), (2, 0), (0, 2)]
 AURORA_MIN_HOUSES = 18
 PROPS = {"pines": "prop_pines", "lamp": "prop_lamp"}
-# House rings: (radius in tiles, lots). Inner ring first; 14 + 20 + 26 = 60.
-RINGS = [(5.6, 14), (8.2, 20), (10.8, 26)]
 MAX_HOUSES = 60
-# Rings are ovals on *screen* with height/width = GROUND_ASPECT (a plain tile-space circle would be 0.5,
-# too flat for a portrait phone). In tile space that stretches the ring along i+j by GROUND_ASPECT/0.5.
-GROUND_ASPECT = 0.75
 
 
-def ring_order(n: int) -> list[int]:
-    """Golden-ratio order: any prefix is spread evenly around the ring (6 houses don't bunch up)."""
-    phi = (math.sqrt(5) - 1) / 2
-    seen, order, k = set(), [], 0
-    while len(order) < n:
-        idx = int((k * phi % 1) * n)
-        k += 1
-        if idx not in seen:
-            seen.add(idx)
-            order.append(idx)
-    return order
-
-
-def facing_center(i: float, j: float) -> int:
-    """Default door direction: the one pointing most toward the plaza."""
-    # direction unit vectors in tile space: 0 → +j, 1 → +i, 2 → -j, 3 → -i
+def facing_toward(i: float, j: float, ti: float, tj: float) -> int:
+    """Door direction (0 → +j, 1 → +i, 2 → -j, 3 → -i) pointing most toward (ti, tj)."""
     vecs = {0: (0, 1), 1: (1, 0), 2: (0, -1), 3: (-1, 0)}
-    return max(vecs, key=lambda d: -(vecs[d][0] * i + vecs[d][1] * j))
+    di, dj = ti - i, tj - j
+    return max(vecs, key=lambda d: vecs[d][0] * di + vecs[d][1] * dj)
 
 
-def lots() -> list[dict]:
-    out = []
-    for ring, (r, n) in enumerate(RINGS):
-        offset = math.pi / n * (ring % 2)
-        for idx in ring_order(n):
-            a = offset + 2 * math.pi * idx / n
-            u = r * math.sqrt(2) * math.cos(a)                              # u = i - j (screen x)
-            v = r * math.sqrt(2) * math.sin(a) * (GROUND_ASPECT / 0.5)      # v = i + j (screen y)
-            i, j = round((u + v) / 2, 3), round((v - u) / 2, 3)
-            out.append({"at": [i, j], "ring": ring, "facing": facing_center(i, j)})
-    assert len(out) == MAX_HOUSES
-    for k, lot in enumerate(out):
-        lot["slot"] = k
-    return out
+def districts_and_lots() -> tuple[list[dict], list[dict]]:
+    pitch = PLOT_TILES + PLOT_GAP
+    districts, lots = [], []
+    for d, ((gi, gj), (key, ko, en, sprite, tiles)) in enumerate(zip(GRID, DISTRICTS)):
+        ci, cj = gi * pitch, gj * pitch
+        # unit vector from the plot toward the plaza along the dominant grid axis
+        if abs(gi) >= abs(gj):
+            ax = (-1 if gi > 0 else 1, 0)
+        else:
+            ax = (0, -1 if gj > 0 else 1)
+        perp = (ax[1], ax[0])
+        cells = []
+        for a in (-1, 0, 1):          # along the plaza axis (+1 = the row next to the plaza)
+            for b in (-1, 0, 1):      # across it
+                if a == 0 and b == 0:
+                    continue          # centre: facility
+                if b == 0:
+                    continue          # walkway cells on the plaza axis
+                cells.append((a, b))
+        # 6 cells: (±1, ±1) corners and (0, ±1) sides; nearest to the plaza first
+        cells.sort(key=lambda ab: (-ab[0], ab[1]))
+        for n, (a, b) in enumerate(cells):
+            i = ci + (ax[0] * a + perp[0] * b) * CELL
+            j = cj + (ax[1] * a + perp[1] * b) * CELL
+            lots.append({"slot": d * 6 + n, "district": d, "half": 0 if n < 3 else 1, "at": [round(i, 3), round(j, 3)],
+                         "facing": facing_toward(i, j, ci, cj)})
+        districts.append({
+            "index": d, "id": key, "name": {"ko": ko, "en": en}, "at": [ci, cj], "grid": [gi, gj],
+            "plot": PLOT_SPRITES[d % len(PLOT_SPRITES)], "size": PLOT_TILES,
+            "facility": {"sprite": sprite, "at": [ci, cj], "tiles": tiles} if sprite else None,
+        })
+    lots.sort(key=lambda l: l["slot"])
+    assert len(lots) == MAX_HOUSES
+    return districts, lots
 
 
 def measure(name: str, kind: str, size: int) -> dict:
@@ -114,18 +137,23 @@ def measure(name: str, kind: str, size: int) -> dict:
     mask = alpha_mask(im)
     w, h = im.size
     ys, xs = np.where(mask)
-    start = 0.5 if kind == "house" else (ys.max() - 0.22 * (ys.max() - ys.min())) / h
+    if kind == "plot":   # diamond: the widest row is its equator (left/right corners) = plot centre
+        start = (ys.min() + 0.2 * (ys.max() - ys.min())) / h
+    else:
+        start = 0.5 if kind == "house" else (ys.max() - 0.22 * (ys.max() - ys.min())) / h
     cx, cy, tile = widest_row(mask, start)
     folder = OUT / kind
     folder.mkdir(parents=True, exist_ok=True)
     out = folder / f"{name}.webp"
-    im.resize((size, size), Image.LANCZOS).save(out, "WEBP", quality=84, method=6)
+    # Keep the canvas aspect (plots are 2:1); `size` is the output width.
+    im.resize((size, max(1, round(size * h / w))), Image.LANCZOS).save(out, "WEBP", quality=84, method=6)
     return {
         "src": f"/assets/v2/{kind}/{name}.webp",
         "anchor": [round(cx / w, 4), round(cy / h, 4)],
         "tileWidth": round(tile / w, 4),
         "bbox": [round(xs.min() / w, 4), round(ys.min() / h, 4), round(xs.max() / w, 4), round(ys.max() / h, 4)],
         "hull": hull_polygon(mask),
+        "aspect": round(h / w, 4),
         "bytes": out.stat().st_size,
     }
 
@@ -133,18 +161,30 @@ def measure(name: str, kind: str, size: int) -> dict:
 def main() -> None:
     if OUT.exists():
         shutil.rmtree(OUT)
-    geo: dict = {"version": 2, "legacyStyles": LEGACY_STYLES, "maxHouses": MAX_HOUSES, "rings": [r for r, _ in RINGS], "groundAspect": GROUND_ASPECT, "houses": {}, "sprites": {},
-                 "facilities": FACILITIES, "auroraMinHouses": AURORA_MIN_HOUSES, "props": PROPS, "lots": lots()}
+    districts, lot_list = districts_and_lots()
+    geo: dict = {"version": 4, "legacyStyles": LEGACY_STYLES, "maxHouses": MAX_HOUSES, "groundAspect": GROUND_ASPECT,
+                 "plotTiles": PLOT_TILES, "plazaPlot": PLAZA_PLOT, "plaza": PLAZA, "districts": districts, "houses": {}, "sprites": {},
+                 "auroraMinHouses": AURORA_MIN_HOUSES, "props": PROPS, "lots": lot_list}
     for key, (ko, en, a, b) in HOUSES.items():
         geo["houses"][key] = {"label": {"ko": ko, "en": en}, "a": a, "b": b}
         for name in {a, b}:
             if name not in geo["sprites"]:
                 geo["sprites"][name] = measure(name, "house", SPRITE_SIZE)
-    for f in FACILITIES:
-        big = f["tiles"] >= 2
-        geo["sprites"][f["sprite"]] = measure(f["sprite"], "facility", BIG_SIZE if big else SPRITE_SIZE)
+    facility_sprites = {f["sprite"]: f["tiles"] for f in PLAZA}
+    facility_sprites.update({d[3]: d[4] for d in DISTRICTS if d[3]})
+    for name, tiles in facility_sprites.items():
+        if name in PROPS.values():
+            continue
+        geo["sprites"][name] = measure(name, "facility", BIG_SIZE if tiles >= 2 else SPRITE_SIZE)
     for name in PROPS.values():
         geo["sprites"][name] = measure(name, "prop", SPRITE_SIZE)
+    # Plot art that exists (the generator may still be drawing some); missing designs reuse one that exists.
+    have = [n for n in PLOT_SPRITES if (SRC / f"{n}.webp").exists()]
+    for name in [*have, PLAZA_PLOT]:
+        geo["sprites"][name] = measure(name, "plot", 1400)
+    for d in districts:
+        if d["plot"] not in have:
+            d["plot"] = have[d["index"] % len(have)]
     # Optional animated rink frames: landmark_rink_f0..fN (same canvas as landmark_rink).
     frames = sorted(SRC.glob("landmark_rink_f*.webp"))
     if frames:

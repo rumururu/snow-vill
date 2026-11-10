@@ -5,8 +5,8 @@
  * lot or house, plus pan (drag), zoom (wheel, pinch, buttons) and "fit". A drag never triggers a tap.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { HOUSE_TILES, houseView, LOTS, spriteHull, tileDiamond, visibleLots, type Point } from "@/lib/map";
-import { houseAt, HOUSE_STYLE_LABEL, type Village } from "@/lib/village";
+import { DISTRICTS, fullView, plotDiamond, HOUSE_TILES, houseView, LOTS, spriteHull, tileDiamond, visibleLots, type Point } from "@/lib/map";
+import { districtState, houseAt, HOUSE_STYLE_LABEL, type Village } from "@/lib/village";
 import { defaultView, VillageMapArt } from "./VillageMapArt";
 import { Snowfall } from "./Snowfall";
 
@@ -15,6 +15,8 @@ interface Props {
   myHouseId?: string | null;
   igniteSlot?: number | null;
   onSelectSlot?: (slot: number, trigger: Element) => void;
+  /** Tap on a closed district (or the closed half of one): offer to open it. */
+  onSelectDistrict?: (district: number, trigger: Element) => void;
   className?: string;
   /** Fill the parent's height (village screen); otherwise keep the village's own aspect ratio. */
   fill?: boolean;
@@ -23,16 +25,18 @@ interface Props {
 type View = [number, number, number, number];
 const pts = (p: Point[]) => p.map((q) => `${q.x.toFixed(1)},${q.y.toFixed(1)}`).join(" ");
 
-export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot, className, fill = false }: Props) {
-  const base = useMemo(() => defaultView(village.capacity, village.houses), [village.capacity, village.houses]);
+export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot, onSelectDistrict, className, fill = false }: Props) {
+  const base = useMemo(() => defaultView(village.openHalves), [village.openHalves]);
   // Container aspect (h / w), measured; the camera grows the short side so the map fills the box.
   const [aspect, setAspect] = useState<number | null>(null);
   const fit = useMemo<View>(() => {
     if (!fill || !aspect) return base;
     const [x, y, w, h] = base;
     if (aspect > h / w) {
-      const nh = w * aspect;
-      return [x, y - (nh - h) * 0.45, w, nh];
+      // Portrait: zoom in (crop the sides, the user pans) instead of showing an empty sky.
+      const nw = Math.max(w * 0.68, h / aspect);
+      const nh = nw * aspect;
+      return [x + (w - nw) / 2, y - (nh - h) * 0.55, nw, nh];
     }
     const nw = h / aspect;
     return [x - (nw - w) / 2, y, nw, h];
@@ -63,12 +67,18 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
 
   const clampView = useCallback(
     (v: View): View => {
+      // Zoom in to 30% of the fit; zoom out / pan far enough to see every district (to pick one to open).
+      const all = fullView();
       const minW = fit[2] * 0.3;
-      const maxW = fit[2] * 1.5;
+      const maxW = Math.max(fit[2] * 1.2, all[2] * 1.05, (all[3] * 1.05 * fit[2]) / fit[3]);
       const w = Math.min(maxW, Math.max(minW, v[2]));
       const h = (w / fit[2]) * fit[3];
-      const cx = Math.min(fit[0] + fit[2], Math.max(fit[0], v[0] + v[2] / 2));
-      const cy = Math.min(fit[1] + fit[3], Math.max(fit[1], v[1] + v[3] / 2));
+      const bx0 = Math.min(fit[0], all[0]);
+      const bx1 = Math.max(fit[0] + fit[2], all[0] + all[2]);
+      const by0 = Math.min(fit[1], all[1]);
+      const by1 = Math.max(fit[1] + fit[3], all[1] + all[3]);
+      const cx = Math.min(bx1, Math.max(bx0, v[0] + v[2] / 2));
+      const cy = Math.min(by1, Math.max(by0, v[1] + v[3] / 2));
       return [cx - w / 2, cy - h / 2, w, h];
     },
     [fit],
@@ -171,7 +181,7 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
       onPointerCancel={onPointerUp}
     >
       <VillageMapArt
-        capacity={village.capacity}
+        openHalves={village.openHalves}
         houses={art}
         view={view}
         names
@@ -181,13 +191,37 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
       />
       <Snowfall />
       {interactive && (
-        <svg viewBox={view.join(" ")} className="absolute inset-0 h-full w-full" aria-label={`마을의 집터 ${village.capacity}곳`} role="group">
+        <svg viewBox={view.join(" ")} className="absolute inset-0 h-full w-full" aria-label={`마을의 집터 ${village.capacity}곳과 아직 열리지 않은 동네`} role="group">
+          {/* Closed districts (behind everything): tap to open one. */}
+          {DISTRICTS.filter((d) => districtState(village.openHalves, d.index) === 0).map((d) => {
+            const ring = plotDiamond(d.at);
+            return (
+              <polygon
+                key={`d${d.index}`}
+                points={pts(ring)}
+                role="button"
+                tabIndex={0}
+                aria-label={`${d.name.ko} (아직 열리지 않음), 마을 넓히기로 열기`}
+                data-district={d.index}
+                data-state="closed"
+                fill="transparent"
+                className="cursor-pointer outline-none focus-visible:fill-white/20"
+                onClick={(e) => !suppressClick.current && onSelectDistrict?.(d.index, e.currentTarget)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelectDistrict?.(d.index, e.currentTarget);
+                  }
+                }}
+              />
+            );
+          })}
           {/* Lots/houses back → front so the front one wins where shapes overlap. */}
-          {[...lots]
+          {[...lots, ...LOTS.filter((l) => l.half === 1 && districtState(village.openHalves, l.district) === 1)]
             .sort((a, b) => a.at[0] + a.at[1] - (b.at[0] + b.at[1]))
             .map((lot) => {
               const house = houseAt(village, lot.slot);
-              const locked = lot.slot >= village.capacity;
+              const locked = !lots.includes(lot);
               const mine = Boolean(house && myHouseId && house.id === myHouseId);
               const shape = house
                 ? (() => {
@@ -198,7 +232,7 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
               const label = house
                 ? `${lot.slot + 1}번 집, ${house.nickname}의 ${HOUSE_STYLE_LABEL[house.style]}${mine ? ", 내 집" : ""} 열기`
                 : locked
-                  ? `${lot.slot + 1}번 집터 (잠김), 마을을 넓히면 입주할 수 있어요`
+                  ? `${lot.slot + 1}번 집터 (잠김), ${DISTRICTS[lot.district].name.ko}의 나머지 절반을 열면 입주할 수 있어요`
                   : `${lot.slot + 1}번 빈 집터, 내 집 만들기`;
               return (
                 <polygon
@@ -211,11 +245,12 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
                   data-state={house ? "occupied" : locked ? "locked" : "empty"}
                   fill="transparent"
                   className="cursor-pointer outline-none focus-visible:fill-white/25"
-                  onClick={(e) => select(lot.slot, e.currentTarget)}
+                  onClick={(e) => (locked ? !suppressClick.current && onSelectDistrict?.(lot.district, e.currentTarget) : select(lot.slot, e.currentTarget))}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      onSelectSlot?.(lot.slot, e.currentTarget);
+                      if (locked) onSelectDistrict?.(lot.district, e.currentTarget);
+                      else onSelectSlot?.(lot.slot, e.currentTarget);
                     }
                   }}
                 />

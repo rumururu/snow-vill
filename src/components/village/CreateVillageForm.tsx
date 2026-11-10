@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { VillageMap } from "@/components/scene/VillageMap";
 import { SimulatedBadge } from "@/components/ui/SimulatedBadge";
-import { charLength, FREE_CAPACITY, MAX_CAPACITY, VILLAGE_NAME_MAX, type Village } from "@/lib/village";
+import { charLength, FREE_CAPACITY, FREE_OPEN_HALVES, MAX_CAPACITY, VILLAGE_NAME_MAX, type Village } from "@/lib/village";
 import { villagePath } from "@/lib/share";
 import { useVillageStore } from "@/store/VillageStoreProvider";
 
@@ -18,7 +18,7 @@ export function CreateVillageForm() {
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const preview: Village = { id: "preview", name: name.trim() || "우리 마을", createdAt: PREVIEW_DATE, houses: [], capacity: FREE_CAPACITY };
+  const preview: Village = { id: "preview", name: name.trim() || "우리 마을", createdAt: PREVIEW_DATE, houses: [], capacity: FREE_CAPACITY, openHalves: FREE_OPEN_HALVES };
 
   async function submit(e: FormEvent) {
     e.preventDefault();

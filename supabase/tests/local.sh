@@ -21,7 +21,7 @@ alter default privileges in schema public grant all on tables to anon, authentic
 alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
 SQL
-for m in migrations/20261109100000_snowvill_core.sql migrations/20261110100000_snowvill_big_village.sql migrations/20261111100000_snowvill_expansion.sql; do
+for m in migrations/20261109100000_snowvill_core.sql migrations/20261110100000_snowvill_big_village.sql migrations/20261111100000_snowvill_expansion.sql migrations/20261111120000_snowvill_districts.sql; do
   "${PSQL[@]}" -v ON_ERROR_STOP=1 -f "$m" >/dev/null || { echo "migration failed: $m"; exit 1; }
 done
 
@@ -45,7 +45,7 @@ VID=$(j "$R" "d['id']"); OWNER=$(j "$R" "d['owner_secret']")
 ok "$(j "$R" "len(d['id'])==10 and len(d['owner_secret'])==32")" True "village id + 32-char owner secret"
 G=$(sql anon "select snowvill_get_village('$VID')")
 ok "$(j "$G" "d['name']")" "눈송이 마을" "name sanitized (tab → space, trimmed)"
-ok "$(j "$G" "sorted(d.keys())")" "['capacity', 'created_at', 'houses', 'id', 'name']" "get_village exposes no secret/owner fields"
+ok "$(j "$G" "sorted(d.keys())")" "['capacity', 'created_at', 'houses', 'id', 'name', 'open_halves']" "get_village exposes no secret/owner fields"
 ok "$(j "$G" "d['capacity']")" 6 "new village is a free 6-house village"
 ok "$(sql anon "select snowvill_get_village('nonexistent') is null")" t "unknown village → null"
 ok "$(sql anon "select snowvill_create_village('$A', '   ')")" "ERR:22023" "blank name → 22023"
@@ -132,6 +132,26 @@ for t in snowvill_wallets snowvill_purchases snowvill_upgrades snowvill_tier_cre
   ok "$(sql anon "select count(*) from $t")" "ERR:42501" "select $t denied"
 done
 ok "$(sql anon "select nextval('snowvill_upgrades_id_seq')")" "ERR:42501" "upgrades sequence denied"
+
+echo "2c. districts (owner picks which district to open)"
+R=$(sql anon "select snowvill_create_village('$A', '동네 마을')"); V3=$(j "$R" "d['id']")
+ok "$(j "$(sql anon "select snowvill_get_village('$V3')")" "d['open_halves'], d['capacity']")" "(3, 6)" "new village: district 0 open (halves 0,1)"
+U=$(python3 -c "import uuid;print(uuid.uuid4())")
+ok "$(j "$(sql anon "select snowvill_claim_house('$U', '$V3', 12, 'x', 'wood', '', 0)")" "d['reason']")" SLOT_LOCKED "lot in a closed district → SLOT_LOCKED"
+W=88888888-8888-8888-8888-888888888888
+cp $W tx-d1 snowvillage_big_village >/dev/null; cp $W tx-d2 snowvillage_expand_2 >/dev/null; cp $W tx-d3 snowvillage_expand_3 >/dev/null
+ok "$(j "$(sql anon "select snowvill_upgrade_village('$W', '$V3', 4)")" "d['ok'], d['capacity'], d['open_halves']")" "(True, 9, 259)" "open district 4 (first half: lots 24-26)"
+ok "$(j "$(sql anon "select snowvill_claim_house('$U', '$V3', 25, 'x', 'wood', '', 0)")" "d['ok']")" True "lot 25 is open now"
+U2=$(python3 -c "import uuid;print(uuid.uuid4())")
+ok "$(j "$(sql anon "select snowvill_claim_house('$U2', '$V3', 27, 'y', 'wood', '', 0)")" "d['reason']")" SLOT_LOCKED "second half (27) still closed"
+ok "$(j "$(sql anon "select snowvill_upgrade_village('$W', '$V3', 4)")" "d['ok'], d['capacity'], d['open_halves']")" "(True, 12, 771)" "district 4 again → its second half"
+ok "$(j "$(sql anon "select snowvill_upgrade_village('$W', '$V3', 4)")" "d['reason']")" DISTRICT_OPEN "district 4 fully open"
+ok "$(j "$(sql anon "select snowvill_upgrade_village('$W', '$V3', 0)")" "d['reason']")" DISTRICT_OPEN "district 0 is open from the start"
+ok "$(sql anon "select snowvill_upgrade_village('$W', '$V3', 10)")" "ERR:22023" "district 10 → 22023"
+ok "$(j "$(sql anon "select snowvill_upgrade_village('$W', '$V3')")" "d['ok'], d['district'], d['capacity']")" "(True, 1, 15)" "old 2-arg call opens the first incomplete district"
+for f in "snowvill_popcount(3)" "snowvill_slot_open(3, 0)"; do
+  ok "$(sql anon "select $f")" "ERR:42501" "anon $f denied"
+done
 
 echo "3. concurrent claim of the last free slot"
 R=$(sql anon "select snowvill_create_village('$B', '경쟁 마을')"); V2=$(j "$R" "d['id']")

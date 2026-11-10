@@ -49,29 +49,31 @@ describe("simulated (local) village store", () => {
     expect(await store.claimHouse(r.id, 1, { nickname: "나2", style: "wood" })).toEqual({ ok: false, reason: "ALREADY_JOINED" });
   });
 
-  it("free village stops at 6; each (simulated) expansion adds 3, up to 60", async () => {
+  it("free village stops at 6; each (simulated) expansion opens 3 lots of a chosen district, up to 60", async () => {
     const store = make();
     const r = await store.createVillage("마을");
     if (!r.ok) throw new Error();
     for (let i = 0; i < 6; i++) expect(store.simulateFriendClaim(r.id).ok).toBe(true);
     expect(store.simulateFriendClaim(r.id).ok).toBe(false);
     expect(await store.claimHouse(r.id, 6, { nickname: "나", style: "wood" })).toEqual({ ok: false, reason: "VILLAGE_FULL" });
-    expect(store.upgradeVillage(r.id)).toEqual({ ok: true });
+    expect(store.upgradeVillage(r.id, 2)).toEqual({ ok: true });
     expect(store.getState().villages[r.id].capacity).toBe(9);
+    expect(await store.claimHouse(r.id, 7, { nickname: "나", style: "wood" })).toMatchObject({ ok: false });
     expect(store.simulateFriendClaim(r.id).ok).toBe(true);
-    expect((await store.claimHouse(r.id, 8, { nickname: "나", style: "bakery", direction: 3 })).ok).toBe(true);
+    expect((await store.claimHouse(r.id, 13, { nickname: "나", style: "bakery", direction: 3 })).ok).toBe(true);
     expect(store.simulateFriendClaim(r.id).ok).toBe(true);
     expect(store.simulateFriendClaim(r.id).ok).toBe(false);
     expect(store.getState().villages[r.id].houses).toHaveLength(9);
-    for (let k = 0; k < 17; k++) store.upgradeVillage(r.id);
+    expect(store.upgradeVillage(r.id, 0).ok).toBe(false); // district 0 is already open
+    for (let d = 1; d < 10; d++) for (let h = 0; h < 2; h++) store.upgradeVillage(r.id, d);
     expect(store.getState().villages[r.id].capacity).toBe(60);
-    expect(store.upgradeVillage(r.id).ok).toBe(false);
+    expect(store.upgradeVillage(r.id, 3).ok).toBe(false);
   });
 
   it("real (remote) villages are upgraded in the app, not on the web", () => {
     const store = createVillageStore({ remote: fakeApi() });
-    store.getState().villages.abcdefghjk = { id: "abcdefghjk", name: "x", createdAt: "x", houses: [], capacity: 6 };
-    expect(store.upgradeVillage("abcdefghjk")).toEqual({ ok: false, message: expect.stringContaining("앱") });
+    store.getState().villages.abcdefghjk = { id: "abcdefghjk", name: "x", createdAt: "x", houses: [], capacity: 6, openHalves: 3 };
+    expect(store.upgradeVillage("abcdefghjk", 1)).toEqual({ ok: false, message: expect.stringContaining("앱") });
   });
 
   it("returns NOT_FOUND for unknown villages and marks them missing on load", async () => {
@@ -123,7 +125,7 @@ function fakeApi(over: Partial<RemoteApi> = {}): RemoteApi {
   const villages = new Map<string, Village>();
   return {
     createVillage: vi.fn(async (_i: string, name: string) => {
-      villages.set("abcdefghjk", { id: "abcdefghjk", name, createdAt: "2026-12-01T00:00:00Z", houses: [], capacity: 6 });
+      villages.set("abcdefghjk", { id: "abcdefghjk", name, createdAt: "2026-12-01T00:00:00Z", houses: [], capacity: 6, openHalves: 3 });
       return { id: "abcdefghjk", ownerSecret: "owner-secret" };
     }),
     getVillage: vi.fn(async (id: string) => villages.get(id) ?? null),
@@ -230,7 +232,7 @@ describe("remote village store", () => {
 
   it("refuses owner actions without the owner secret", async () => {
     const api = fakeApi({
-      getVillage: vi.fn(async () => ({ id: "otherxxxxx", name: "남의 마을", createdAt: "x", capacity: 6, houses: [house({ id: "h9" })] })),
+      getVillage: vi.fn(async () => ({ id: "otherxxxxx", name: "남의 마을", createdAt: "x", capacity: 6, openHalves: 3, houses: [house({ id: "h9" })] })),
     });
     const store = createVillageStore({ remote: api });
     await store.loadVillage("otherxxxxx");

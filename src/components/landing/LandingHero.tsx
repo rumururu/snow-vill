@@ -13,7 +13,7 @@ const HERO_HOUSES: MapHouseArt[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13].ma
 export function LandingHero() {
   return (
     <div className="relative mx-auto mt-4 w-full max-w-[440px] overflow-hidden rounded-3xl">
-      <VillageMapArt capacity={15} houses={HERO_HOUSES} className="h-auto w-full" title="성당 광장을 둘러싼 겨울 마을 그림" />
+      <VillageMapArt openHalves={0b11111} houses={HERO_HOUSES} className="h-auto w-full" title="성당 광장을 둘러싼 겨울 마을 그림" />
       <Snowfall />
     </div>
   );

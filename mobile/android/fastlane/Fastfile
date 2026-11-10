@@ -1,0 +1,44 @@
+# Snow Village (Android). Store builds only through these lanes (global rule: no direct `flutter build appbundle`).
+# Needs: mobile/env/prod.json (SUPABASE_*, REVENUECAT_*), android/key.properties + upload keystore,
+# fastlane/play-store-key.json (company service account). All gitignored.
+default_platform(:android)
+
+MOBILE = File.expand_path("../..", Dir.pwd)
+AAB = File.join(MOBILE, "build/app/outputs/bundle/release/app-release.aab")
+PACKAGE = "com.mkideabox.snowvillage"
+
+platform :android do
+  def next_version_code
+    codes = %w[production beta alpha internal].flat_map do |track|
+      google_play_track_version_codes(track: track, package_name: PACKAGE)
+    rescue StandardError => e
+      # An empty or never-used track has no codes; anything else (auth, network) must fail closed.
+      raise e unless e.message =~ /flat_map|not found|No releases/i
+      []
+    end
+    (codes.max || 0) + 1
+  end
+
+  desc "Build the release AAB"
+  lane :build do |options|
+    UI.user_error!("mobile/env/prod.json missing") unless File.exist?(File.join(MOBILE, "env/prod.json"))
+    UI.user_error!("android/key.properties missing (upload key)") unless File.exist?(File.join(MOBILE, "android/key.properties"))
+    code = options[:version_code] || next_version_code
+    Dir.chdir(MOBILE) do
+      sh("flutter clean")
+      sh("flutter pub get")
+      sh("flutter build appbundle --release --build-number=#{code} --dart-define-from-file=env/prod.json")
+    end
+  end
+
+  desc "Build and upload to the internal testing track (pass draft:true while the app is still a draft app)"
+  lane :internal do |options|
+    build(version_code: options[:version_code])
+    upload_to_play_store(
+      track: "internal",
+      aab: AAB,
+      release_status: options[:draft] ? "draft" : "completed",
+      skip_upload_metadata: true, skip_upload_images: true, skip_upload_screenshots: true, skip_upload_changelogs: true
+    )
+  end
+end

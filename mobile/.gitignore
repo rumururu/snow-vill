@@ -46,3 +46,13 @@ app.*.map.json
 
 # server config (anon key; never commit)
 /env/
+
+# store credentials (never commit)
+/ios/fastlane/*.p8
+/ios/fastlane/api_key.json
+/android/fastlane/play-store-key.json
+/android/key.properties
+/android/app/*.jks
+/ios/fastlane/report.xml
+/android/fastlane/report.xml
+/env/prod.json

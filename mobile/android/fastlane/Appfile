@@ -1,0 +1,2 @@
+json_key_file("fastlane/play-store-key.json") # company Play service account (gitignored)
+package_name("com.mkideabox.snowvillage")

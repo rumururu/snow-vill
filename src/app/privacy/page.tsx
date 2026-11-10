@@ -6,7 +6,7 @@ export const metadata = {
   description: "Snow Village가 어떤 정보를 왜 처리하고 어떻게 지우는지 안내합니다.",
 };
 
-const EFFECTIVE_DATE = "2026-11-09";
+const EFFECTIVE_DATE = "2026-11-10";
 const CONTACT = "mkideabox.feedback@gmail.com";
 // Company-standard privacy officer (same as other mkideabox app policies).
 const OFFICER = { name: "hyung-woo park", email: "mkideabox@gmail.com", phone: "+82-10-4732-7825" };
@@ -70,6 +70,11 @@ export default function PrivacyPage() {
             <b>요청 기록</b>(설치 ID·요청 종류·시각): 남용 방지용이며 하루가 지나면 자동으로 지웁니다.
           </li>
           <li>
+            <b>앱 내 구매 기록</b>(Snow Village 앱에서 &quot;큰 마을&quot;을 살 때): 설치 ID(구매 계정으로 사용), 거래 번호, 상품, 결제 금액·통화,
+            스토어(App Store / Google Play), 구매·환불 시각, 그리고 이용권을 사용한 마을. 구매 확인과 마을 적용, 환불 처리를 위해
+            씁니다. 카드 번호 같은 결제 수단 정보는 Apple·Google이 처리하며 서비스는 받지 않습니다.
+          </li>
+          <li>
             <b>신고 내용</b>: 부적절한 집을 신고하면 대상 집과 신고 시각, 신고한 설치 ID를 확인·조치를 위해 보관합니다.
           </li>
           <li>
@@ -112,6 +117,7 @@ export default function PrivacyPage() {
           </li>
           <li>지우지 않은 정보는 사용자가 지우거나 서비스가 종료될 때까지 보관하며, 서비스를 종료하면 모두 지웁니다.</li>
           <li>요청 기록은 하루 뒤 자동으로 지웁니다.</li>
+          <li>앱 내 구매 기록은 전자상거래법에 따라 대금 결제와 재화 공급에 관한 기록으로 5년간 보관한 뒤 파기합니다.</li>
           <li>
             브라우저 정보를 지워서 직접 삭제할 수 없다면 마을 링크와 닉네임을{" "}
             <a className="underline" href={`mailto:${CONTACT}`}>{CONTACT}</a>로 알려 주세요. 확인 후 지웁니다.
@@ -139,6 +145,16 @@ export default function PrivacyPage() {
             <a className="underline" href="https://supabase.com/privacy" rel="noreferrer" target="_blank">
               개인정보처리방침
             </a>
+          </li>
+          <li>
+            <b>RevenueCat, Inc.</b>(미국) — 위탁 업무: 앱 내 구매 확인과 구매 기록 전달. 처리 항목: 설치 ID, 거래 번호, 상품, 가격,
+            스토어. 이전 시기·방법: 앱에서 구매할 때 인터넷으로 전송. 보관 기간: RevenueCat 정책에 따름. 연락처:{" "}
+            <a className="underline" href="https://www.revenuecat.com/privacy" rel="noreferrer" target="_blank">
+              revenuecat.com/privacy
+            </a>
+          </li>
+          <li>
+            <b>Apple Inc. / Google LLC</b> — 앱 내 구매 결제 처리(각 스토어 약관과 개인정보처리방침에 따름).
           </li>
           <li>
             <b>Cloudflare, Inc.</b>(미국, 전 세계 네트워크) — 위탁 업무: 웹사이트 전송과 보안(Supabase 서버 앞단 포함). 처리 항목:

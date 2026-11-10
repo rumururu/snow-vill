@@ -1,0 +1,39 @@
+# Snow Village (iOS). Store builds only through these lanes (global rule: no direct `flutter build ipa`).
+# Server + RevenueCat config come from mobile/env/prod.json (gitignored, see env.example.json).
+# App Store Connect API key: fastlane/AuthKey_DGS7ANBS8T.p8 (company key, gitignored, copied like nametree).
+default_platform(:ios)
+
+MOBILE = File.expand_path("../..", Dir.pwd)
+APP_ID = "com.mkideabox.snowvillage"
+PROFILE = "#{APP_ID} AppStore"
+
+platform :ios do
+  def api_key
+    app_store_connect_api_key(
+      key_id: "DGS7ANBS8T",
+      issuer_id: "02b6b091-bc95-4ca4-ba1b-7ffa4c71680b",
+      key_filepath: File.join(Dir.pwd, "AuthKey_DGS7ANBS8T.p8")
+    )
+  end
+
+  def require_prod_env!
+    prod = File.join(MOBILE, "env/prod.json")
+    UI.user_error!("mobile/env/prod.json missing (SUPABASE_*, REVENUECAT_*)") unless File.exist?(prod)
+  end
+
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    require_prod_env!
+    key = api_key
+    get_provisioning_profile(api_key: key, app_identifier: APP_ID, provisioning_name: PROFILE, ignore_profiles_with_different_name: true)
+    build_number = (latest_testflight_build_number(api_key: key, app_identifier: APP_ID, initial_build_number: 0) + 1).to_s
+    Dir.chdir(MOBILE) do
+      sh("flutter clean")
+      sh("flutter pub get")
+      sh("flutter build ipa --release --build-number=#{build_number} --dart-define-from-file=env/prod.json --export-options-plist=ios/ExportOptions.plist")
+    end
+    ipa = Dir[File.join(MOBILE, "build/ios/ipa/*.ipa")].first
+    UI.user_error!("ipa not found") unless ipa
+    upload_to_testflight(api_key: key, ipa: ipa, skip_waiting_for_build_processing: true)
+  end
+end

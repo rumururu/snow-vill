@@ -189,6 +189,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
             onSimulateFriend={full || !simulated ? undefined : simulateFriend}
             onResetSample={village.isSample ? () => (store.resetSample(), notify("샘플 마을을 처음 상태로 되돌렸어요.")) : undefined}
             onDeleteVillage={isOwner && !village.isSample ? () => setDeleteOpen(true) : undefined}
+            onUpgrade={canUpgrade(village) ? () => setUpgradeOpen(true) : undefined}
           />
         </header>
 
@@ -378,8 +379,10 @@ function OverflowMenu({
   onSimulateFriend,
   onResetSample,
   onDeleteVillage,
+  onUpgrade,
 }: {
   onShareCard: () => void;
+  onUpgrade?: () => void;
   onSimulateFriend?: () => void;
   onResetSample?: () => void;
   onDeleteVillage?: () => void;
@@ -431,6 +434,11 @@ function OverflowMenu({
           <button type="button" className={item} onClick={run(onShareCard)}>
             공유 카드 보기
           </button>
+          {onUpgrade && (
+            <button type="button" className={item} onClick={run(onUpgrade)}>
+              큰 마을로 키우기
+            </button>
+          )}
           {onSimulateFriend && (
             <button type="button" className={item} onClick={run(onSimulateFriend)}>
               친구 입주 시뮬레이션

@@ -315,10 +315,15 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
         title: Text(village?.name ?? '', style: const TextStyle(fontWeight: FontWeight.w800, color: SvColors.night)),
         centerTitle: true,
         actions: [
-          if (village != null && identity.owners.containsKey(village.id))
+          if (village != null && (village.canUpgrade || identity.owners.containsKey(village.id)))
             PopupMenuButton<String>(
-              onSelected: (_) => _confirmDelete(village),
-              itemBuilder: (_) => [PopupMenuItem(value: 'delete', child: Text(l.deleteVillage))],
+              key: const ValueKey('village-menu'),
+              onSelected: (v) => v == 'grow' ? _openUpgrade(village) : _confirmDelete(village),
+              itemBuilder: (_) => [
+                // Always reachable (not only at 6/6) so anyone — including app reviewers — can buy it.
+                if (village.canUpgrade) PopupMenuItem(value: 'grow', child: Text(l.growBig)),
+                if (identity.owners.containsKey(village.id)) PopupMenuItem(value: 'delete', child: Text(l.deleteVillage)),
+              ],
             ),
         ],
       ),

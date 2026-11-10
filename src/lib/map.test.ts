@@ -38,7 +38,7 @@ describe("district map", () => {
 
   it("free village shows district 0 only; opening a district brings its lots and facility", () => {
     expect(visibleLots({ openHalves: FREE_OPEN_HALVES }).map((l) => l.slot)).toEqual([0, 1, 2, 3, 4, 5]);
-    const ids = (open: number) => facilitiesFor({ openHalves: open }).map((f) => f.sprite).sort();
+    const ids = (open: number) => facilitiesFor({ openHalves: open }).filter((f) => !f.id.includes("decor")).map((f) => f.sprite).sort();
     expect(ids(FREE_OPEN_HALVES)).toEqual(["decor_snowfamily", "landmark_cathedral", "tree_complete"]);
     const santaHalf = openNextHalf(FREE_OPEN_HALVES, 2)!;
     expect(visibleLots({ openHalves: santaHalf }).map((l) => l.slot)).toEqual([0, 1, 2, 3, 4, 5, 12, 13, 14]);

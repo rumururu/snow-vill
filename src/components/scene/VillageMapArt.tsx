@@ -15,10 +15,15 @@ import {
   LOTS,
   lotsView,
   mapOrder,
+  cellDiamond,
+  fencePieces,
+  groundEdges,
+  openCells,
+  PARTS,
   placeSprite,
-  PLAZA_PLOT,
-  PLOT_TILES,
+  plotDiamond,
   project,
+  SNOW_TEXTURE,
   RINK_FRAMES,
   SPRITES,
   TILE,
@@ -97,23 +102,38 @@ function Backdrop({ vb }: { vb: [number, number, number, number] }) {
   );
 }
 
-/** A fenced snowy plot (art). Closed districts: faded, with the district name and a lock. */
-function Plot({ sprite, at, ghost, label, index }: { sprite: string; at: [number, number]; ghost: boolean; label?: string; index: number }) {
-  const r = placeSprite(sprite, at[0], at[1], PLOT_TILES);
+const SEG_TILES = 2.05;
+
+/** A straight fence/gate part laid along a ground edge: its drawn width covers `tiles` of the edge
+ *  (+8% overlap) and the middle of its base line sits on `at`. The art runs ↘; mirrored for ↙ edges. */
+function placeAlong(sprite: string, at: [number, number], tiles: number, mirror: boolean) {
+  const g = SPRITES[sprite];
+  const aspect = g.aspect ?? 1;
+  const bw = g.bbox[2] - g.bbox[0];
+  const width = ((tiles * TILE) / 2) * 1.08 / bw;
+  const height = width * aspect;
   const c = project(at[0], at[1]);
+  const cx = (g.bbox[0] + bw / 2) * width;
+  // base line runs down-right with the measured slope: its middle is slope·w/2 above the bottom
+  const baseMid = g.bbox[3] * height - ((g.baseSlope ?? 0.5) * bw * width) / 2;
+  const x = c.x - cx;
+  const y = c.y - baseMid;
+  // Shear vertically (posts stay upright) so the base line follows the true 2:1 ground edge.
+  const k = 0.5 - (g.baseSlope ?? 0.5);
+  const shear = Math.abs(k) > 0.01 ? ` translate(${c.x} ${c.y}) matrix(1 ${k} 0 1 0 0) translate(${-c.x} ${-c.y})` : "";
+  const flip = mirror ? `translate(${2 * c.x} 0) scale(-1 1)` : "";
+  const transform = `${flip}${shear}`.trim();
+  return { x, y, width, height, transform: transform || undefined };
+}
+
+/** Snow texture laid on the ground plane (isometric pattern). */
+function GroundPattern() {
+  const s = 3; // texture repeats every 3 tiles
   return (
-    <g data-plot={index} data-district-ghost={ghost ? index : undefined} pointerEvents="none" opacity={ghost ? 0.38 : 1}>
-      <image href={SPRITES[sprite].src} x={r.x} y={r.y} width={r.width} height={r.height} preserveAspectRatio="none"
-        style={ghost ? { filter: "grayscale(0.6) brightness(1.08)" } : undefined} />
-      {ghost && label && (
-        <g transform={`translate(${c.x} ${c.y})`} opacity={2.4}>
-          <rect x={-112} y={-27} width={224} height={54} rx={27} fill="#1C284A" opacity="0.85" />
-          <text x={0} y={10} textAnchor="middle" fontSize={28} fontWeight={700} fill="#F6F0E4">
-            🔒 {label}
-          </text>
-        </g>
-      )}
-    </g>
+    <pattern id="sv-ground" patternUnits="userSpaceOnUse" width={1} height={1}
+      patternTransform={`matrix(${(TILE / 2) * s} ${(TILE / 4) * s} ${(-TILE / 2) * s} ${(TILE / 4) * s} 0 0)`}>
+      <image href={SNOW_TEXTURE} x={0} y={0} width={1} height={1} preserveAspectRatio="none" />
+    </pattern>
   );
 }
 
@@ -124,12 +144,17 @@ export function VillageMapArt({ openHalves, houses, view, names = false, ghosts 
   const vb = view ?? defaultView(openHalves);
   const aurora = houses.length >= AURORA_MIN_HOUSES;
   const order = mapOrder(village as never);
-  const open = DISTRICTS.filter((d) => districtState(openHalves, d.index) > 0);
   const closed = DISTRICTS.filter((d) => districtState(openHalves, d.index) === 0);
   // Second halves still closed inside an open district: dashed, locked lots.
+  const cells = openCells({ openHalves });
+  const edges = groundEdges({ openHalves });
+  const fences = SPRITES[PARTS.fence] ? fencePieces({ openHalves }) : [];
   const halfLocked = LOTS.filter((l) => districtState(openHalves, l.district) === 1 && l.half === 1);
 
-  const layered = order.map((e) => ({ kind: "entity" as const, e, depth: e.depth }));
+  const layered = [
+    ...order.map((e) => ({ kind: "entity" as const, e, depth: e.depth })),
+    ...fences.map((f, k) => ({ kind: "fence" as const, f, k, depth: f.depth })),
+  ].sort((a, b) => a.depth - b.depth);
 
   return (
     <svg viewBox={vb.join(" ")} {...frame} className={className} role="img" aria-label={title ?? "겨울 마을 지도"} xmlns="http://www.w3.org/2000/svg">
@@ -150,6 +175,12 @@ export function VillageMapArt({ openHalves, houses, view, names = false, ghosts 
           <stop offset="0.7" stopColor="#8FB7FF" stopOpacity="0.45" />
           <stop offset="1" stopColor="#C58CFF" stopOpacity="0" />
         </linearGradient>
+        <GroundPattern />
+        <linearGradient id="sv-bank" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#C9D3E0" />
+          <stop offset="0.35" stopColor="#B4A99B" />
+          <stop offset="1" stopColor="#8E8376" />
+        </linearGradient>
         <radialGradient id="sv-snow" cx="0.5" cy="0.42" r="0.62">
           <stop offset="0" stopColor="#FFFFFF" />
           <stop offset="0.8" stopColor="#F1F5FA" />
@@ -165,14 +196,46 @@ export function VillageMapArt({ openHalves, houses, view, names = false, ghosts 
           data-aurora
         />
       )}
-      {/* Plots back → front (the board is drawn under every house and facility). */}
-      {[{ index: -1, at: [0, 0] as [number, number], plot: PLAZA_PLOT, ghost: false, label: undefined as string | undefined },
-        ...open.map((d) => ({ index: d.index, at: d.at, plot: d.plot, ghost: false, label: undefined as string | undefined })),
-        ...(ghosts ? closed.map((d) => ({ index: d.index, at: d.at, plot: d.plot, ghost: true, label: d.name.ko })) : [])]
-        .sort((a, b) => a.at[0] + a.at[1] - (b.at[0] + b.at[1]))
-        .map((p) => (
-          <Plot key={`plot${p.index}`} sprite={p.plot} at={p.at} ghost={p.ghost} label={p.label} index={p.index} />
-        ))}
+      {/* Ghost districts: dashed outline + name (not part of the ground yet). */}
+      {ghosts &&
+        closed.map((d) => {
+          const c = project(d.at[0], d.at[1]);
+          return (
+            <g key={`gh${d.index}`} data-district-ghost={d.index} pointerEvents="none">
+              <polygon points={pts(plotDiamond(d.at).map((p) => ({ x: p.x * 0.97 + c.x * 0.03, y: p.y * 0.97 + c.y * 0.03 })))} fill="#FFFFFF" fillOpacity="0.08"
+                stroke="#FFFFFF" strokeOpacity="0.75" strokeWidth={3} strokeDasharray="14 12" />
+              <rect x={c.x - 112} y={c.y - 27} width={224} height={54} rx={27} fill="#1C284A" opacity="0.8" />
+              <text x={c.x} y={c.y + 10} textAnchor="middle" fontSize={28} fontWeight={700} fill="#F6F0E4">
+                🔒 {d.name.ko}
+              </text>
+            </g>
+          );
+        })}
+      {/* One continuous ground: bank on the outer edges facing the viewer, snow on top, cobble paths
+          between districts. */}
+      {edges.outer.filter((e) => e.front).map((e, k) => {
+        const a = project(e.a[0], e.a[1]);
+        const b = project(e.b[0], e.b[1]);
+        const t = TILE * 0.42;
+        return <polygon key={`bank${k}`} points={pts([a, b, { x: b.x, y: b.y + t }, { x: a.x, y: a.y + t }])} fill="url(#sv-bank)" />;
+      })}
+      {cells.map((c) => (
+        <polygon key={`g${c}`} points={pts(cellDiamond(c, 0.04))} fill="#EEF3F8" />
+      ))}
+      {cells.map((c) => (
+        <polygon key={`t${c}`} points={pts(cellDiamond(c, 0.04))} fill="url(#sv-ground)" opacity="0.9" />
+      ))}
+      {edges.inner.map((e, k) => {
+        const w = 0.42;
+        const off = e.axis === "i" ? ([0, w] as const) : ([w, 0] as const);
+        const quad = [
+          project(e.a[0] - off[0], e.a[1] - off[1]),
+          project(e.b[0] - off[0], e.b[1] - off[1]),
+          project(e.b[0] + off[0], e.b[1] + off[1]),
+          project(e.a[0] + off[0], e.a[1] + off[1]),
+        ];
+        return <polygon key={`path${k}`} points={pts(quad)} fill="#CFC5B8" opacity="0.55" />;
+      })}
       {halfLocked.map((l) => {
         const c = project(l.at[0], l.at[1]);
         return (
@@ -186,6 +249,19 @@ export function VillageMapArt({ openHalves, houses, view, names = false, ghosts 
         );
       })}
       {layered.map((item) => {
+        if (item.kind === "fence") {
+          const f = item.f;
+          if (f.kind === "post") {
+            const r = placeSprite(PARTS.post, f.at[0], f.at[1], 0.55);
+            return <image key={`fp${item.k}`} href={SPRITES[PARTS.post].src} x={r.x} y={r.y} width={r.width} height={r.height} preserveAspectRatio="none" />;
+          }
+          const sprite = f.kind === "gate" && SPRITES[PARTS.gate] ? PARTS.gate : PARTS.fence;
+          const r = placeAlong(sprite, f.at, SEG_TILES * (sprite === PARTS.gate ? 1.15 : 1), f.mirror);
+          return (
+            <image key={`f${item.k}`} href={SPRITES[sprite].src} x={r.x} y={r.y} width={r.width} height={r.height} preserveAspectRatio="none"
+              transform={r.transform} data-fence={f.kind} />
+          );
+        }
         const e = item.e;
         if (e.kind === "facility") {
           const f = e.facility;

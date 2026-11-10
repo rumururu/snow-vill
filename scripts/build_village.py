@@ -52,22 +52,25 @@ HOUSES = {
 }
 LEGACY_STYLES = ["sage", "indigo"]
 
-# Layout (owner decision 2026-11-11): fenced snowy plots (ChatGPT art, same look as the first village
-# background) laid edge to edge like a board around the plaza plot. Every plot has a fence opening in the
-# middle of each side, so neighbours connect. A district plot holds a 3×3 grid: houses on the 4 corners and
-# the 2 side cells across the plaza axis, the district facility in the centre; the 2 cells on the plaza axis
-# stay free as the walkway. Lots of district d are slots d*6 … d*6+5; the first half (d*6+0..2) are the
-# 3 houses nearest the plaza.
-GROUND_ASPECT = 0.5                  # plain isometric (plots are drawn art, not ovals)
-PLOT_TILES = 8.2                    # plot width in ground tiles (the art's diamond)
-PLOT_GAP = 0.2                       # snow walkway between plots
+# Layout (owner decisions 2026-11-11): a board of square plots — the plaza in the middle and up to 10
+# district plots around it. Opened plots merge into one piece of ground (drawn in code); the fence runs only
+# along the village's outer edge and moves outward as districts open; districts are told apart by cobble
+# paths. A district plot holds a 3×3 grid: houses on the 4 corners and the 2 side cells across the plaza
+# axis, the district facility in the centre, the 2 cells on the plaza axis are walkways with decoration.
+# Lots of district d are slots d*6 … d*6+5; the first half (d*6+0..2) are the 3 houses nearest the plaza.
+GROUND_ASPECT = 0.5                  # plain 2:1 isometric
+PLOT_TILES = 8.2                     # plot width in ground tiles
+PLOT_GAP = 0.0                       # plots touch (one continuous ground)
 CELL = 2.35                          # 3×3 grid pitch inside a plot
 PLAZA = [
     {"id": "cathedral", "sprite": "landmark_cathedral", "at": [-0.4, -0.4], "tiles": 3.4},
     {"id": "tree", "sprite": "tree_complete", "at": [2.1, 2.1], "tiles": 1.2},
 ]
-PLOT_SPRITES = ["plot_wood", "plot_picket", "plot_stone"]
-PLAZA_PLOT = "plot_plaza"
+# Modular parts (owner decision 2026-11-11): plain ground drawn in code, fences only on the village's outer
+# edge (fence_straight / fence_post), a gate arch at the front, and decoration props placed per district.
+PARTS = {"fence": "fence_straight", "post": "fence_post", "gate": "gate_arch"}
+DECOR_PROPS = ["prop_bench", "prop_bush", "prop_snowman_lantern", "prop_signpost"]
+SNOW_TEXTURE = "snow_texture"
 # id, name (ko), name (en), facility sprite, facility size in tiles
 DISTRICTS = [
     ("snowflake", "눈송이 동네", "Snowflake Lane", "decor_snowfamily", 1.2),
@@ -86,6 +89,16 @@ DISTRICTS = [
 GRID = [(1, 0), (0, 1), (1, 1), (-1, 0), (0, -1), (1, -1), (-1, 1), (-1, -1), (2, 0), (0, 2)]
 AURORA_MIN_HOUSES = 18
 PROPS = {"pines": "prop_pines", "lamp": "prop_lamp"}
+# Decoration per district, in plot-local cell units (a = toward the plaza, b = across): (sprite, a, b, tiles)
+DECOR = [
+    ("prop_signpost", 1.0, 0.45, 0.75),   # at the walkway into the plaza
+    ("prop_bench", -1.0, 0.55, 0.9),      # on the far walkway
+    ("prop_bush", -1.0, -0.5, 0.7),
+    ("prop_lamp", 1.55, 1.55, 0.55),      # plot corners (inside the edge)
+    ("prop_lamp", -1.55, -1.55, 0.55),
+    ("prop_snowman_lantern", -1.55, 1.55, 0.7),
+    ("prop_pines", 1.55, -1.55, 1.1),
+]
 MAX_HOUSES = 60
 
 
@@ -122,10 +135,15 @@ def districts_and_lots() -> tuple[list[dict], list[dict]]:
             j = cj + (ax[1] * a + perp[1] * b) * CELL
             lots.append({"slot": d * 6 + n, "district": d, "half": 0 if n < 3 else 1, "at": [round(i, 3), round(j, 3)],
                          "facing": facing_toward(i, j, ci, cj)})
+        decor = []
+        for k, (dsprite, a, b, dt) in enumerate(DECOR):
+            i = ci + (ax[0] * a + perp[0] * b) * CELL
+            j = cj + (ax[1] * a + perp[1] * b) * CELL
+            decor.append({"sprite": dsprite, "at": [round(i, 3), round(j, 3)], "tiles": dt})
         districts.append({
             "index": d, "id": key, "name": {"ko": ko, "en": en}, "at": [ci, cj], "grid": [gi, gj],
-            "plot": PLOT_SPRITES[d % len(PLOT_SPRITES)], "size": PLOT_TILES,
             "facility": {"sprite": sprite, "at": [ci, cj], "tiles": tiles} if sprite else None,
+            "decor": decor,
         })
     lots.sort(key=lambda l: l["slot"])
     assert len(lots) == MAX_HOUSES
@@ -147,7 +165,17 @@ def measure(name: str, kind: str, size: int) -> dict:
     out = folder / f"{name}.webp"
     # Keep the canvas aspect (plots are 2:1); `size` is the output width.
     im.resize((size, max(1, round(size * h / w))), Image.LANCZOS).save(out, "WEBP", quality=84, method=6)
+    extra = {}
+    if kind == "part":
+        # Slope of the base line (lowest opaque pixel per column, middle 80%): parts made to run along a
+        # ground edge are sheared to the true 2:1 slope by the renderer.
+        cols = np.where(mask.any(axis=0))[0]
+        lo, hi = cols[0] + int(0.1 * len(cols)), cols[-1] - int(0.1 * len(cols))
+        xs_ = np.arange(lo, hi)
+        bottoms = np.array([np.where(mask[:, x])[0].max() for x in xs_])
+        extra["baseSlope"] = round(float(np.polyfit(xs_, bottoms, 1)[0]), 4)
     return {
+        **extra,
         "src": f"/assets/v2/{kind}/{name}.webp",
         "anchor": [round(cx / w, 4), round(cy / h, 4)],
         "tileWidth": round(tile / w, 4),
@@ -163,7 +191,7 @@ def main() -> None:
         shutil.rmtree(OUT)
     districts, lot_list = districts_and_lots()
     geo: dict = {"version": 4, "legacyStyles": LEGACY_STYLES, "maxHouses": MAX_HOUSES, "groundAspect": GROUND_ASPECT,
-                 "plotTiles": PLOT_TILES, "plazaPlot": PLAZA_PLOT, "plaza": PLAZA, "districts": districts, "houses": {}, "sprites": {},
+                 "plotTiles": PLOT_TILES, "parts": PARTS, "snowTexture": f"/assets/v2/texture/{SNOW_TEXTURE}.webp", "plaza": PLAZA, "districts": districts, "houses": {}, "sprites": {},
                  "auroraMinHouses": AURORA_MIN_HOUSES, "props": PROPS, "lots": lot_list}
     for key, (ko, en, a, b) in HOUSES.items():
         geo["houses"][key] = {"label": {"ko": ko, "en": en}, "a": a, "b": b}
@@ -178,13 +206,15 @@ def main() -> None:
         geo["sprites"][name] = measure(name, "facility", BIG_SIZE if tiles >= 2 else SPRITE_SIZE)
     for name in PROPS.values():
         geo["sprites"][name] = measure(name, "prop", SPRITE_SIZE)
-    # Plot art that exists (the generator may still be drawing some); missing designs reuse one that exists.
-    have = [n for n in PLOT_SPRITES if (SRC / f"{n}.webp").exists()]
-    for name in [*have, PLAZA_PLOT]:
-        geo["sprites"][name] = measure(name, "plot", 1400)
-    for d in districts:
-        if d["plot"] not in have:
-            d["plot"] = have[d["index"] % len(have)]
+    for name in [*PARTS.values(), *DECOR_PROPS]:
+        if (SRC / f"{name}.webp").exists():
+            geo["sprites"][name] = measure(name, "part", SPRITE_SIZE)
+        else:
+            print("missing part", name)
+    tex = SRC / f"{SNOW_TEXTURE}.webp"
+    if tex.exists():
+        (OUT / "texture").mkdir(parents=True, exist_ok=True)
+        Image.open(tex).convert("RGB").resize((512, 512), Image.LANCZOS).save(OUT / "texture" / f"{SNOW_TEXTURE}.webp", "WEBP", quality=82)
     # Optional animated rink frames: landmark_rink_f0..fN (same canvas as landmark_rink).
     frames = sorted(SRC.glob("landmark_rink_f*.webp"))
     if frames:

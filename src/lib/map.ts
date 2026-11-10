@@ -1,6 +1,7 @@
 /**
- * Village map (docs/11-village-expansion-plan.md): fenced snowy plots laid edge to edge — the cathedral
- * plaza plot in the middle and up to 10 district plots ("동네") of 6 lots around it. All numbers come from
+ * Village map (docs/11-village-expansion-plan.md): a board of square plots — the cathedral plaza in the
+ * middle and up to 10 district plots ("동네") of 6 lots around it. Opened plots form one piece of ground;
+ * the fence (modular parts) runs only along the outer edge; districts are separated by cobble paths. All numbers come from
  * src/lib/village-geometry.json, written by scripts/build_village.py and shared with the Flutter app.
  *
  * World units: one ground tile is TILE wide on screen. Ground point (i, j) in tile units projects to
@@ -16,7 +17,9 @@ export const HOUSE_TILES = 1.7;
 export const GROUND_ASPECT: number = geo.groundAspect;
 /** Plot width in ground tiles (the fenced diamond). */
 export const PLOT_TILES: number = geo.plotTiles;
-export const PLAZA_PLOT: string = geo.plazaPlot;
+/** Fence and gate parts (sprite names). */
+export const PARTS = geo.parts as { fence: string; post: string; gate: string };
+export const SNOW_TEXTURE: string = geo.snowTexture;
 export const AURORA_MIN_HOUSES: number = geo.auroraMinHouses;
 
 export interface Point {
@@ -29,8 +32,10 @@ export interface SpriteGeo {
   tileWidth: number;
   bbox: number[];
   hull: number[][];
-  /** Canvas height / width (1 for square sprites, 0.5 for plots). */
+  /** Canvas height / width (1 for square sprites). */
   aspect?: number;
+  /** Parts only: measured slope (dy/dx) of the base line, before correction to 0.5. */
+  baseSlope?: number;
 }
 export const SPRITES = geo.sprites as Record<string, SpriteGeo>;
 export const HOUSE_SPRITES = geo.houses as Record<HouseStyle, { label: { ko: string; en: string }; a: string; b: string }>;
@@ -65,20 +70,22 @@ export interface DistrictDef {
   name: { ko: string; en: string };
   /** Plot centre (ground tiles). */
   at: [number, number];
-  /** Plot art (fenced diamond). */
-  plot: string;
+  /** Plot cell on the board (plaza = 0,0). */
+  grid: [number, number];
   facility: FacilityDef | null;
+  decor: FacilityDef[];
 }
 export const DISTRICTS: readonly DistrictDef[] = (
-  geo.districts as Array<{ index: number; id: string; name: { ko: string; en: string }; at: number[]; plot: string;
-    facility: { sprite: string; at: number[]; tiles: number } | null }>
+  geo.districts as Array<{ index: number; id: string; name: { ko: string; en: string }; at: number[]; grid: number[];
+    facility: { sprite: string; at: number[]; tiles: number } | null; decor: Array<{ sprite: string; at: number[]; tiles: number }> }>
 ).map((d) => ({
   index: d.index,
   id: d.id,
   name: d.name,
   at: [d.at[0], d.at[1]],
-  plot: d.plot,
+  grid: [d.grid[0], d.grid[1]],
   facility: d.facility ? { id: `d${d.index}`, sprite: d.facility.sprite, at: [d.facility.at[0], d.facility.at[1]], tiles: d.facility.tiles } : null,
+  decor: d.decor.map((x, k) => ({ id: `d${d.index}-decor${k}`, sprite: x.sprite, at: [x.at[0], x.at[1]] as [number, number], tiles: x.tiles })),
 }));
 export const PLAZA: readonly FacilityDef[] = (geo.plaza as Array<{ id: string; sprite: string; at: number[]; tiles: number }>).map((f) => ({
   ...f,
@@ -134,11 +141,96 @@ export function visibleLots(village: Pick<Village, "openHalves">): LotDef[] {
   return LOTS.filter((l) => isHalfOpen(village.openHalves, l.slot));
 }
 
-/** Plaza facilities plus the facility of every district that has at least one opened half. */
+/** Plaza facilities plus, for every district with an opened half, its facility and decoration. */
 export function facilitiesFor(village: Pick<Village, "openHalves">): FacilityDef[] {
   const out = [...PLAZA];
-  for (const d of DISTRICTS) if (d.facility && districtState(village.openHalves, d.index) > 0) out.push(d.facility);
+  for (const d of DISTRICTS) {
+    if (districtState(village.openHalves, d.index) === 0) continue;
+    if (d.facility) out.push(d.facility);
+    out.push(...d.decor.filter((x) => SPRITES[x.sprite]));
+  }
   return out;
+}
+
+// ---------- ground, fence and paths (computed from the opened plot cells) ----------
+
+export interface Edge {
+  /** Ground tiles of the edge's two ends. */
+  a: [number, number];
+  b: [number, number];
+  /** Axis the edge runs along: "i" (screen ↘) or "j" (screen ↙). */
+  axis: "i" | "j";
+  /** True when the edge faces the viewer (its outside is +i or +j). */
+  front: boolean;
+}
+
+/** Board cells of the plaza and every district with an opened half. */
+export function openCells(village: Pick<Village, "openHalves">): Array<[number, number]> {
+  return [[0, 0], ...DISTRICTS.filter((d) => districtState(village.openHalves, d.index) > 0).map((d) => d.grid)];
+}
+
+/** Ground diamond of one board cell. */
+export function cellDiamond(cell: [number, number], grow = 0): Point[] {
+  return tileDiamond(cell[0] * PLOT_TILES, cell[1] * PLOT_TILES, PLOT_TILES + grow);
+}
+
+/** Outer edges (fence + bank) and inner edges (cobble paths) of the opened ground. */
+export function groundEdges(village: Pick<Village, "openHalves">): { outer: Edge[]; inner: Edge[] } {
+  const cells = openCells(village);
+  const key = (c: [number, number]) => `${c[0]},${c[1]}`;
+  const has = new Set(cells.map(key));
+  const h = PLOT_TILES / 2;
+  const outer: Edge[] = [];
+  const inner: Edge[] = [];
+  for (const [gi, gj] of cells) {
+    const ci = gi * PLOT_TILES;
+    const cj = gj * PLOT_TILES;
+    const sides: Array<{ n: [number, number]; e: Edge }> = [
+      { n: [gi + 1, gj], e: { a: [ci + h, cj - h], b: [ci + h, cj + h], axis: "j", front: true } },
+      { n: [gi, gj + 1], e: { a: [ci - h, cj + h], b: [ci + h, cj + h], axis: "i", front: true } },
+      { n: [gi - 1, gj], e: { a: [ci - h, cj - h], b: [ci - h, cj + h], axis: "j", front: false } },
+      { n: [gi, gj - 1], e: { a: [ci - h, cj - h], b: [ci + h, cj - h], axis: "i", front: false } },
+    ];
+    for (const { n, e } of sides) {
+      if (!has.has(key(n))) outer.push(e);
+      else if (e.front) inner.push(e); // count each shared edge once
+    }
+  }
+  return { outer, inner };
+}
+
+export interface FencePiece {
+  kind: "fence" | "post" | "gate";
+  at: [number, number];
+  mirror: boolean;
+  depth: number;
+}
+
+/** Fence pieces along the outer edge: a post at every corner, straight parts between, the gate at the
+ *  middle of the free district's front edge. Each piece carries its painter's depth. */
+export function fencePieces(village: Pick<Village, "openHalves">): FencePiece[] {
+  const { outer } = groundEdges(village);
+  const pieces: FencePiece[] = [];
+  const posts = new Map<string, [number, number]>();
+  const gateCell = DISTRICTS[0].grid;
+  const gateEdgeMid: [number, number] = [gateCell[0] * PLOT_TILES + PLOT_TILES / 2, gateCell[1] * PLOT_TILES];
+  const SEG = 2.05; // ground tiles covered by one straight part
+  for (const e of outer) {
+    posts.set(`${e.a}`, e.a);
+    posts.set(`${e.b}`, e.b);
+    const len = Math.hypot(e.b[0] - e.a[0], e.b[1] - e.a[1]);
+    const isGateEdge = e.front && e.axis === "j" && Math.abs(e.a[0] - gateEdgeMid[0]) < 0.01 && e.a[1] < gateEdgeMid[1] && e.b[1] > gateEdgeMid[1];
+    let n = Math.max(1, Math.round(len / SEG));
+    if (isGateEdge && n % 2 === 0) n += 1; // odd count → exactly one middle piece for the gate
+    for (let k = 0; k < n; k++) {
+      const t = (k + 0.5) / n;
+      const at: [number, number] = [e.a[0] + (e.b[0] - e.a[0]) * t, e.a[1] + (e.b[1] - e.a[1]) * t];
+      const middle = isGateEdge && k === (n - 1) / 2;
+      pieces.push({ kind: middle ? "gate" : "fence", at, mirror: e.axis === "j", depth: at[0] + at[1] });
+    }
+  }
+  for (const at of posts.values()) pieces.push({ kind: "post", at, mirror: false, depth: at[0] + at[1] + 0.01 });
+  return pieces;
 }
 
 export type MapEntity =
@@ -168,7 +260,7 @@ function bounds(points: Point[], padX: number, padTop: number, padBottom: number
   return [x0, y0, x1 - x0, y1 - y0];
 }
 
-/** Corners of a plot's fenced diamond (world). */
+/** Corners of a plot's diamond (world). */
 export function plotDiamond(at: [number, number]): Point[] {
   return tileDiamond(at[0], at[1], PLOT_TILES);
 }

@@ -115,7 +115,7 @@ try {
   await slot(A.page, 1).waitFor();
   await A.page.waitForFunction(() => document.querySelector('button[data-slot="1"]')?.getAttribute("data-state") === "occupied", null, { timeout: 15000 });
   check(true, "creator sees friend's house");
-  check(await A.page.getByText("2/8").isVisible(), "occupancy 2/8 on creator device");
+  check(await A.page.getByText("2/6").isVisible(), "occupancy 2/6 (free village) on creator device");
 
   // ---- real collision: C opens slot 3, D claims it first, C submits ----
   await C.page.goto(invite);

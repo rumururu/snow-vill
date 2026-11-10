@@ -81,13 +81,22 @@ the refund webhook depends on RevenueCat noticing the refund (RTDN not connected
 An earlier purchase on SM G525N (before the permission grant) was charged by Play but never reached RevenueCat;
 unacknowledged, so Google refunds it automatically within 3 days.
 
-Test data to remove after the refund check: villages "QA IAP test" (capacity 6) and "QA IAP test 2" (capacity 8) and their purchase/upgrade rows.
+### iOS (2026-11-10, shared iPad, TestFlight build 3, internal tester rumururu@gmail.com)
+
+TestFlight setup: builds 1–3 answered "no non-exempt encryption" (API), `ITSAppUsesNonExemptEncryption=false` added to
+Info.plist for later builds, internal group "내부 테스트" (all builds) with rumururu@gmail.com (same as ctw / claires-space).
+Upgrade sheet showed US$1.99 (device storefront) → Apple sheet "테스트 전용… 청구되지 않습니다" ₩2,900 → owner confirmed with the
+side button → webhook wrote `snowvill_purchases` (APP_STORE, SANDBOX, KRW 2900), wallet 1. The app had been closed while the
+purchase sheet was open (the UI-test run ended), so it did not spend the credit right away; on reopening, the sheet offered
+"보유한 이용권으로 키우기" and that turned "QA 아이패드" from capacity 6 to 8 (screen "0/8", wallet 0). This is the intended
+recovery path for a purchase that finishes while the app is gone. iOS refund not tested (no sandbox refund API).
+
+Test data to remove after the refund check: villages "QA IAP test" (capacity 6), "QA IAP test 2" (capacity 8) and "QA 아이패드" (capacity 8) and their purchase/upgrade rows.
 
 ## 7. Remaining
 
 | To do | Who | Note |
 |---|---|---|
 | Refund round trip with RTDN on: the first refund (`GPA.3371-0939-…`) was issued **before** RTDN was connected, so its notification was lost (`refunded_at` still null). Buy once more, refund, confirm `refunded_at`; then delete test data | Claude | needs a free phone with the tester account (M205N / G525N; the Note9 has no Google account) |
-| iPhone sandbox purchase via TestFlight | Claude | Android round trip done (§6) |
 | ASC review screenshot for the IAP, store listings, Play app content forms, data safety | Claude | before submitting for review |
 | Lower the RevenueCat v2 key to read-only | Claude | after setup |

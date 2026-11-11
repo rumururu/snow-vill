@@ -80,7 +80,7 @@ function useRinkFrame(): string | null {
 const LAND = landOutline();
 const LAND_TOP = Math.min(...LAND.map((p) => p.y));
 
-function Backdrop({ vb }: { vb: [number, number, number, number] }) {
+function Backdrop({ vb, aurora, base }: { vb: [number, number, number, number]; aurora: boolean; base: [number, number, number, number] }) {
   const left = vb[0] - vb[2];
   const right = vb[0] + vb[2] * 2;
   const horizon = LAND_TOP + 60;
@@ -102,6 +102,21 @@ function Backdrop({ vb }: { vb: [number, number, number, number] }) {
       {stars.map((st, k) => (
         <circle key={k} cx={st.x} cy={st.y} r={st.r} fill="#FFFFFF" opacity={0.35 + (k % 4) * 0.15} />
       ))}
+      {aurora && (() => {
+        // A soft band in the sky just above the hills (behind them), across the village's width.
+        const w = base[2] * 1.3;
+        const x = base[0] + base[2] / 2 - w / 2;
+        const h = 420;
+        const y = horizon - 330;
+        return (
+          <path
+            d={`M ${x} ${y + h * 0.45} C ${x + w * 0.3} ${y}, ${x + w * 0.6} ${y + h * 0.55}, ${x + w} ${y + h * 0.2} L ${x + w} ${y + h * 0.5} C ${x + w * 0.6} ${y + h * 0.95}, ${x + w * 0.3} ${y + h * 0.3}, ${x} ${y + h * 0.8} Z`}
+            fill="url(#sv-aurora)"
+            filter="url(#sv-blur)"
+            data-aurora
+          />
+        );
+      })()}
       <path d={hill(horizon, 160, 0.4)} fill="#3B4C74" />
       <path d={hill(horizon + 45, 100, 1.7)} fill="#56688F" />
       <rect x={left} y={horizon + 70} width={right - left} height={Math.abs(vb[3]) * 6 + 8000} fill="url(#sv-field)" />
@@ -148,11 +163,14 @@ export function VillageMapArt({ openHalves, houses, view, names = false, ghosts 
         </linearGradient>
         <linearGradient id="sv-aurora" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="#5FE3B0" stopOpacity="0" />
-          <stop offset="0.35" stopColor="#5FE3B0" stopOpacity="0.55" />
-          <stop offset="0.7" stopColor="#8FB7FF" stopOpacity="0.45" />
+          <stop offset="0.35" stopColor="#5FE3B0" stopOpacity="0.65" />
+          <stop offset="0.7" stopColor="#8FB7FF" stopOpacity="0.55" />
           <stop offset="1" stopColor="#C58CFF" stopOpacity="0" />
         </linearGradient>
         <GroundPattern />
+        <filter id="sv-blur" x="-10%" y="-50%" width="120%" height="200%">
+          <feGaussianBlur stdDeviation="18" />
+        </filter>
         <linearGradient id="sv-bank" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#C3CEDF" />
           <stop offset="1" stopColor="#9DABC2" />
@@ -164,15 +182,8 @@ export function VillageMapArt({ openHalves, houses, view, names = false, ghosts 
         </radialGradient>
       </defs>
       <rect x={vb[0] - 4000} y={vb[1] - 4000} width={vb[2] + 8000} height={vb[3] + 8000} fill="url(#sv-sky)" />
-      <Backdrop vb={vb} />
+      <Backdrop vb={vb} aurora={aurora} base={lotsView({ openHalves })} />
       <polygon points={pts(LAND)} fill="#DCE4EF" />
-      {aurora && (
-        <path
-          d={`M ${vb[0]} ${vb[1] + vb[3] * 0.12} C ${vb[0] + vb[2] * 0.3} ${vb[1] - vb[3] * 0.02}, ${vb[0] + vb[2] * 0.6} ${vb[1] + vb[3] * 0.2}, ${vb[0] + vb[2]} ${vb[1] + vb[3] * 0.05} L ${vb[0] + vb[2]} ${vb[1] + vb[3] * 0.13} C ${vb[0] + vb[2] * 0.6} ${vb[1] + vb[3] * 0.28}, ${vb[0] + vb[2] * 0.3} ${vb[1] + vb[3] * 0.06}, ${vb[0]} ${vb[1] + vb[3] * 0.2} Z`}
-          fill="url(#sv-aurora)"
-          data-aurora
-        />
-      )}
       {/* Ghost districts: dashed outline (the forest still covers them); names are drawn on top later. */}
       {ghosts &&
         closed.map((d) => (

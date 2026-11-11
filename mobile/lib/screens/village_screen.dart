@@ -708,23 +708,34 @@ class _ClaimSheetState extends ConsumerState<_ClaimSheet> {
                 ),
                 const SizedBox(height: 8),
                 if (geometry != null)
-                  GridView.count(
-                    crossAxisCount: 3,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 1.05,
-                    children: [
-                      for (final s in pickerStyles)
-                        _PickTile(
-                          key: ValueKey('style-${s.name}'),
-                          selected: d.style == s,
-                          label: widget.styleLabel(l, s),
-                          onTap: () => setState(() => d.style = s),
-                          child: houseImage(s, 0, 54),
+                  LayoutBuilder(
+                    builder: (context, c) {
+                      // Icon grows with the tile (tablets) and the tile is only as tall as its content.
+                      final icon = ((c.maxWidth - 16) / 3 * 0.55).clamp(
+                        54.0,
+                        96.0,
+                      );
+                      return GridView(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: 8,
+                          mainAxisExtent: icon + 38,
                         ),
-                    ],
+                        children: [
+                          for (final s in pickerStyles)
+                            _PickTile(
+                              key: ValueKey('style-${s.name}'),
+                              selected: d.style == s,
+                              label: widget.styleLabel(l, s),
+                              onTap: () => setState(() => d.style = s),
+                              child: houseImage(s, 0, icon),
+                            ),
+                        ],
+                      );
+                    },
                   ),
                 const SizedBox(height: 14),
                 Text(
@@ -939,6 +950,7 @@ class _PickTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               child,
               const SizedBox(height: 2),
@@ -1393,13 +1405,16 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
               ),
             ),
             const SizedBox(height: 8),
-            GridView.count(
-              crossAxisCount: 2,
+            GridView(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 2.6,
+              // Fixed height, so the cards don't stretch on a tablet.
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                mainAxisExtent: 76,
+              ),
               children: [
                 for (final d in _choices)
                   Semantics(

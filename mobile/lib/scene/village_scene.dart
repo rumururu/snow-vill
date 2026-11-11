@@ -523,6 +523,44 @@ class _GroundPainter extends CustomPainter {
         ..close();
     }
 
+    // Aurora (enough houses): a soft band in the sky just above the hills (behind them).
+    if (village.houses.length >= g.auroraMinHouses) {
+      final vb = g.lotsView(open);
+      final w = vb.width * 1.3;
+      final x = vb.center.dx - w / 2;
+      const h = 420.0;
+      final y = horizon - 330;
+      final band = Path()
+        ..moveTo(x, y + h * 0.45)
+        ..cubicTo(x + w * 0.3, y, x + w * 0.6, y + h * 0.55, x + w, y + h * 0.2)
+        ..lineTo(x + w, y + h * 0.5)
+        ..cubicTo(
+          x + w * 0.6,
+          y + h * 0.95,
+          x + w * 0.3,
+          y + h * 0.3,
+          x,
+          y + h * 0.8,
+        )
+        ..close();
+      canvas.drawPath(
+        band,
+        Paint()
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18)
+          ..shader = ui.Gradient.linear(
+            Offset(x, 0),
+            Offset(x + w, 0),
+            const [
+              Color(0x005FE3B0),
+              Color(0xA65FE3B0),
+              Color(0x8C8FB7FF),
+              Color(0x00C58CFF),
+            ],
+            const [0, 0.35, 0.7, 1],
+          ),
+      );
+    }
+
     canvas.drawPath(
       hill(horizon, 160, 0.4),
       Paint()..color = const Color(0xFF3B4C74),

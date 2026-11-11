@@ -1,23 +1,27 @@
 /**
- * Village map (docs/11-village-expansion-plan.md): a board of square plots — the cathedral plaza in the
- * middle and up to 10 district plots ("동네") of 6 lots around it. Opened plots form one piece of ground;
- * the fence (modular parts) runs only along the outer edge; districts are separated by cobble paths. All numbers come from
- * src/lib/village-geometry.json, written by scripts/build_village.py and shared with the Flutter app.
+ * Village map (docs/11-village-expansion-plan.md, layout v5): the cathedral plaza on a small rise in the middle;
+ * districts ("동네") are round clearings in a snowy fir forest around it (6 inner, 4 outer), each joined to the
+ * plaza by a curved path, each at its own height. A district's landmark sits in its centre with 6 houses
+ * around it. Closed districts are still forest. All numbers come from src/lib/village-geometry.json, written by
+ * scripts/build_village.py and shared with the Flutter app.
  *
- * World units: one ground tile is TILE wide on screen. Ground point (i, j) in tile units projects to
- *   x = (i - j) * TILE / 2,  y = (i + j) * TILE / 4      (2:1 isometric, plaza centre at 0,0)
+ * World units: one ground tile is TILE wide on screen. Ground point (i, j) at elevation z projects to
+ *   x = (i - j) * TILE / 2,  y = (i + j) * TILE / 4 - z * ELEVATION_PX      (2:1 isometric, plaza at 0,0)
  */
 import geo from "./village-geometry.json";
 import type { Direction, HouseStyle, Village } from "./village";
 import { districtState, isHalfOpen } from "./village";
 
 export const TILE = 100;
-/** On-screen house size in tiles (lots are ≥ 2.25 tiles apart, so houses keep a gap). */
+/** On-screen house size in tiles (lots are ≥ 2.3 tiles apart, so houses keep a gap). */
 export const HOUSE_TILES = 1.7;
 export const GROUND_ASPECT: number = geo.groundAspect;
-/** Plot width in ground tiles (the fenced diamond). */
-export const PLOT_TILES: number = geo.plotTiles;
-/** Fence and gate parts (sprite names). */
+/** Screen px per elevation unit (at TILE = 100). */
+export const ELEVATION_PX: number = geo.elevationPx;
+export const PATH_WIDTH: number = geo.pathWidth;
+export const DISTRICT_RADIUS: number = geo.districtRadius;
+export const PLAZA_BASE_RADIUS: number = geo.plazaBaseRadius;
+const HULL_MARGIN: number = geo.hullMargin;
 export const PARTS = geo.parts as { fence: string; post: string; gate: string };
 export const SNOW_TEXTURE: string = geo.snowTexture;
 export const AURORA_MIN_HOUSES: number = geo.auroraMinHouses;
@@ -47,14 +51,16 @@ export interface LotDef {
   district: number;
   half: 0 | 1;
   at: [number, number];
-  /** Door direction that faces the plaza (default in the claim sheet). */
+  z: number;
+  /** Door direction that faces the district's landmark (default in the claim sheet). */
   facing: Direction;
 }
-export const LOTS: readonly LotDef[] = (geo.lots as Array<{ slot: number; district: number; half: number; at: number[]; facing: number }>).map((l) => ({
+export const LOTS: readonly LotDef[] = (geo.lots as Array<{ slot: number; district: number; half: number; at: number[]; z: number; facing: number }>).map((l) => ({
   slot: l.slot,
   district: l.district,
   half: l.half as 0 | 1,
   at: [l.at[0], l.at[1]],
+  z: l.z,
   facing: l.facing as Direction,
 }));
 
@@ -62,44 +68,77 @@ export interface FacilityDef {
   id: string;
   sprite: string;
   at: [number, number];
+  z: number;
   tiles: number;
 }
-export interface DistrictDef {
+/** A raised piece of ground: the plaza or a district clearing. */
+export interface AreaDef {
+  at: [number, number];
+  z: number;
+  /** Irregular round outline on the ground plane (tiles). */
+  outline: Array<[number, number]>;
+}
+export interface DistrictDef extends AreaDef {
   index: number;
   id: string;
   name: { ko: string; en: string };
-  /** Plot centre (ground tiles). */
-  at: [number, number];
-  /** Plot cell on the board (plaza = 0,0). */
-  grid: [number, number];
   facility: FacilityDef | null;
   decor: FacilityDef[];
+  /** Path centre line from the plaza to the clearing: [i, j, z] points. */
+  path: Array<[number, number, number]>;
+  /** Frozen pond outline (lake district), drawn in code. */
+  pond: Array<[number, number]> | null;
 }
+type RawFacility = { sprite: string; at: number[]; z: number; tiles: number };
+const pair = (p: number[]) => [p[0], p[1]] as [number, number];
 export const DISTRICTS: readonly DistrictDef[] = (
-  geo.districts as Array<{ index: number; id: string; name: { ko: string; en: string }; at: number[]; grid: number[];
-    facility: { sprite: string; at: number[]; tiles: number } | null; decor: Array<{ sprite: string; at: number[]; tiles: number }> }>
+  geo.districts as Array<{ index: number; id: string; name: { ko: string; en: string }; at: number[]; z: number; outline: number[][];
+    path: number[][]; pond: number[][] | null; facility: RawFacility | null; decor: RawFacility[] }>
 ).map((d) => ({
   index: d.index,
   id: d.id,
   name: d.name,
-  at: [d.at[0], d.at[1]],
-  grid: [d.grid[0], d.grid[1]],
-  facility: d.facility ? { id: `d${d.index}`, sprite: d.facility.sprite, at: [d.facility.at[0], d.facility.at[1]], tiles: d.facility.tiles } : null,
-  decor: d.decor.map((x, k) => ({ id: `d${d.index}-decor${k}`, sprite: x.sprite, at: [x.at[0], x.at[1]] as [number, number], tiles: x.tiles })),
+  at: pair(d.at),
+  z: d.z,
+  outline: d.outline.map(pair),
+  path: d.path.map((p) => [p[0], p[1], p[2]] as [number, number, number]),
+  pond: d.pond ? d.pond.map(pair) : null,
+  facility: d.facility ? { id: `d${d.index}`, sprite: d.facility.sprite, at: pair(d.facility.at), z: d.facility.z, tiles: d.facility.tiles } : null,
+  decor: d.decor.map((x, k) => ({ id: `d${d.index}-decor${k}`, sprite: x.sprite, at: pair(x.at), z: x.z, tiles: x.tiles })),
 }));
-export const PLAZA: readonly FacilityDef[] = (geo.plaza as Array<{ id: string; sprite: string; at: number[]; tiles: number }>).map((f) => ({
+export const PLAZA: readonly FacilityDef[] = (geo.plaza as Array<{ id: string; sprite: string; at: number[]; z: number; tiles: number }>).map((f) => ({
   ...f,
-  at: [f.at[0], f.at[1]] as [number, number],
+  at: pair(f.at),
+}));
+export const PLAZA_AREA: AreaDef = {
+  at: pair(geo.plazaArea.at),
+  z: geo.plazaArea.z,
+  outline: (geo.plazaArea.outline as number[][]).map(pair),
+};
+
+export interface TreeDef {
+  sprite: string;
+  at: [number, number];
+  z: number;
+  tiles: number;
+  mirror: boolean;
+}
+export const FOREST: readonly TreeDef[] = (geo.forest as Array<{ sprite: string; at: number[]; z: number; tiles: number; mirror: boolean }>).map((t) => ({
+  sprite: t.sprite,
+  at: pair(t.at),
+  z: t.z,
+  tiles: t.tiles,
+  mirror: t.mirror,
 }));
 
-export function project(i: number, j: number): Point {
-  return { x: ((i - j) * TILE) / 2, y: ((i + j) * TILE) / 4 };
+export function project(i: number, j: number, z = 0): Point {
+  return { x: ((i - j) * TILE) / 2, y: ((i + j) * TILE) / 4 - z * ELEVATION_PX };
 }
 
 /** Diamond outline of a ground tile (footprint) centred on (i, j), `size` tiles wide. */
-export function tileDiamond(i: number, j: number, size = 1): Point[] {
+export function tileDiamond(i: number, j: number, size = 1, z = 0): Point[] {
   const h = size / 2;
-  return [project(i - h, j - h), project(i + h, j - h), project(i + h, j + h), project(i - h, j + h)];
+  return [project(i - h, j - h, z), project(i + h, j - h, z), project(i + h, j + h, z), project(i - h, j + h, z)];
 }
 
 /** View + mirroring for a door direction (0 = A, 1 = A mirrored, 2 = B, 3 = B mirrored). */
@@ -115,18 +154,18 @@ export interface Placed {
   height: number;
 }
 /** Where a sprite is drawn so that its measured base lands on ground (i, j), `tiles` wide. */
-export function placeSprite(sprite: string, i: number, j: number, tiles = 1): Placed {
+export function placeSprite(sprite: string, i: number, j: number, tiles = 1, z = 0): Placed {
   const g = SPRITES[sprite];
-  const ground = project(i, j);
+  const ground = project(i, j, z);
   const width = (TILE * tiles) / g.tileWidth;
   const height = width * (g.aspect ?? 1);
   return { x: ground.x - g.anchor[0] * width, y: ground.y - g.anchor[1] * height, width, height };
 }
 
 /** Tap polygon (sprite hull) in world coords; mirrored sprites flip around the anchor. */
-export function spriteHull(sprite: string, i: number, j: number, tiles = 1, mirror = false): Point[] {
+export function spriteHull(sprite: string, i: number, j: number, tiles = 1, mirror = false, z = 0): Point[] {
   const g = SPRITES[sprite];
-  const r = placeSprite(sprite, i, j, tiles);
+  const r = placeSprite(sprite, i, j, tiles, z);
   const ax = r.x + g.anchor[0] * r.width;
   return g.hull.map(([u, v]) => {
     const x = r.x + u * r.width;
@@ -152,91 +191,122 @@ export function facilitiesFor(village: Pick<Village, "openHalves">): FacilityDef
   return out;
 }
 
-// ---------- ground, fence and paths (computed from the opened plot cells) ----------
+// ---------- ground, paths and forest ----------
 
-export interface Edge {
-  /** Ground tiles of the edge's two ends. */
-  a: [number, number];
-  b: [number, number];
-  /** Axis the edge runs along: "i" (screen ↘) or "j" (screen ↙). */
-  axis: "i" | "j";
-  /** True when the edge faces the viewer (its outside is +i or +j). */
-  front: boolean;
+type G = [number, number];
+
+function convexHull(points: G[]): G[] {
+  const p = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o: G, a: G, b: G) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lower: G[] = [];
+  for (const q of p) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], q) <= 0) lower.pop();
+    lower.push(q);
+  }
+  const upper: G[] = [];
+  for (const q of [...p].reverse()) {
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], q) <= 0) upper.pop();
+    upper.push(q);
+  }
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
 }
 
-/** Board cells of the plaza and every district with an opened half. */
-export function openCells(village: Pick<Village, "openHalves">): Array<[number, number]> {
-  return [[0, 0], ...DISTRICTS.filter((d) => districtState(village.openHalves, d.index) > 0).map((d) => d.grid)];
-}
-
-/** Ground diamond of one board cell. */
-export function cellDiamond(cell: [number, number], grow = 0): Point[] {
-  return tileDiamond(cell[0] * PLOT_TILES, cell[1] * PLOT_TILES, PLOT_TILES + grow);
-}
-
-/** Outer edges (fence + bank) and inner edges (cobble paths) of the opened ground. */
-export function groundEdges(village: Pick<Village, "openHalves">): { outer: Edge[]; inner: Edge[] } {
-  const cells = openCells(village);
-  const key = (c: [number, number]) => `${c[0]},${c[1]}`;
-  const has = new Set(cells.map(key));
-  const h = PLOT_TILES / 2;
-  const outer: Edge[] = [];
-  const inner: Edge[] = [];
-  for (const [gi, gj] of cells) {
-    const ci = gi * PLOT_TILES;
-    const cj = gj * PLOT_TILES;
-    const sides: Array<{ n: [number, number]; e: Edge }> = [
-      { n: [gi + 1, gj], e: { a: [ci + h, cj - h], b: [ci + h, cj + h], axis: "j", front: true } },
-      { n: [gi, gj + 1], e: { a: [ci - h, cj + h], b: [ci + h, cj + h], axis: "i", front: true } },
-      { n: [gi - 1, gj], e: { a: [ci - h, cj - h], b: [ci - h, cj + h], axis: "j", front: false } },
-      { n: [gi, gj - 1], e: { a: [ci - h, cj - h], b: [ci + h, cj - h], axis: "i", front: false } },
-    ];
-    for (const { n, e } of sides) {
-      if (!has.has(key(n))) outer.push(e);
-      else if (e.front) inner.push(e); // count each shared edge once
+/** The opened village as ONE rounded shape on the ground plane (owner: not islands, no bridges): a convex
+ *  envelope of the plaza base and every opened clearing, resampled with a gently wavy edge. */
+export function villageShape(village: Pick<Village, "openHalves">): G[] {
+  const circles: Array<[number, number, number]> = [[0, 0, PLAZA_BASE_RADIUS]];
+  for (const d of DISTRICTS) if (districtState(village.openHalves, d.index) > 0) circles.push([d.at[0], d.at[1], DISTRICT_RADIUS + HULL_MARGIN]);
+  const pts: G[] = [];
+  for (const [ci, cj, r] of circles) for (let k = 0; k < 48; k++) pts.push([ci + r * Math.cos((k * Math.PI) / 24), cj + r * Math.sin((k * Math.PI) / 24)]);
+  const hull = convexHull(pts);
+  // resample every ~0.6 tiles and push each point out/in a little along the outward normal
+  const out: G[] = [];
+  let s = 0;
+  for (let k = 0; k < hull.length; k++) {
+    const a = hull[k];
+    const b = hull[(k + 1) % hull.length];
+    const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const n = Math.max(1, Math.round(L / 0.6));
+    const ni = (b[1] - a[1]) / (L || 1);
+    const nj = -(b[0] - a[0]) / (L || 1);
+    for (let t = 0; t < n; t++) {
+      const f = t / n;
+      const w = 0.22 * Math.sin(s * 0.55 + 0.7) + 0.12 * Math.sin(s * 1.37 + 2.1);
+      out.push([a[0] + (b[0] - a[0]) * f + ni * w, a[1] + (b[1] - a[1]) * f + nj * w]);
+      s += L / n;
     }
   }
-  return { outer, inner };
+  return out;
 }
 
-export interface FencePiece {
-  kind: "fence" | "post" | "gate";
-  at: [number, number];
-  mirror: boolean;
-  depth: number;
-}
-
-/** Fence pieces along the outer edge: a post at every corner, straight parts between, the gate at the
- *  middle of the free district's front edge. Each piece carries its painter's depth. */
-export function fencePieces(village: Pick<Village, "openHalves">): FencePiece[] {
-  const { outer } = groundEdges(village);
-  const pieces: FencePiece[] = [];
-  const posts = new Map<string, [number, number]>();
-  const gateCell = DISTRICTS[0].grid;
-  const gateEdgeMid: [number, number] = [gateCell[0] * PLOT_TILES + PLOT_TILES / 2, gateCell[1] * PLOT_TILES];
-  const SEG = 2.05; // ground tiles covered by one straight part
-  for (const e of outer) {
-    posts.set(`${e.a}`, e.a);
-    posts.set(`${e.b}`, e.b);
-    const len = Math.hypot(e.b[0] - e.a[0], e.b[1] - e.a[1]);
-    const isGateEdge = e.front && e.axis === "j" && Math.abs(e.a[0] - gateEdgeMid[0]) < 0.01 && e.a[1] < gateEdgeMid[1] && e.b[1] > gateEdgeMid[1];
-    let n = Math.max(1, Math.round(len / SEG));
-    if (isGateEdge && n % 2 === 0) n += 1; // odd count → exactly one middle piece for the gate
-    for (let k = 0; k < n; k++) {
-      const t = (k + 0.5) / n;
-      const at: [number, number] = [e.a[0] + (e.b[0] - e.a[0]) * t, e.a[1] + (e.b[1] - e.a[1]) * t];
-      const middle = isGateEdge && k === (n - 1) / 2;
-      pieces.push({ kind: middle ? "gate" : "fence", at, mirror: e.axis === "j", depth: at[0] + at[1] });
-    }
+export function pointInPolygon(p: G, poly: G[]): boolean {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i];
+    const [xj, yj] = poly[j];
+    if (yi > p[1] !== yj > p[1] && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) inside = !inside;
   }
-  for (const at of posts.values()) pieces.push({ kind: "post", at, mirror: false, depth: at[0] + at[1] + 0.01 });
-  return pieces;
+  return inside;
+}
+
+/** The village ground (z = 0): projected outline, and its bank (side wall) quads to draw first. */
+export function shapeOutline(shape: G[]): Point[] {
+  return shape.map(([i, j]) => project(i, j, 0));
+}
+export function shapeBank(shape: G[], height = 0.45): Point[][] {
+  const top = shapeOutline(shape);
+  const drop = height * ELEVATION_PX;
+  return top.map((p, k) => {
+    const q = top[(k + 1) % top.length];
+    return [p, q, { x: q.x, y: q.y + drop }, { x: p.x, y: p.y + drop }];
+  });
+}
+
+/** Projected outline of an area (plaza mound top, or a district clearing for hit tests / ghosts). */
+export function areaOutline(a: AreaDef): Point[] {
+  return a.outline.map(([i, j]) => project(i, j, a.z));
+}
+
+/** Bank (side wall) quads of the raised plaza mound. Drawn before its top. */
+export function areaBank(a: AreaDef): Point[][] {
+  const top = areaOutline(a);
+  const drop = (a.z + 0.05) * ELEVATION_PX;
+  return top.map((p, k) => {
+    const q = top[(k + 1) % top.length];
+    return [p, q, { x: q.x, y: q.y + drop }, { x: p.x, y: p.y + drop }];
+  });
+}
+
+/** A path's band (width PATH_WIDTH) as one polygon. */
+export function pathPolygon(line: Array<[number, number, number]>, width = PATH_WIDTH): Point[] {
+  const left: Point[] = [];
+  const right: Point[] = [];
+  const w = width / 2;
+  line.forEach(([i, j, z], k) => {
+    const a = line[Math.max(0, k - 1)];
+    const b = line[Math.min(line.length - 1, k + 1)];
+    const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    const ni = (-(b[1] - a[1]) / L) * w;
+    const nj = ((b[0] - a[0]) / L) * w;
+    left.push(project(i + ni, j + nj, z));
+    right.push(project(i - ni, j - nj, z));
+  });
+  return [...left, ...right.reverse()];
+}
+
+/** Trees still standing: outside the village shape, with a little room at the sides and more in front of
+ *  it (the viewer looks along +i+j, so trees just in front would hide houses). */
+export function forestFor(village: Pick<Village, "openHalves">, shape: G[] = villageShape(village)): TreeDef[] {
+  const near = (i: number, j: number) => pointInPolygon([i, j], shape);
+  return FOREST.filter(({ at: [i, j] }) => !(near(i, j) || near(i - 0.6, j) || near(i, j - 0.6) || near(i + 0.6, j) || near(i, j + 0.6) ||
+    near(i - 1.4, j - 1.4) || near(i - 2.4, j - 2.4)));
 }
 
 export type MapEntity =
   | { kind: "house"; slot: number; depth: number }
   | { kind: "lot"; slot: number; depth: number }
-  | { kind: "facility"; facility: FacilityDef; depth: number };
+  | { kind: "facility"; facility: FacilityDef; depth: number }
+  | { kind: "tree"; tree: TreeDef; depth: number };
 
 /** Painter's order: back → front by ground depth (i + j), ties by x. */
 export function mapOrder(village: MapVillage): MapEntity[] {
@@ -246,6 +316,7 @@ export function mapOrder(village: MapVillage): MapEntity[] {
     items.push({ e: { kind: taken.has(l.slot) ? "house" : "lot", slot: l.slot, depth: l.at[0] + l.at[1] }, x: l.at[0] - l.at[1] });
   }
   for (const f of facilitiesFor(village)) items.push({ e: { kind: "facility", facility: f, depth: f.at[0] + f.at[1] }, x: f.at[0] - f.at[1] });
+  for (const t of forestFor(village)) items.push({ e: { kind: "tree", tree: t, depth: t.at[0] + t.at[1] }, x: t.at[0] - t.at[1] });
   items.sort((a, b) => a.e.depth - b.e.depth || a.x - b.x);
   return items.map((i) => i.e);
 }
@@ -260,19 +331,21 @@ function bounds(points: Point[], padX: number, padTop: number, padBottom: number
   return [x0, y0, x1 - x0, y1 - y0];
 }
 
-/** Corners of a plot's diamond (world). */
-export function plotDiamond(at: [number, number]): Point[] {
-  return tileDiamond(at[0], at[1], PLOT_TILES);
-}
-
 /** Camera that frames the plaza and every opened district, with room for roofs and name chips. */
 export function lotsView(village: Pick<Village, "openHalves">): [number, number, number, number] {
-  const pts: Point[] = plotDiamond([0, 0]);
-  for (const d of DISTRICTS) if (districtState(village.openHalves, d.index) > 0) pts.push(...plotDiamond(d.at));
-  return bounds(pts, TILE * 0.3, TILE * HOUSE_TILES * 0.9, TILE * 0.6);
+  return bounds([...shapeOutline(villageShape(village)), ...areaOutline(PLAZA_AREA)], TILE * 0.4, TILE * HOUSE_TILES * 1.1, TILE * 0.7);
 }
 
 /** Camera that shows the whole possible village (all 10 districts), for zooming out. */
 export function fullView(): [number, number, number, number] {
-  return bounds(DISTRICTS.flatMap((d) => plotDiamond(d.at)), TILE * 0.3, TILE * HOUSE_TILES * 0.9, TILE * 0.6);
+  return bounds([PLAZA_AREA, ...DISTRICTS].flatMap(areaOutline), TILE * 1.2, TILE * HOUSE_TILES * 1.1, TILE * 1.2);
+}
+
+/** Outer edge of the land (forest), projected: the field is drawn inside it. */
+export function landOutline(): Point[] {
+  const R = 33;
+  return Array.from({ length: 48 }, (_, k) => {
+    const t = (2 * Math.PI * k) / 48;
+    return project(R * Math.cos(t), R * Math.sin(t));
+  });
 }

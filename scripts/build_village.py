@@ -13,6 +13,8 @@ Coordinates
 Directions (door facing), shared by server (`houses.direction`), app and web:
   0 = front-left (view A)   1 = front-right (A mirrored)   2 = back-right (view B)   3 = back-left (B mirrored)
 
+Elevation: every ground point also has z (elevation units); screen y moves up by z * elevationPx.
+
 Usage: python3 scripts/build_village.py   (Pillow + numpy)
 """
 import json
@@ -52,54 +54,80 @@ HOUSES = {
 }
 LEGACY_STYLES = ["sage", "indigo"]
 
-# Layout (owner decisions 2026-11-11): a board of square plots — the plaza in the middle and up to 10
-# district plots around it. Opened plots merge into one piece of ground (drawn in code); the fence runs only
-# along the village's outer edge and moves outward as districts open; districts are told apart by cobble
-# paths. A district plot holds a 3×3 grid: houses on the 4 corners and the 2 side cells across the plaza
-# axis, the district facility in the centre, the 2 cells on the plaza axis are walkways with decoration.
-# Lots of district d are slots d*6 … d*6+5; the first half (d*6+0..2) are the 3 houses nearest the plaza.
+# Layout (owner feedback 2026-11-11, v5): no square board. The cathedral plaza sits on a small rise in the
+# middle; districts ("동네") are round clearings in a snowy pine forest, 6 in an inner ring and 4 in an outer
+# ring, each joined to the plaza by a curved path. A district has its landmark in the centre and 6 houses
+# around it at slightly varied angles/distances (doors toward the landmark), with the side facing the plaza
+# left open as the entrance. Clearings sit at different heights (banks drawn in code). Closed districts are
+# still forest; their trees clear when the district opens. Landmarks stay near house size (owner: "too big").
+# Lots of district d are slots d*6 … d*6+5; the first half (d*6+0..2) are the 3 houses nearest the entrance.
 GROUND_ASPECT = 0.5                  # plain 2:1 isometric
-PLOT_TILES = 8.2                     # plot width in ground tiles
-PLOT_GAP = 0.0                       # plots touch (one continuous ground)
-CELL = 2.35                          # 3×3 grid pitch inside a plot
-PLAZA = [
-    {"id": "cathedral", "sprite": "landmark_cathedral", "at": [-0.4, -0.4], "tiles": 3.4},
-    {"id": "tree", "sprite": "tree_complete", "at": [2.1, 2.1], "tiles": 1.2},
-]
-# Modular parts (owner decision 2026-11-11): plain ground drawn in code, fences only on the village's outer
-# edge (fence_straight / fence_post), a gate arch at the front, and decoration props placed per district.
-PARTS = {"fence": "fence_straight", "post": "fence_post", "gate": "gate_arch"}
-DECOR_PROPS = ["prop_bench", "prop_bush", "prop_snowman_lantern", "prop_signpost"]
+ELEVATION_PX = 40                    # screen px (at TILE=100) per elevation unit
 SNOW_TEXTURE = "snow_texture"
-# id, name (ko), name (en), facility sprite, facility size in tiles
+PARTS = {"fence": "fence_straight", "post": "fence_post", "gate": "gate_arch"}   # kept for the plaza gate
+DECOR_PROPS = ["prop_bench", "prop_bush", "prop_snowman_lantern", "prop_signpost"]
+PLAZA_RADIUS = 4.4
+PLAZA_Z = 0.55                       # the cathedral mound; everything else is on the base level (z = 0)
+PLAZA = [
+    {"id": "cathedral", "sprite": "landmark_cathedral", "at": [-0.9, -0.9], "tiles": 2.5},
+    {"id": "tree", "sprite": "tree_complete", "at": [1.5, 1.2], "tiles": 1.05},
+    {"id": "plaza-lamp-a", "sprite": "prop_lamp", "at": [2.6, -1.0], "tiles": 0.5},
+    {"id": "plaza-lamp-b", "sprite": "prop_lamp", "at": [-1.0, 2.6], "tiles": 0.5},
+    {"id": "plaza-bench", "sprite": "prop_bench", "at": [0.4, 2.6], "tiles": 0.8},
+]
+# id, name (ko), name (en), landmark sprite (None = drawn in code), landmark size in tiles (houses are 1.7)
 DISTRICTS = [
-    ("snowflake", "눈송이 동네", "Snowflake Lane", "decor_snowfamily", 1.2),
-    ("rink", "링크 동네", "Ice Rink Lane", "landmark_rink", 2.4),
-    ("santa", "산타 동네", "Santa's Lane", "landmark_santa", 2.3),
-    ("rudolph", "루돌프 동네", "Rudolph Lane", "landmark_rudolph", 1.3),
-    ("sled", "썰매 동네", "Sled Lane", "decor_sled", 1.3),
-    ("forest", "숲속 동네", "Forest Lane", "prop_pines", 1.6),
-    ("lantern", "등불 동네", "Lantern Lane", "prop_lamp", 1.1),
-    ("starlight", "별빛 동네", "Starlight Lane", "prop_pines", 1.4),
-    ("hill", "언덕 동네", "Hill Lane", "prop_pines", 1.5),
-    ("lake", "호숫가 동네", "Lakeside Lane", "prop_lamp", 1.1),
+    ("snowflake", "눈송이 동네", "Snowflake Lane", "decor_snowfamily", 1.15),
+    ("rink", "링크 동네", "Ice Rink Lane", "landmark_rink", 1.8),
+    ("santa", "산타 동네", "Santa's Lane", "landmark_santa", 1.7),
+    ("rudolph", "루돌프 동네", "Rudolph Lane", "landmark_rudolph", 1.2),
+    ("sled", "썰매 동네", "Sled Lane", "decor_sled", 1.2),
+    ("forest", "숲속 동네", "Forest Lane", "prop_pines", 1.5),
+    ("lantern", "등불 동네", "Lantern Lane", "prop_lamp", 0.75),
+    ("starlight", "별빛 동네", "Starlight Lane", "tree_complete", 1.0),
+    ("hill", "언덕 동네", "Hill Lane", "prop_pines", 1.4),
+    ("lake", "호숫가 동네", "Lakeside Lane", None, 0),      # frozen pond drawn in code
 ]
-# Plot grid cells (gi, gj) per district; +i+j is toward the viewer. District 0 sits right in front of the
-# plaza (front-right), then the plaza's other neighbours, nearest first.
-GRID = [(1, 0), (0, 1), (1, 1), (-1, 0), (0, -1), (1, -1), (-1, 1), (-1, -1), (2, 0), (0, 2)]
-AURORA_MIN_HOUSES = 18
-PROPS = {"pines": "prop_pines", "lamp": "prop_lamp"}
-# Decoration per district, in plot-local cell units (a = toward the plaza, b = across): (sprite, a, b, tiles)
+# (ring radius, angle in degrees on the ground plane, elevation). Angle 45° = toward the viewer (+i+j).
+PLACES = [
+    # inner ring: district 0 in front of the plaza, district 1 behind it (the village first grows along the
+    # screen's vertical, which suits phones), then the sides
+    (12.5, 45), (12.5, 225), (12.5, 105), (12.5, 345), (12.5, 165), (12.5, 285),
+    # outer ring, in the gaps
+    (22.0, 75), (22.0, 15), (22.0, 135), (22.0, 315),
+]
+PLAZA_BASE_RADIUS = 6.0              # base ground around the cathedral mound
+# The opened village is ONE rounded shape (owner: not islands, no bridges): renderers wrap the plaza base and
+# every opened clearing (radius + HULL_MARGIN) in a convex envelope with a slightly wavy edge, at runtime.
+HULL_MARGIN = 0.6
+DISTRICT_RADIUS = 5.4
+POND_RADIUS = 1.7
+# House positions around the landmark, relative to the entrance direction (degrees, radius in tiles).
+# First three = first half (nearest the entrance).
+HOUSE_RING = [(55, 3.6), (-55, 3.6), (105, 3.9), (-105, 3.9), (155, 3.5), (-155, 3.5)]
+# Decoration around each clearing (degrees from the entrance, radius, sprite, tiles)
 DECOR = [
-    ("prop_signpost", 1.0, 0.45, 0.75),   # at the walkway into the plaza
-    ("prop_bench", -1.0, 0.55, 0.9),      # on the far walkway
-    ("prop_bush", -1.0, -0.5, 0.7),
-    ("prop_lamp", 1.55, 1.55, 0.55),      # plot corners (inside the edge)
-    ("prop_lamp", -1.55, -1.55, 0.55),
-    ("prop_snowman_lantern", -1.55, 1.55, 0.7),
-    ("prop_pines", 1.55, -1.55, 1.1),
+    (25, 5.0, "prop_lamp", 0.5), (-25, 5.0, "prop_lamp", 0.5),
+    (12, 3.0, "prop_signpost", 0.7),
+    (180, 2.1, "prop_bench", 0.8),
+    (128, 5.1, "prop_bush", 0.7), (-128, 5.1, "prop_snowman_lantern", 0.7),
+    (180, 5.1, "prop_pines", 1.0),
 ]
+FOREST_RADIUS = 30.0
+FOREST_PITCH = 1.9
+# Forest sprites (ChatGPT, 2026-11-11): (sprite, tiles min, tiles max, weight)
+TREES = [("prop_fir_tall", 0.95, 1.2, 4), ("prop_fir_mid", 1.0, 1.25, 4), ("prop_fir_small", 0.85, 1.0, 2), ("prop_rock", 0.7, 0.9, 1)]
+PATH_WIDTH = 1.0
+AURORA_MIN_HOUSES = 18
+PROPS = {"pines": "prop_pines", "lamp": "prop_lamp", "fir_tall": "prop_fir_tall", "fir_mid": "prop_fir_mid",
+         "fir_small": "prop_fir_small", "rock": "prop_rock"}
 MAX_HOUSES = 60
+
+
+def rand(n: int) -> float:
+    """Deterministic pseudo-random in [0, 1)."""
+    x = math.sin(n * 12.9898 + 78.233) * 43758.5453
+    return x - math.floor(x)
 
 
 def facing_toward(i: float, j: float, ti: float, tj: float) -> int:
@@ -109,45 +137,121 @@ def facing_toward(i: float, j: float, ti: float, tj: float) -> int:
     return max(vecs, key=lambda d: vecs[d][0] * di + vecs[d][1] * dj)
 
 
-def districts_and_lots() -> tuple[list[dict], list[dict]]:
-    pitch = PLOT_TILES + PLOT_GAP
+def polar(ci: float, cj: float, ang_deg: float, r: float) -> tuple[float, float]:
+    a = math.radians(ang_deg)
+    return ci + r * math.cos(a), cj + r * math.sin(a)
+
+
+def blob(ci: float, cj: float, r: float, seed: int, n: int = 32) -> list[list[float]]:
+    """Irregular round outline (ground plane), deterministic per seed."""
+    ph1, ph2 = rand(seed) * 6.283, rand(seed + 7) * 6.283
+    pts = []
+    for k in range(n):
+        t = 2 * math.pi * k / n
+        rr = r * (1 + 0.06 * math.sin(3 * t + ph1) + 0.04 * math.sin(5 * t + ph2))
+        pts.append([round(ci + rr * math.cos(t), 3), round(cj + rr * math.sin(t), 3)])
+    return pts
+
+
+def smooth(t: float) -> float:
+    return t * t * (3 - 2 * t)
+
+
+def path_line(a: tuple[float, float, float], b: tuple[float, float, float], bend: float, n: int = 18) -> list[list[float]]:
+    """Quadratic curve from a to b (i, j, z) bowed sideways by `bend` tiles; z eases between the ends."""
+    (ai, aj, az), (bi, bj, bz) = a, b
+    mi, mj = (ai + bi) / 2, (aj + bj) / 2
+    di, dj = bi - ai, bj - aj
+    L = math.hypot(di, dj) or 1
+    ci, cj = mi - dj / L * bend, mj + di / L * bend
+    out = []
+    for k in range(n + 1):
+        t = k / n
+        i = (1 - t) ** 2 * ai + 2 * (1 - t) * t * ci + t * t * bi
+        j = (1 - t) ** 2 * aj + 2 * (1 - t) * t * cj + t * t * bj
+        out.append([round(i, 3), round(j, 3), round(az + (bz - az) * smooth(t), 3)])
+    return out
+
+
+def dist_to_line(p: tuple[float, float], line: list[list[float]]) -> float:
+    best = 1e9
+    for (ai, aj, _), (bi, bj, _) in zip(line, line[1:]):
+        vi, vj = bi - ai, bj - aj
+        L2 = vi * vi + vj * vj or 1
+        t = max(0, min(1, ((p[0] - ai) * vi + (p[1] - aj) * vj) / L2))
+        best = min(best, math.hypot(p[0] - ai - t * vi, p[1] - aj - t * vj))
+    return best
+
+
+def districts_and_lots() -> tuple[list[dict], list[dict], list[dict], dict]:
     districts, lots = [], []
-    for d, ((gi, gj), (key, ko, en, sprite, tiles)) in enumerate(zip(GRID, DISTRICTS)):
-        ci, cj = gi * pitch, gj * pitch
-        # unit vector from the plot toward the plaza along the dominant grid axis
-        if abs(gi) >= abs(gj):
-            ax = (-1 if gi > 0 else 1, 0)
-        else:
-            ax = (0, -1 if gj > 0 else 1)
-        perp = (ax[1], ax[0])
-        cells = []
-        for a in (-1, 0, 1):          # along the plaza axis (+1 = the row next to the plaza)
-            for b in (-1, 0, 1):      # across it
-                if a == 0 and b == 0:
-                    continue          # centre: facility
-                if b == 0:
-                    continue          # walkway cells on the plaza axis
-                cells.append((a, b))
-        # 6 cells: (±1, ±1) corners and (0, ±1) sides; nearest to the plaza first
-        cells.sort(key=lambda ab: (-ab[0], ab[1]))
-        for n, (a, b) in enumerate(cells):
-            i = ci + (ax[0] * a + perp[0] * b) * CELL
-            j = cj + (ax[1] * a + perp[1] * b) * CELL
+    for d, ((R, ang), (key, ko, en, sprite, tiles)) in enumerate(zip(PLACES, DISTRICTS)):
+        z = 0.0
+        ci, cj = polar(0, 0, ang, R)
+        entrance = ang + 180                      # direction from the clearing toward the plaza
+        jitter = lambda n: (rand(d * 31 + n) - 0.5)
+        for n, (da, r) in enumerate(HOUSE_RING):
+            i, j = polar(ci, cj, entrance + da + jitter(n) * 14, r + jitter(n + 10) * 0.5)
             lots.append({"slot": d * 6 + n, "district": d, "half": 0 if n < 3 else 1, "at": [round(i, 3), round(j, 3)],
-                         "facing": facing_toward(i, j, ci, cj)})
+                         "z": z, "facing": facing_toward(i, j, ci, cj)})
         decor = []
-        for k, (dsprite, a, b, dt) in enumerate(DECOR):
-            i = ci + (ax[0] * a + perp[0] * b) * CELL
-            j = cj + (ax[1] * a + perp[1] * b) * CELL
-            decor.append({"sprite": dsprite, "at": [round(i, 3), round(j, 3)], "tiles": dt})
+        for k, (da, r, dsprite, dt) in enumerate(DECOR):
+            if key == "lake" and r < 3:           # the pond takes the centre
+                continue
+            i, j = polar(ci, cj, entrance + da, r)
+            decor.append({"sprite": dsprite, "at": [round(i, 3), round(j, 3)], "z": z, "tiles": dt})
+        if key == "lantern":                      # a small ring of lamps around the centre lamp
+            for k in range(3):
+                i, j = polar(ci, cj, entrance + 60 + k * 120, 1.1)
+                decor.append({"sprite": "prop_lamp", "at": [round(i, 3), round(j, 3)], "z": z, "tiles": 0.5})
+        start = polar(0, 0, ang, PLAZA_RADIUS - 1.2)
+        end = polar(ci, cj, entrance, 1.9 if sprite or key == "lake" else 1.2)
+        bend = (1.2 if d % 2 else -1.2) * (1.6 if R > 20 else 1)
         districts.append({
-            "index": d, "id": key, "name": {"ko": ko, "en": en}, "at": [ci, cj], "grid": [gi, gj],
-            "facility": {"sprite": sprite, "at": [ci, cj], "tiles": tiles} if sprite else None,
+            "index": d, "id": key, "name": {"ko": ko, "en": en}, "at": [round(ci, 3), round(cj, 3)], "z": z,
+            "radius": DISTRICT_RADIUS, "outline": blob(ci, cj, DISTRICT_RADIUS, d + 1),
+            "path": path_line((start[0], start[1], PLAZA_Z), (end[0], end[1], z), bend),
+            "facility": {"sprite": sprite, "at": [round(ci, 3), round(cj, 3)], "z": z, "tiles": tiles} if sprite else None,
+            "pond": blob(ci, cj, POND_RADIUS, d + 50, 24) if key == "lake" else None,
             "decor": decor,
         })
     lots.sort(key=lambda l: l["slot"])
     assert len(lots) == MAX_HOUSES
-    return districts, lots
+    # minimum spacing check (houses are 1.7 tiles wide)
+    for a in lots:
+        for b in lots:
+            if a["slot"] < b["slot"] and a["district"] == b["district"]:
+                assert math.dist(a["at"], b["at"]) > 2.3, (a, b)
+    plaza = {"at": [0, 0], "z": PLAZA_Z, "radius": PLAZA_RADIUS, "outline": blob(0, 0, PLAZA_RADIUS, 0),
+             "base": blob(0, 0, PLAZA_BASE_RADIUS, 99)}
+    # Forest: jittered grid of pines over the whole land; each belongs to the district it covers (cleared
+    # when that district opens) and lists districts whose path it blocks (cleared when they open).
+    forest = []
+    n = int(FOREST_RADIUS / FOREST_PITCH)
+    k = 0
+    for gi in range(-n, n + 1):
+        for gj in range(-n, n + 1):
+            k += 1
+            i = gi * FOREST_PITCH + (rand(k) - 0.5) * 1.4
+            j = gj * FOREST_PITCH + (rand(k + 999) - 0.5) * 1.4
+            if math.hypot(i, j) > FOREST_RADIUS or math.hypot(i, j) < PLAZA_RADIUS + 1.2:
+                continue
+            # clumps: a smooth density field leaves open snowfields between groves
+            dens = 0.5 + 0.3 * math.sin(i * 0.31 + 1.3) * math.cos(j * 0.27 - 0.4) + 0.25 * math.sin((i + j) * 0.17 + 2.1)
+            near = min(math.dist((i, j), dd["at"]) - DISTRICT_RADIUS for dd in districts)
+            if 0 < near < 1.6:
+                dens += 0.35                       # trees ring each clearing
+            if rand(k + 4242) > dens:
+                continue
+            zz = 0.0
+            pick = rand(k + 31) * sum(t[3] for t in TREES)
+            for sprite, lo, hi, wgt in TREES:
+                pick -= wgt
+                if pick <= 0:
+                    break
+            tiles = round(lo + rand(k + 77) * (hi - lo), 2)
+            forest.append({"sprite": sprite, "at": [round(i, 3), round(j, 3)], "z": zz, "tiles": tiles, "mirror": rand(k + 5) > 0.5})
+    return districts, lots, forest, plaza
 
 
 def measure(name: str, kind: str, size: int) -> dict:
@@ -160,6 +264,9 @@ def measure(name: str, kind: str, size: int) -> dict:
     else:
         start = 0.5 if kind == "house" else (ys.max() - 0.22 * (ys.max() - ys.min())) / h
     cx, cy, tile = widest_row(mask, start)
+    if name.startswith(("prop_fir", "prop_rock")):
+        cy = ys.max() - 0.03 * (ys.max() - ys.min())   # stand on the trunk / rock bottom
+        cx = (xs.min() + xs.max()) / 2
     folder = OUT / kind
     folder.mkdir(parents=True, exist_ok=True)
     out = folder / f"{name}.webp"
@@ -189,17 +296,20 @@ def measure(name: str, kind: str, size: int) -> dict:
 def main() -> None:
     if OUT.exists():
         shutil.rmtree(OUT)
-    districts, lot_list = districts_and_lots()
-    geo: dict = {"version": 4, "legacyStyles": LEGACY_STYLES, "maxHouses": MAX_HOUSES, "groundAspect": GROUND_ASPECT,
-                 "plotTiles": PLOT_TILES, "parts": PARTS, "snowTexture": f"/assets/v2/texture/{SNOW_TEXTURE}.webp", "plaza": PLAZA, "districts": districts, "houses": {}, "sprites": {},
+    districts, lot_list, forest, plaza_area = districts_and_lots()
+    geo: dict = {"version": 5, "legacyStyles": LEGACY_STYLES, "maxHouses": MAX_HOUSES, "groundAspect": GROUND_ASPECT,
+                 "elevationPx": ELEVATION_PX, "pathWidth": PATH_WIDTH, "parts": PARTS, "districtRadius": DISTRICT_RADIUS,
+                 "plazaBaseRadius": PLAZA_BASE_RADIUS, "hullMargin": HULL_MARGIN,
+                 "snowTexture": f"/assets/v2/texture/{SNOW_TEXTURE}.webp", "plazaArea": plaza_area,
+                 "plaza": [{**f, "z": PLAZA_Z} for f in PLAZA], "districts": districts, "forest": forest, "houses": {}, "sprites": {},
                  "auroraMinHouses": AURORA_MIN_HOUSES, "props": PROPS, "lots": lot_list}
     for key, (ko, en, a, b) in HOUSES.items():
         geo["houses"][key] = {"label": {"ko": ko, "en": en}, "a": a, "b": b}
         for name in {a, b}:
             if name not in geo["sprites"]:
                 geo["sprites"][name] = measure(name, "house", SPRITE_SIZE)
-    facility_sprites = {f["sprite"]: f["tiles"] for f in PLAZA}
-    facility_sprites.update({d[3]: d[4] for d in DISTRICTS if d[3]})
+    facility_sprites = {f["sprite"]: f["tiles"] for f in PLAZA if f["sprite"] not in PROPS.values() and not f["sprite"].startswith("prop_")}
+    facility_sprites.update({d[3]: max(2.0 if d[3] in ("landmark_rink", "landmark_santa") else 0, d[4]) for d in DISTRICTS if d[3]})
     for name, tiles in facility_sprites.items():
         if name in PROPS.values():
             continue

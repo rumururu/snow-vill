@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DISTRICTS, facilitiesFor, houseView, LOTS, mapOrder, PLAZA, SPRITES, visibleLots } from "./map";
+import { DISTRICTS, facilitiesFor, forestFor, houseView, LOTS, mapOrder, PLAZA, pointInPolygon, SPRITES, villageShape, visibleLots } from "./map";
 import { FREE_OPEN_HALVES, HOUSE_STYLES, MAX_CAPACITY, openNextHalf } from "./village";
 
 const dist = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[1] - b[1]);
@@ -20,11 +20,11 @@ describe("district map", () => {
     }
   });
 
-  it("keeps generous spacing: no two lots closer than 2.2 tiles; houses clear of facilities", () => {
+  it("keeps generous spacing: no two lots closer than 2.2 tiles; houses clear of landmarks", () => {
     let min = Infinity;
     for (const a of LOTS) for (const b of LOTS) if (a !== b) min = Math.min(min, dist(a.at, b.at));
     expect(min).toBeGreaterThanOrEqual(2.2);
-    const facilities = [...PLAZA, ...DISTRICTS.flatMap((d) => (d.facility ? [d.facility] : []))];
+    const facilities = [...PLAZA.filter((f) => !f.id.startsWith("plaza-")), ...DISTRICTS.flatMap((d) => (d.facility ? [d.facility] : []))];
     for (const lot of LOTS) for (const f of facilities) expect(dist(lot.at, f.at), `${lot.slot} vs ${f.id}`).toBeGreaterThan(f.tiles / 2 + 0.6);
   });
 
@@ -38,7 +38,8 @@ describe("district map", () => {
 
   it("free village shows district 0 only; opening a district brings its lots and facility", () => {
     expect(visibleLots({ openHalves: FREE_OPEN_HALVES }).map((l) => l.slot)).toEqual([0, 1, 2, 3, 4, 5]);
-    const ids = (open: number) => facilitiesFor({ openHalves: open }).filter((f) => !f.id.includes("decor")).map((f) => f.sprite).sort();
+    const ids = (open: number) =>
+      facilitiesFor({ openHalves: open }).filter((f) => !f.id.includes("decor") && !f.id.startsWith("plaza-")).map((f) => f.sprite).sort();
     expect(ids(FREE_OPEN_HALVES)).toEqual(["decor_snowfamily", "landmark_cathedral", "tree_complete"]);
     const santaHalf = openNextHalf(FREE_OPEN_HALVES, 2)!;
     expect(visibleLots({ openHalves: santaHalf }).map((l) => l.slot)).toEqual([0, 1, 2, 3, 4, 5, 12, 13, 14]);
@@ -46,6 +47,21 @@ describe("district map", () => {
     const santaFull = openNextHalf(santaHalf, 2)!;
     expect(visibleLots({ openHalves: santaFull })).toHaveLength(12);
     expect(openNextHalf(santaFull, 2)).toBeNull();
+  });
+
+  it("keeps landmarks near house size (owner: landmarks were too big)", () => {
+    for (const f of [...PLAZA, ...DISTRICTS.flatMap((d) => (d.facility ? [d.facility] : []))]) expect(f.tiles, f.sprite).toBeLessThanOrEqual(2.5);
+  });
+
+  it("is one shape: clears the forest inside the opened village, keeps it outside", () => {
+    const closedAll = forestFor({ openHalves: 0 }).length;
+    const free = forestFor({ openHalves: FREE_OPEN_HALVES });
+    expect(free.length).toBeLessThan(closedAll);
+    const shape = villageShape({ openHalves: FREE_OPEN_HALVES });
+    for (const t of free) expect(pointInPolygon(t.at, shape)).toBe(false);
+    for (const l of visibleLots({ openHalves: FREE_OPEN_HALVES })) expect(pointInPolygon(l.at, shape)).toBe(true);
+    const grown = villageShape({ openHalves: openNextHalf(FREE_OPEN_HALVES, 1)! });
+    for (const l of LOTS.filter((x) => x.district <= 1)) expect(pointInPolygon(l.at, grown)).toBe(true);
   });
 
   it("draws back to front", () => {

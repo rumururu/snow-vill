@@ -22,7 +22,7 @@ void main() {
       for (final h in g.houses.values) ...[h.a, h.b],
       for (final f in g.plaza) f.sprite,
       for (final d in g.districts) ...[if (d.facility != null) d.facility!.sprite, for (final x in d.decor) x.sprite],
-      g.parts.fence, g.parts.post, g.parts.gate,
+      for (final t in g.forest) t.sprite,
     };
     for (final s in used) {
       expect(g.sprites[s], isNotNull, reason: s);
@@ -31,23 +31,39 @@ void main() {
     expect(File(g.snowTexture).existsSync(), isTrue);
   });
 
-  test('free village: district 0 lots, plaza + district 0 ground, fence with one gate', () {
+  test('free village: district 0 lots inside one village shape with the plaza', () {
     final v = Village(id: 'x', name: 'x', createdAt: DateTime(2026), houses: const []);
     expect(g.visibleLots(v.openHalves).map((l) => l.slot), [0, 1, 2, 3, 4, 5]);
-    expect(g.openCells(v.openHalves), hasLength(2));
-    final fences = g.fencePieces(v.openHalves);
-    expect(fences.where((p) => p.kind == 'gate'), hasLength(1));
-    expect(fences.where((p) => p.kind == 'post'), isNotEmpty);
-    final edges = g.groundEdges(v.openHalves);
-    expect(edges.inner, hasLength(1)); // plaza ↔ district 0
-    expect(edges.outer, hasLength(6));
+    final shape = g.villageShape(v.openHalves);
+    expect(pointInPolygon(Offset.zero, shape), isTrue);
+    for (final l in g.visibleLots(v.openHalves)) {
+      expect(pointInPolygon(Offset(l.i, l.j), shape), isTrue, reason: 'lot ${l.slot}');
+    }
+    // the cathedral stands on the raised plaza
+    expect(g.plaza.firstWhere((f) => f.id == 'cathedral').z, g.plazaArea.z);
+    expect(g.plazaArea.z, greaterThan(0));
   });
 
-  test('opening a district adds its lots, facility and moves the fence outward', () {
+  test('opening a district grows the one shape, clears its trees and adds its landmark', () {
+    final free = g.forestFor(freeOpenHalves);
     final open = openNextHalf(freeOpenHalves, 2)!;
     expect(g.visibleLots(open).map((l) => l.slot).toList()..sort(), [0, 1, 2, 3, 4, 5, 12, 13, 14]);
     expect(g.facilitiesFor(open).map((f) => f.sprite), contains('landmark_santa'));
-    expect(g.openCells(open), hasLength(3));
+    final shape = g.villageShape(open);
+    for (final l in g.visibleLots(open)) {
+      expect(pointInPolygon(Offset(l.i, l.j), shape), isTrue, reason: 'lot ${l.slot}');
+    }
+    final trees = g.forestFor(open, shape);
+    expect(trees.length, lessThan(free.length));
+    for (final t in trees) {
+      expect(pointInPolygon(Offset(t.i, t.j), shape), isFalse);
+    }
+  });
+
+  test('landmarks stay small next to houses', () {
+    for (final f in [...g.plaza, for (final d in g.districts) ?d.facility]) {
+      expect(f.tiles, lessThanOrEqualTo(2.5), reason: f.sprite);
+    }
   });
 
   test('house view: A/B with mirroring for every type and direction', () {
@@ -63,9 +79,9 @@ void main() {
   test('tap resolution: lot under its centre; closed district under its centre', () {
     final v = Village(id: 'x', name: 'x', createdAt: DateTime(2026), houses: const []);
     final l = g.lots[3];
-    expect(g.slotAt(v, project(l.i, l.j)), 3);
+    expect(g.slotAt(v, project(l.i, l.j, l.z)), 3);
     final d = g.districts[4];
-    expect(g.districtAt(v, project(d.i, d.j)), 4);
+    expect(g.districtAt(v, project(d.i, d.j, d.z)), 4);
   });
 
   test('painter order is back to front', () {

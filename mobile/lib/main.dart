@@ -50,6 +50,7 @@ class SnowVillageApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       onGenerateTitle: (c) => AppLocalizations.of(c).appTitle,
       theme: buildTheme(),
       routerConfig: _router,

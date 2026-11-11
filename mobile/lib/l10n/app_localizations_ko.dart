@@ -300,7 +300,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '앗, 방금 다른 친구가 이 집터에 먼저 입주했어요. 작성한 내용은 그대로 두었으니 다른 빈 집을 골라 주세요.';
 
   @override
-  String get errVillageFull => '마을의 8채가 모두 찼어요.';
+  String get errVillageFull => '마을의 열린 집터가 모두 찼어요. 마을을 넓히거나 새 마을을 만들어 보세요.';
 
   @override
   String get errAlreadyJoined => '이 기기에서는 이미 이 마을에 집을 만들었어요.';
@@ -323,17 +323,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get decorAurora => '오로라 하늘';
 
   @override
-  String lockedLot(int slot) {
-    return '$slot번 집터 (잠김) · 큰 마을로 키우면 입주할 수 있어요';
-  }
-
-  @override
   String get growBig => '마을 넓히기';
-
-  @override
-  String upgradeBody(int free, int big) {
-    return '무료 마을은 집 $free채까지예요. 큰 마을로 키우면 친구 $big명까지 입주할 수 있어요.';
-  }
 
   @override
   String upgradePointLots(int count) {
@@ -349,20 +339,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get upgradePointGift => '마을 주인이 아니어도 넓혀 줄 수 있고, 넓히면 웹과 앱의 모두에게 적용돼요.';
 
   @override
-  String buyUpgrade(String price) {
-    return '$price에 큰 마을 만들기';
-  }
-
-  @override
   String get useCredit => '보유한 이용권으로 넓히기';
 
   @override
   String get upgradeWaiting => '결제를 확인하는 중이에요…';
-
-  @override
-  String upgradeDone(int count) {
-    return '큰 마을이 됐어요! 빈 집 $count채가 열렸어요.';
-  }
 
   @override
   String get restorePurchases => '구매 복원';
@@ -377,7 +357,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get errNoCredit => '사용할 수 있는 이용권이 없어요.';
 
   @override
-  String get errAlreadyBig => '이미 큰 마을이에요.';
+  String get errAlreadyBig => '이미 가장 큰 마을(60채)이에요.';
 
   @override
   String get errPurchaseFailed => '결제를 완료하지 못했어요. 다시 시도해 주세요.';

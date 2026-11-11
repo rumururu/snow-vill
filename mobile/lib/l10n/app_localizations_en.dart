@@ -307,7 +307,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Someone just took this lot. Your draft is kept — pick another empty lot.';
 
   @override
-  String get errVillageFull => 'All 8 houses are taken.';
+  String get errVillageFull =>
+      'Every open lot is taken. Grow the village or start a new one.';
 
   @override
   String get errAlreadyJoined =>
@@ -331,17 +332,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get decorAurora => 'Aurora sky';
 
   @override
-  String lockedLot(int slot) {
-    return 'Lot $slot (locked) · grow into a big village to move in';
-  }
-
-  @override
   String get growBig => 'Grow the village';
-
-  @override
-  String upgradeBody(int free, int big) {
-    return 'Free villages hold $free houses. A big village holds $big.';
-  }
 
   @override
   String upgradePointLots(int count) {
@@ -358,20 +349,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Anyone can grow a village, not only its owner; it applies to everyone on the web and in the app.';
 
   @override
-  String buyUpgrade(String price) {
-    return 'Make it big for $price';
-  }
-
-  @override
   String get useCredit => 'Use a pass you own';
 
   @override
   String get upgradeWaiting => 'Confirming your purchase…';
-
-  @override
-  String upgradeDone(int count) {
-    return 'It\'s a big village now! $count lots opened.';
-  }
 
   @override
   String get restorePurchases => 'Restore purchases';
@@ -386,7 +367,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errNoCredit => 'No upgrade available to use.';
 
   @override
-  String get errAlreadyBig => 'Already a big village.';
+  String get errAlreadyBig =>
+      'This village is already at its largest (60 houses).';
 
   @override
   String get errPurchaseFailed =>

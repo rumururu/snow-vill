@@ -629,7 +629,7 @@ abstract class AppLocalizations {
   /// No description provided for @errVillageFull.
   ///
   /// In ko, this message translates to:
-  /// **'마을의 8채가 모두 찼어요.'**
+  /// **'마을의 열린 집터가 모두 찼어요. 마을을 넓히거나 새 마을을 만들어 보세요.'**
   String get errVillageFull;
 
   /// No description provided for @errAlreadyJoined.
@@ -668,23 +668,11 @@ abstract class AppLocalizations {
   /// **'오로라 하늘'**
   String get decorAurora;
 
-  /// No description provided for @lockedLot.
-  ///
-  /// In ko, this message translates to:
-  /// **'{slot}번 집터 (잠김) · 큰 마을로 키우면 입주할 수 있어요'**
-  String lockedLot(int slot);
-
   /// No description provided for @growBig.
   ///
   /// In ko, this message translates to:
   /// **'마을 넓히기'**
   String get growBig;
-
-  /// No description provided for @upgradeBody.
-  ///
-  /// In ko, this message translates to:
-  /// **'무료 마을은 집 {free}채까지예요. 큰 마을로 키우면 친구 {big}명까지 입주할 수 있어요.'**
-  String upgradeBody(int free, int big);
 
   /// No description provided for @upgradePointLots.
   ///
@@ -704,12 +692,6 @@ abstract class AppLocalizations {
   /// **'마을 주인이 아니어도 넓혀 줄 수 있고, 넓히면 웹과 앱의 모두에게 적용돼요.'**
   String get upgradePointGift;
 
-  /// No description provided for @buyUpgrade.
-  ///
-  /// In ko, this message translates to:
-  /// **'{price}에 큰 마을 만들기'**
-  String buyUpgrade(String price);
-
   /// No description provided for @useCredit.
   ///
   /// In ko, this message translates to:
@@ -721,12 +703,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'결제를 확인하는 중이에요…'**
   String get upgradeWaiting;
-
-  /// No description provided for @upgradeDone.
-  ///
-  /// In ko, this message translates to:
-  /// **'큰 마을이 됐어요! 빈 집 {count}채가 열렸어요.'**
-  String upgradeDone(int count);
 
   /// No description provided for @restorePurchases.
   ///
@@ -755,7 +731,7 @@ abstract class AppLocalizations {
   /// No description provided for @errAlreadyBig.
   ///
   /// In ko, this message translates to:
-  /// **'이미 큰 마을이에요.'**
+  /// **'이미 가장 큰 마을(60채)이에요.'**
   String get errAlreadyBig;
 
   /// No description provided for @errPurchaseFailed.

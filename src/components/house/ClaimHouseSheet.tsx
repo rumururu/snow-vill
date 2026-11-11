@@ -126,7 +126,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
         setSimCollision(false);
         break;
       case "VILLAGE_FULL":
-        setSubmitError("마을의 8채가 모두 찼어요. 새 마을을 만들어 볼까요?");
+        setSubmitError("열린 집터가 모두 찼어요. 마을을 넓히거나 새 마을을 만들어 볼까요?");
         break;
       case "ALREADY_JOINED":
         setSubmitError("이 브라우저에서는 이미 이 마을에 집을 만들었어요.");

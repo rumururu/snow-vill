@@ -14,9 +14,29 @@ final _heroVillage = Village(
   id: 'hero',
   name: 'Snow Village',
   createdAt: DateTime(2026, 12, 1),
+  openHalves: 0x1F, // districts 0 and 1, half of 2
   houses: [
-    for (final (slot, style) in [(0, HouseStyle.wood), (1, HouseStyle.sage), (2, HouseStyle.indigo), (3, HouseStyle.indigo), (4, HouseStyle.wood), (6, HouseStyle.sage), (7, HouseStyle.wood)])
-      House(id: 'h$slot', slot: slot, nickname: '', style: style, message: '', hasPhoto: false, createdAt: DateTime(2026, 12, 1)),
+    for (final (slot, style, dir) in [
+      (0, HouseStyle.brick, 1),
+      (1, HouseStyle.bakery, 1),
+      (2, HouseStyle.tower, 0),
+      (3, HouseStyle.gingerbread, 0),
+      (5, HouseStyle.windmill, 2),
+      (6, HouseStyle.timber, 1),
+      (7, HouseStyle.aframe, 0),
+      (9, HouseStyle.greenhouse, 3),
+      (12, HouseStyle.wood, 2),
+    ])
+      House(
+        id: 'h$slot',
+        slot: slot,
+        nickname: '',
+        style: style,
+        direction: dir,
+        message: '',
+        hasPhoto: false,
+        createdAt: DateTime(2026, 12, 1),
+      ),
   ],
 );
 
@@ -27,49 +47,114 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     final identity = ref.watch(identityProvider);
-    final geometry = ref.watch(sceneGeometryProvider);
+    final geometry = ref.watch(villageGeometryProvider);
 
     return Scaffold(
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
-            Row(children: [
-              const Text('❄️', style: TextStyle(fontSize: 22)),
-              const SizedBox(width: 8),
-              Text(l.appTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: SvColors.night)),
-            ]),
+            Row(
+              children: [
+                const Text('❄️', style: TextStyle(fontSize: 22)),
+                const SizedBox(width: 8),
+                Text(
+                  l.appTitle,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: SvColors.night,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 20),
-            Text(l.tagline, style: const TextStyle(fontSize: 28, height: 1.25, fontWeight: FontWeight.w800, color: SvColors.night)),
+            Text(
+              l.tagline,
+              style: const TextStyle(
+                fontSize: 28,
+                height: 1.25,
+                fontWeight: FontWeight.w800,
+                color: SvColors.night,
+              ),
+            ),
             const SizedBox(height: 10),
-            Text(l.taglineBody, style: TextStyle(fontSize: 15, height: 1.5, color: SvColors.night.withValues(alpha: 0.75))),
+            Text(
+              l.taglineBody,
+              style: TextStyle(
+                fontSize: 15,
+                height: 1.5,
+                color: SvColors.night.withValues(alpha: 0.75),
+              ),
+            ),
             const SizedBox(height: 16),
             geometry.when(
-              data: (g) => ExcludeSemantics(child: VillageSceneView(geometry: g, village: _heroVillage)),
-              loading: () => const AspectRatio(aspectRatio: 1, child: SizedBox()),
+              data: (g) => ExcludeSemantics(
+                child: AspectRatio(
+                  aspectRatio: 0.95,
+                  child: VillageMapView(
+                    geometry: g,
+                    village: _heroVillage,
+                    interactive: false,
+                  ),
+                ),
+              ),
+              loading: () =>
+                  const AspectRatio(aspectRatio: 1, child: SizedBox()),
               error: (_, _) => const SizedBox.shrink(),
             ),
             const SizedBox(height: 16),
-            FilledButton(key: const ValueKey('create-village'), onPressed: () => context.push('/create'), child: Text(l.createVillage)),
+            FilledButton(
+              key: const ValueKey('create-village'),
+              onPressed: () => context.push('/create'),
+              child: Text(l.createVillage),
+            ),
             const SizedBox(height: 10),
-            OutlinedButton(key: const ValueKey('open-link'), onPressed: () => _openLinkDialog(context), child: Text(l.openByLink)),
+            OutlinedButton(
+              key: const ValueKey('open-link'),
+              onPressed: () => _openLinkDialog(context),
+              child: Text(l.openByLink),
+            ),
             const SizedBox(height: 28),
-            Text(l.myVillages, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: SvColors.night)),
+            Text(
+              l.myVillages,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: SvColors.night,
+              ),
+            ),
             const SizedBox(height: 8),
             if (identity.villages.isEmpty)
-              Text(l.noVillages, style: TextStyle(color: SvColors.night.withValues(alpha: 0.7), height: 1.5))
+              Text(
+                l.noVillages,
+                style: TextStyle(
+                  color: SvColors.night.withValues(alpha: 0.7),
+                  height: 1.5,
+                ),
+              )
             else
               for (final v in identity.villages)
                 Card(
                   color: Colors.white,
                   elevation: 0,
                   margin: const EdgeInsets.only(bottom: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   child: ListTile(
                     key: ValueKey('village-${v.id}'),
                     minVerticalPadding: 14,
-                    leading: Icon(identity.owners.containsKey(v.id) ? Icons.home_work_outlined : Icons.cottage_outlined, color: SvColors.night),
-                    title: Text(v.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    leading: Icon(
+                      identity.owners.containsKey(v.id)
+                          ? Icons.home_work_outlined
+                          : Icons.cottage_outlined,
+                      color: SvColors.night,
+                    ),
+                    title: Text(
+                      v.name,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push('/v/${v.id}'),
                   ),
@@ -77,7 +162,10 @@ class HomeScreen extends ConsumerWidget {
             const SizedBox(height: 20),
             Center(
               child: TextButton(
-                onPressed: () => launchUrl(Uri.parse('$webBase/privacy/'), mode: LaunchMode.externalApplication),
+                onPressed: () => launchUrl(
+                  Uri.parse('$webBase/privacy/'),
+                  mode: LaunchMode.externalApplication,
+                ),
                 child: Text(l.privacyPolicy),
               ),
             ),
@@ -100,10 +188,16 @@ class HomeScreen extends ConsumerWidget {
             key: const ValueKey('link-input'),
             controller: controller,
             autofocus: true,
-            decoration: InputDecoration(hintText: l.openLinkHint, errorText: error),
+            decoration: InputDecoration(
+              hintText: l.openLinkHint,
+              errorText: error,
+            ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(c), child: Text(l.cancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(c),
+              child: Text(l.cancel),
+            ),
             FilledButton(
               style: FilledButton.styleFrom(minimumSize: const Size(88, 44)),
               onPressed: () {

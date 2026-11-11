@@ -15,22 +15,34 @@ import 'ui/common.dart';
 
 Future<void> main() async {
   if (kDebugMode) {
-    MarionetteBinding.ensureInitialized(const MarionetteConfiguration(maxScreenshotSize: Size(1200, 1200)));
+    MarionetteBinding.ensureInitialized(
+      const MarionetteConfiguration(maxScreenshotSize: Size(1200, 1200)),
+    );
   } else {
     WidgetsFlutterBinding.ensureInitialized();
   }
   final prefs = await SharedPreferences.getInstance();
-  runApp(ProviderScope(overrides: [prefsProvider.overrideWithValue(prefs)], child: const SnowVillageApp()));
+  runApp(
+    ProviderScope(
+      overrides: [prefsProvider.overrideWithValue(prefs)],
+      child: const SnowVillageApp(),
+    ),
+  );
 }
 
-final _router = GoRouter(routes: [
-  GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
-  GoRoute(path: '/create', builder: (_, _) => const CreateScreen()),
-  GoRoute(
-    path: '/v/:id',
-    builder: (_, s) => VillageScreen(villageId: s.pathParameters['id']!, isNew: s.uri.queryParameters['new'] == '1'),
-  ),
-]);
+final _router = GoRouter(
+  routes: [
+    GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
+    GoRoute(path: '/create', builder: (_, _) => const CreateScreen()),
+    GoRoute(
+      path: '/v/:id',
+      builder: (_, s) => VillageScreen(
+        villageId: s.pathParameters['id']!,
+        isNew: s.uri.queryParameters['new'] == '1',
+      ),
+    ),
+  ],
+);
 
 class SnowVillageApp extends StatelessWidget {
   const SnowVillageApp({super.key});

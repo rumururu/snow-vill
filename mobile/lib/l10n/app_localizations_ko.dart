@@ -16,7 +16,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get taglineBody =>
-      '친구 한 명이 집 한 채. 친구가 늘수록 썰매·눈사람 가족이 생기고, 큰 마을이 가득 차면 오로라가 떠요. 사진은 집을 눌렀을 때만 보여요.';
+      '친구 한 명이 집 한 채. 성당 광장을 가운데 두고 동네를 하나씩 열어 60채까지 넓혀요. 동네마다 아이스링크·산타의 집 같은 시설이 생기고, 사진은 집을 눌렀을 때만 보여요.';
 
   @override
   String get createVillage => '새 마을 만들기';
@@ -41,7 +41,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get createCapacity =>
-      '친구 6명까지 한 집씩 입주할 수 있어요. 큰 마을로 키우면 8명까지 살 수 있어요.';
+      '친구 6명까지 무료로 한 집씩 입주할 수 있어요. 동네를 열어 60채까지 넓힐 수 있어요.';
 
   @override
   String get createButton => '마을 생성하기';
@@ -115,7 +115,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get nicknameHint => '친구들이 알아볼 이름';
 
   @override
-  String get houseStyle => '집 스타일';
+  String get houseStyle => '집 모양';
 
   @override
   String get styleWood => '나무';
@@ -328,7 +328,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get growBig => '큰 마을로 키우기';
+  String get growBig => '마을 넓히기';
 
   @override
   String upgradeBody(int free, int big) {
@@ -346,8 +346,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get upgradePointGift =>
-      '마을 주인이 아니어도 선물할 수 있어요. 한 번 키우면 웹과 앱의 모두에게 적용돼요.';
+  String get upgradePointGift => '마을 주인이 아니어도 넓혀 줄 수 있고, 넓히면 웹과 앱의 모두에게 적용돼요.';
 
   @override
   String buyUpgrade(String price) {
@@ -355,7 +354,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get useCredit => '보유한 이용권으로 키우기';
+  String get useCredit => '보유한 이용권으로 넓히기';
 
   @override
   String get upgradeWaiting => '결제를 확인하는 중이에요…';
@@ -389,4 +388,61 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tapHintFull => '집을 눌러 친구들의 사진 액자를 열어 보세요.';
+
+  @override
+  String get doorDirection => '문 방향';
+
+  @override
+  String get dirFrontLeft => '왼쪽 앞';
+
+  @override
+  String get dirFrontRight => '오른쪽 앞';
+
+  @override
+  String get dirBackRight => '오른쪽 뒤';
+
+  @override
+  String get dirBackLeft => '왼쪽 뒤';
+
+  @override
+  String get dirTowardCentre => '동네 가운데 쪽';
+
+  @override
+  String districtOpened(String name) {
+    return '$name에 집터 3곳이 열렸어요!';
+  }
+
+  @override
+  String lockedDistrict(String name) {
+    return '$name (아직 열리지 않음) · 마을 넓히기로 열기';
+  }
+
+  @override
+  String expandBody(int capacity, int step) {
+    return '지금 집 $capacity채 마을이에요. 동네를 고르면 집터 $step곳이 열려요 (한 동네는 6채, 두 번에 걸쳐 열려요).';
+  }
+
+  @override
+  String get pickDistrict => '열 동네';
+
+  @override
+  String get districtNew => '새 동네 · 3채';
+
+  @override
+  String get districtHalf => '반쯤 열림 · 나머지 3채';
+
+  @override
+  String buyDistrict(String price) {
+    return '$price에 넓히기';
+  }
+
+  @override
+  String priceLadder(String p1, String p2, String p3, String p4, int max) {
+    return '무료 6채 → 9채 $p1 → 12채 $p2 → 15채 $p3 → 그 뒤 3채마다 $p4 (최대 $max채)';
+  }
+
+  @override
+  String maxVillage(int max) {
+    return '이미 가장 큰 마을($max채)이에요';
+  }
 }

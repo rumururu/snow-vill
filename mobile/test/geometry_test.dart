@@ -2,56 +2,75 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:snow_village/data/models.dart';
 import 'package:snow_village/scene/geometry.dart';
 
 void main() {
-  // Same JSON the web uses (scripts/build_assets.py output).
-  final geometry = SceneGeometry.fromJson(jsonDecode(File('assets/art/asset-geometry.json').readAsStringSync()) as Map<String, dynamic>);
+  final g = VillageGeometry.fromJson(jsonDecode(File('assets/v2/village-geometry.json').readAsStringSync()) as Map<String, dynamic>);
 
-  test('8 slots inside the 1024 world, back → front order matching the web', () {
-    expect(geometry.slots, hasLength(8));
-    for (final s in geometry.slots) {
-      expect(s.hit.left, greaterThanOrEqualTo(0));
-      expect(s.hit.right, lessThanOrEqualTo(worldSize));
-      expect(s.hit.bottom, lessThanOrEqualTo(worldSize));
-    }
-    final order = geometry.renderOrder().map((e) => e is TreeEntity ? 'tree' : (e as HouseEntity).slot).toList();
-    expect(geometry.renderOrder().whereType<PropEntity>(), isEmpty);
-    expect(order, [0, 1, 2, 3, 'tree', 4, 5, 6, 7]);
-  });
-
-  test('tap at each house centre resolves to that house (front-most wins)', () {
-    for (final s in geometry.slots) {
-      final centre = Offset(s.hit.center.dx, s.hit.top + s.hit.height * 0.45);
-      expect(geometry.slotAt(centre), s.slot, reason: 'slot ${s.slot}');
-    }
-    expect(geometry.slotAt(const Offset(5, 5)), isNull);
-  });
-
-  test('tap regions stay ≥ 44 logical px on a 320-wide phone', () {
-    for (final s in geometry.slots) {
-      expect(s.hit.width * 312 / worldSize, greaterThanOrEqualTo(44));
-      expect(s.hit.height * 312 / worldSize, greaterThanOrEqualTo(44));
+  test('60 lots in 10 districts, same layout as the web', () {
+    expect(g.lots, hasLength(maxCapacity));
+    expect(g.districts, hasLength(districtCount));
+    for (final l in g.lots) {
+      expect(l.district, l.slot ~/ 6);
+      expect(l.half, l.slot % 6 < 3 ? 0 : 1);
     }
   });
 
-  test('free decorations by house count: 4 sled, 6 snowman family, 8 aurora (same as web)', () {
-    List<String> props(int n) => geometry.renderOrder(n).whereType<PropEntity>().map((e) => e.prop.sprite).toList()..sort();
-    expect(props(3), isEmpty);
-    expect(props(4), ['decor_sled']);
-    expect(props(6), ['decor_sled', 'decor_snowfamily']);
-    expect(geometry.backgroundFor(7).back, endsWith('background_snow.webp'));
-    expect(geometry.backgroundFor(8).back, endsWith('background_aurora.webp'));
-    for (final b in geometry.backgrounds.values) {
-      expect(File(b.back).existsSync(), isTrue);
-      expect(File(b.front).existsSync(), isTrue, reason: 'foreground layer ${b.front}');
+  test('every sprite the map uses is bundled', () {
+    final used = {
+      for (final h in g.houses.values) ...[h.a, h.b],
+      for (final f in g.plaza) f.sprite,
+      for (final d in g.districts) ...[if (d.facility != null) d.facility!.sprite, for (final x in d.decor) x.sprite],
+      g.parts.fence, g.parts.post, g.parts.gate,
+    };
+    for (final s in used) {
+      expect(g.sprites[s], isNotNull, reason: s);
+      expect(File(g.sprites[s]!.asset).existsSync(), isTrue, reason: g.sprites[s]!.asset);
+    }
+    expect(File(g.snowTexture).existsSync(), isTrue);
+  });
+
+  test('free village: district 0 lots, plaza + district 0 ground, fence with one gate', () {
+    final v = Village(id: 'x', name: 'x', createdAt: DateTime(2026), houses: const []);
+    expect(g.visibleLots(v.openHalves).map((l) => l.slot), [0, 1, 2, 3, 4, 5]);
+    expect(g.openCells(v.openHalves), hasLength(2));
+    final fences = g.fencePieces(v.openHalves);
+    expect(fences.where((p) => p.kind == 'gate'), hasLength(1));
+    expect(fences.where((p) => p.kind == 'post'), isNotEmpty);
+    final edges = g.groundEdges(v.openHalves);
+    expect(edges.inner, hasLength(1)); // plaza ↔ district 0
+    expect(edges.outer, hasLength(6));
+  });
+
+  test('opening a district adds its lots, facility and moves the fence outward', () {
+    final open = openNextHalf(freeOpenHalves, 2)!;
+    expect(g.visibleLots(open).map((l) => l.slot).toList()..sort(), [0, 1, 2, 3, 4, 5, 12, 13, 14]);
+    expect(g.facilitiesFor(open).map((f) => f.sprite), contains('landmark_santa'));
+    expect(g.openCells(open), hasLength(3));
+  });
+
+  test('house view: A/B with mirroring for every type and direction', () {
+    for (final s in HouseStyle.values) {
+      for (final d in [0, 1, 2, 3]) {
+        final v = g.houseView(s, d);
+        expect(g.sprites[v.sprite], isNotNull, reason: '$s/$d');
+        expect(v.mirror, d == 1 || d == 3);
+      }
     }
   });
 
-  test('sprites resolve to bundled assets', () {
-    for (final g in geometry.sprites.values) {
-      expect(File(g.asset).existsSync(), isTrue, reason: g.asset);
-    }
-    expect(File(geometry.background).existsSync(), isTrue);
+  test('tap resolution: lot under its centre; closed district under its centre', () {
+    final v = Village(id: 'x', name: 'x', createdAt: DateTime(2026), houses: const []);
+    final l = g.lots[3];
+    expect(g.slotAt(v, project(l.i, l.j)), 3);
+    final d = g.districts[4];
+    expect(g.districtAt(v, project(d.i, d.j)), 4);
+  });
+
+  test('painter order is back to front', () {
+    final v = Village(id: 'x', name: 'x', createdAt: DateTime(2026), houses: const [], openHalves: (1 << 20) - 1);
+    final depth = g.mapOrder(v).map((e) => e.depth).toList();
+    expect(depth, [...depth]..sort());
   });
 }

@@ -16,7 +16,11 @@ abstract final class SvColors {
 ThemeData buildTheme() {
   final base = ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(seedColor: SvColors.night, primary: SvColors.night, surface: SvColors.ivory),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: SvColors.night,
+      primary: SvColors.night,
+      surface: SvColors.ivory,
+    ),
     scaffoldBackgroundColor: SvColors.sky,
   );
   return base.copyWith(
@@ -44,39 +48,44 @@ ThemeData buildTheme() {
       fillColor: Colors.white,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
     ),
-    bottomSheetTheme: const BottomSheetThemeData(backgroundColor: SvColors.ivory, showDragHandle: true),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: SvColors.ivory,
+      showDragHandle: true,
+    ),
   );
 }
 
 /// Localised text for a dynamic error key coming from validation / providers.
 String trKey(AppLocalizations l, String key) => switch (key) {
-      'nameRequired' => l.nameRequired,
-      'nameTooLong' => l.nameTooLong,
-      'nicknameRequired' => l.nicknameRequired,
-      'nicknameTooLong' => l.nicknameTooLong,
-      'messageTooLong' => l.messageTooLong,
-      'errRateLimited' => l.errRateLimited,
-      'errNetwork' => l.errNetwork,
-      'errForbidden' => l.errForbidden,
-      'errPhotoTooLarge' => l.errPhotoTooLarge,
-      'errPhotoUnsupported' => l.errPhotoUnsupported,
-      'errNotFound' => l.errNotFound,
-      'errSlotTaken' => l.errSlotTaken,
-      'errVillageFull' => l.errVillageFull,
-      'errAlreadyJoined' => l.errAlreadyJoined,
-      'errNoServer' => l.errNoServer,
-      'linkInvalid' => l.linkInvalid,
-      'errNoCredit' => l.errNoCredit,
-      'errAlreadyBig' => l.errAlreadyBig,
-      'errPurchaseFailed' => l.errPurchaseFailed,
-      'errPurchasePending' => l.errPurchasePending,
-      _ => l.errServer,
-    };
+  'nameRequired' => l.nameRequired,
+  'nameTooLong' => l.nameTooLong,
+  'nicknameRequired' => l.nicknameRequired,
+  'nicknameTooLong' => l.nicknameTooLong,
+  'messageTooLong' => l.messageTooLong,
+  'errRateLimited' => l.errRateLimited,
+  'errNetwork' => l.errNetwork,
+  'errForbidden' => l.errForbidden,
+  'errPhotoTooLarge' => l.errPhotoTooLarge,
+  'errPhotoUnsupported' => l.errPhotoUnsupported,
+  'errNotFound' => l.errNotFound,
+  'errSlotTaken' => l.errSlotTaken,
+  'errVillageFull' => l.errVillageFull,
+  'errAlreadyJoined' => l.errAlreadyJoined,
+  'errNoServer' => l.errNoServer,
+  'linkInvalid' => l.linkInvalid,
+  'errNoCredit' => l.errNoCredit,
+  'errAlreadyBig' => l.errAlreadyBig,
+  'errPurchaseFailed' => l.errPurchaseFailed,
+  'errPurchasePending' => l.errPurchasePending,
+  _ => l.errServer,
+};
 
 void showToast(BuildContext context, String text) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(text), behavior: SnackBarBehavior.floating));
+    ..showSnackBar(
+      SnackBar(content: Text(text), behavior: SnackBarBehavior.floating),
+    );
 }
 
 class ErrorBox extends StatelessWidget {
@@ -86,23 +95,33 @@ class ErrorBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: SvColors.dangerBg, borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Semantics(liveRegion: true, child: Text(text, style: const TextStyle(color: SvColors.night))),
-            if (action != null) ...[const SizedBox(height: 8), action!],
-          ],
+    width: double.infinity,
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: SvColors.dangerBg,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          liveRegion: true,
+          child: Text(text, style: const TextStyle(color: SvColors.night)),
         ),
-      );
+        if (action != null) ...[const SizedBox(height: 8), action!],
+      ],
+    ),
+  );
 }
 
 /// Web base URL for invite links and the privacy policy.
-const String webBase = String.fromEnvironment('WEB_BASE', defaultValue: 'https://snow.mkideabox.com');
+const String webBase = String.fromEnvironment(
+  'WEB_BASE',
+  defaultValue: 'https://snow.mkideabox.com',
+);
 
-String inviteUrl(String villageId) => '$webBase/v/?id=$villageId&src=invite_app';
+String inviteUrl(String villageId) =>
+    '$webBase/v/?id=$villageId&src=invite_app';
 
 /// Accepts a full invite URL or a bare 10-character village id.
 String? parseVillageId(String input) {

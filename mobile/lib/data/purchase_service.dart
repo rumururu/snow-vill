@@ -33,21 +33,26 @@ class PurchaseService {
     final key = _key;
     if (key == null) return false;
     if (!_configured) {
-      await Purchases.configure(PurchasesConfiguration(key)..appUserID = installId);
+      await Purchases.configure(
+        PurchasesConfiguration(key)..appUserID = installId,
+      );
       _configured = true;
     }
     return true;
   }
 
-  /// The big-village package from the current offering (package lookup key = product id).
-  Future<Package?> bigVillagePackage(String installId) async {
-    if (!await _ensure(installId)) return null;
+  /// The expansion package of a price tier from the current offering (package lookup key = product id).
+  Future<Package?> tierPackage(String installId, int tier) async {
+    final productId = tierProduct[tier];
+    if (productId == null || !await _ensure(installId)) return null;
     try {
       final offerings = await Purchases.getOfferings();
       final current = offerings.current;
       if (current == null) return null;
-      return current.getPackage(bigVillageProductId) ??
-          current.availablePackages.where((p) => p.storeProduct.identifier.startsWith(bigVillageProductId)).firstOrNull;
+      return current.getPackage(productId) ??
+          current.availablePackages
+              .where((p) => p.storeProduct.identifier.startsWith(productId))
+              .firstOrNull;
     } on PlatformException {
       return null;
     }
@@ -59,7 +64,8 @@ class PurchaseService {
       await Purchases.purchase(PurchaseParams.package(package));
       return PurchaseOutcome.purchased;
     } on PlatformException catch (e) {
-      return PurchasesErrorHelper.getErrorCode(e) == PurchasesErrorCode.purchaseCancelledError
+      return PurchasesErrorHelper.getErrorCode(e) ==
+              PurchasesErrorCode.purchaseCancelledError
           ? PurchaseOutcome.cancelled
           : PurchaseOutcome.failed;
     }

@@ -25,19 +25,23 @@ void main() {
     });
   });
 
-  test('free village locks lots at 6; big village holds 8', () {
-    House h(int slot) => House(id: 'h$slot', slot: slot, nickname: 'n', style: HouseStyle.wood, message: '', hasPhoto: false, createdAt: DateTime(2026));
+  test('free village = district 0; each step opens the next half of a chosen district (same as the server)', () {
+    House h(int slot) => House(id: 'h$slot', slot: slot, nickname: 'n', style: HouseStyle.wood, direction: 0, message: '', hasPhoto: false, createdAt: DateTime(2026));
     final free = Village(id: 'v', name: 'v', createdAt: DateTime(2026), houses: [for (var i = 0; i < 6; i++) h(i)]);
     expect(free.capacity, freeCapacity);
     expect(free.isFull, isTrue);
     expect(free.freeSlots, isEmpty);
-    expect(free.lockedSlots, [6, 7]);
+    expect(free.lockedSlots, hasLength(54));
     expect(free.canUpgrade, isTrue);
-    final big = Village(id: 'v', name: 'v', createdAt: DateTime(2026), capacity: bigCapacity, houses: free.houses);
-    expect(big.isFull, isFalse);
-    expect(big.freeSlots, [6, 7]);
-    expect(big.lockedSlots, isEmpty);
-    expect(Village.fromJson({'id': 'x', 'name': 'x', 'created_at': '2026-12-01T00:00:00Z', 'capacity': 8, 'houses': []}).capacity, 8);
+    final open = openNextHalf(free.openHalves, 2)!;
+    final grown = free.copyWith(openHalves: open);
+    expect(grown.capacity, 9);
+    expect(grown.freeSlots, [12, 13, 14]);
+    expect(openNextHalf(openNextHalf(open, 2)!, 2), isNull);
+    expect(openNextHalf(free.openHalves, 0), isNull);
+    expect([6, 9, 12, 15, 18, 57, 60].map(stepTier), [1, 2, 3, 4, 4, 4, 0]);
+    expect(Village.fromJson({'id': 'x', 'name': 'x', 'created_at': '2026-12-01T00:00:00Z', 'open_halves': 259, 'houses': []}).capacity, 9);
+    expect(Village.fromJson({'id': 'x', 'name': 'x', 'created_at': '2026-12-01T00:00:00Z', 'capacity': 12, 'houses': []}).openHalves, 15);
     expect(Village.fromJson({'id': 'x', 'name': 'x', 'created_at': '2026-12-01T00:00:00Z', 'houses': []}).capacity, 6);
   });
 
@@ -73,7 +77,8 @@ void main() {
       expect(seen.headers['apikey'], 'anon');
       expect(v!.houseAt(3)!.style, HouseStyle.sage);
       expect(v.houseAt(3)!.hasPhoto, isTrue);
-      expect(v.freeSlots, [0, 1, 2, 4, 5, 6, 7]);
+      expect(v.freeSlots, [0, 1, 2, 4, 5]);
+      expect(v.houseAt(3)!.direction, 0);
     });
 
     test('missing village → null; claim collision → slotTaken', () async {
@@ -82,7 +87,7 @@ void main() {
         return http.Response(jsonEncode({'ok': false, 'reason': 'SLOT_TAKEN'}), 200);
       }));
       expect(await api.getVillage('x'), isNull);
-      final r = await api.claimHouse('i', 'v', 0, nickname: 'n', style: HouseStyle.wood, message: '');
+      final r = await api.claimHouse('i', 'v', 0, nickname: 'n', style: HouseStyle.wood, direction: 2, message: '');
       expect(r.ok, isFalse);
       expect(r.failure, ClaimFailure.slotTaken);
     });

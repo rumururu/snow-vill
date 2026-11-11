@@ -67,10 +67,12 @@ dev_dependencies:
 flutter:
   generate: true
   assets:
-    - assets/art/
-    - assets/art/houses/
-    - assets/art/decor/
-    - assets/art/village/
+    - assets/v2/
+    - assets/v2/house/
+    - assets/v2/facility/
+    - assets/v2/prop/
+    - assets/v2/part/
+    - assets/v2/texture/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

@@ -16,7 +16,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get taglineBody =>
-      'One friend, one house. More friends unlock a sled and a snowman family; a full big village brings the aurora. Photos only appear when a house is tapped.';
+      'One friend, one house. Open districts around the cathedral plaza to grow up to 60 houses — each brings an ice rink, Santa\'s house and more. Photos only appear when a house is tapped.';
 
   @override
   String get createVillage => 'Create a village';
@@ -42,7 +42,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createCapacity =>
-      'Up to 6 friends can each move into a house; grow it into a big village for 8.';
+      'Up to 6 friends move in for free; open more districts to grow up to 60 houses.';
 
   @override
   String get createButton => 'Create village';
@@ -118,7 +118,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nicknameHint => 'A name friends will recognise';
 
   @override
-  String get houseStyle => 'House style';
+  String get houseStyle => 'House type';
 
   @override
   String get styleWood => 'Wood';
@@ -336,7 +336,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get growBig => 'Grow into a big village';
+  String get growBig => 'Grow the village';
 
   @override
   String upgradeBody(int free, int big) {
@@ -355,7 +355,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get upgradePointGift =>
-      'Anyone can gift it, not just the owner. It applies for everyone on web and app.';
+      'Anyone can grow a village, not only its owner; it applies to everyone on the web and in the app.';
 
   @override
   String buyUpgrade(String price) {
@@ -363,7 +363,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get useCredit => 'Use your purchased upgrade';
+  String get useCredit => 'Use a pass you own';
 
   @override
   String get upgradeWaiting => 'Confirming your purchase…';
@@ -398,4 +398,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tapHintFull => 'Tap a house to open your friends\' photo frames.';
+
+  @override
+  String get doorDirection => 'Door direction';
+
+  @override
+  String get dirFrontLeft => 'Front left';
+
+  @override
+  String get dirFrontRight => 'Front right';
+
+  @override
+  String get dirBackRight => 'Back right';
+
+  @override
+  String get dirBackLeft => 'Back left';
+
+  @override
+  String get dirTowardCentre => 'Toward the centre';
+
+  @override
+  String districtOpened(String name) {
+    return '3 new lots opened in $name!';
+  }
+
+  @override
+  String lockedDistrict(String name) {
+    return '$name (not open yet) · open it by growing the village';
+  }
+
+  @override
+  String expandBody(int capacity, int step) {
+    return 'This village holds $capacity houses. Pick a district to open $step more lots (a district has 6, opened in two steps).';
+  }
+
+  @override
+  String get pickDistrict => 'District to open';
+
+  @override
+  String get districtNew => 'New district · 3 lots';
+
+  @override
+  String get districtHalf => 'Half open · last 3 lots';
+
+  @override
+  String buyDistrict(String price) {
+    return 'Grow for $price';
+  }
+
+  @override
+  String priceLadder(String p1, String p2, String p3, String p4, int max) {
+    return 'Free 6 → 9 for $p1 → 12 for $p2 → 15 for $p3 → then $p4 per 3 (up to $max)';
+  }
+
+  @override
+  String maxVillage(int max) {
+    return 'Already the largest village ($max)';
+  }
 }

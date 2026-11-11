@@ -41,15 +41,27 @@ class _CreateScreenState extends ConsumerState<CreateScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final geometry = ref.watch(sceneGeometryProvider);
-    final preview = Village(id: 'preview', name: _name.text, createdAt: DateTime(2026), houses: const []);
+    final geometry = ref.watch(villageGeometryProvider);
+    final preview = Village(
+      id: 'preview',
+      name: _name.text,
+      createdAt: DateTime(2026),
+      houses: const [],
+    );
     return Scaffold(
       appBar: AppBar(backgroundColor: SvColors.sky),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
           children: [
-            Text(l.createHeading, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: SvColors.night)),
+            Text(
+              l.createHeading,
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+                color: SvColors.night,
+              ),
+            ),
             const SizedBox(height: 14),
             TextField(
               key: const ValueKey('village-name'),
@@ -67,12 +79,26 @@ class _CreateScreenState extends ConsumerState<CreateScreen> {
             ),
             const SizedBox(height: 12),
             geometry.when(
-              data: (g) => ExcludeSemantics(child: VillageSceneView(geometry: g, village: preview)),
-              loading: () => const AspectRatio(aspectRatio: 1, child: SizedBox()),
+              data: (g) => ExcludeSemantics(
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: VillageMapView(
+                    geometry: g,
+                    village: preview,
+                    interactive: false,
+                  ),
+                ),
+              ),
+              loading: () =>
+                  const AspectRatio(aspectRatio: 1, child: SizedBox()),
               error: (_, _) => const SizedBox.shrink(),
             ),
             const SizedBox(height: 8),
-            Text(l.createCapacity, textAlign: TextAlign.center, style: TextStyle(color: SvColors.night.withValues(alpha: 0.7))),
+            Text(
+              l.createCapacity,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: SvColors.night.withValues(alpha: 0.7)),
+            ),
             const SizedBox(height: 20),
             FilledButton(
               key: const ValueKey('create-submit'),

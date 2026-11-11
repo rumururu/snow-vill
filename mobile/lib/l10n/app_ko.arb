@@ -2,7 +2,7 @@
   "@@locale": "ko",
   "appTitle": "Snow Village",
   "tagline": "친구들과 만드는\n우리만의 겨울 마을",
-  "taglineBody": "친구 한 명이 집 한 채. 친구가 늘수록 썰매·눈사람 가족이 생기고, 큰 마을이 가득 차면 오로라가 떠요. 사진은 집을 눌렀을 때만 보여요.",
+  "taglineBody": "친구 한 명이 집 한 채. 성당 광장을 가운데 두고 동네를 하나씩 열어 60채까지 넓혀요. 동네마다 아이스링크·산타의 집 같은 시설이 생기고, 사진은 집을 눌렀을 때만 보여요.",
   "createVillage": "새 마을 만들기",
   "openByLink": "초대 링크로 마을 열기",
   "myVillages": "내 마을",
@@ -10,7 +10,7 @@
   "privacyPolicy": "개인정보처리방침",
   "createHeading": "우리 마을의 이름은?",
   "villageNameHint": "예: 눈송이 마을",
-  "createCapacity": "친구 6명까지 한 집씩 입주할 수 있어요. 큰 마을로 키우면 8명까지 살 수 있어요.",
+  "createCapacity": "친구 6명까지 무료로 한 집씩 입주할 수 있어요. 동네를 열어 60채까지 넓힐 수 있어요.",
   "createButton": "마을 생성하기",
   "creating": "만드는 중…",
   "occupancy": "{count}/{capacity}",
@@ -63,7 +63,7 @@
   "firstHouseIntro": "마을이 생겼어요! 첫 번째 집을 지어 불을 켜 볼까요?",
   "nickname": "닉네임",
   "nicknameHint": "친구들이 알아볼 이름",
-  "houseStyle": "집 스타일",
+  "houseStyle": "집 모양",
   "styleWood": "나무",
   "styleSage": "세이지",
   "styleIndigo": "인디고",
@@ -193,7 +193,7 @@
       }
     }
   },
-  "growBig": "큰 마을로 키우기",
+  "growBig": "마을 넓히기",
   "upgradeBody": "무료 마을은 집 {free}채까지예요. 큰 마을로 키우면 친구 {big}명까지 입주할 수 있어요.",
   "@upgradeBody": {
     "placeholders": {
@@ -221,7 +221,7 @@
       }
     }
   },
-  "upgradePointGift": "마을 주인이 아니어도 선물할 수 있어요. 한 번 키우면 웹과 앱의 모두에게 적용돼요.",
+  "upgradePointGift": "마을 주인이 아니어도 넓혀 줄 수 있고, 넓히면 웹과 앱의 모두에게 적용돼요.",
   "buyUpgrade": "{price}에 큰 마을 만들기",
   "@buyUpgrade": {
     "placeholders": {
@@ -230,7 +230,7 @@
       }
     }
   },
-  "useCredit": "보유한 이용권으로 키우기",
+  "useCredit": "보유한 이용권으로 넓히기",
   "upgradeWaiting": "결제를 확인하는 중이에요…",
   "upgradeDone": "큰 마을이 됐어요! 빈 집 {count}채가 열렸어요.",
   "@upgradeDone": {
@@ -247,5 +247,77 @@
   "errAlreadyBig": "이미 큰 마을이에요.",
   "errPurchaseFailed": "결제를 완료하지 못했어요. 다시 시도해 주세요.",
   "errPurchasePending": "결제는 됐지만 확인이 늦어지고 있어요. 잠시 후 다시 열면 자동으로 적용돼요.",
-  "tapHintFull": "집을 눌러 친구들의 사진 액자를 열어 보세요."
+  "tapHintFull": "집을 눌러 친구들의 사진 액자를 열어 보세요.",
+  "doorDirection": "문 방향",
+  "dirFrontLeft": "왼쪽 앞",
+  "dirFrontRight": "오른쪽 앞",
+  "dirBackRight": "오른쪽 뒤",
+  "dirBackLeft": "왼쪽 뒤",
+  "dirTowardCentre": "동네 가운데 쪽",
+  "districtOpened": "{name}에 집터 3곳이 열렸어요!",
+  "@districtOpened": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lockedDistrict": "{name} (아직 열리지 않음) · 마을 넓히기로 열기",
+  "@lockedDistrict": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "expandBody": "지금 집 {capacity}채 마을이에요. 동네를 고르면 집터 {step}곳이 열려요 (한 동네는 6채, 두 번에 걸쳐 열려요).",
+  "@expandBody": {
+    "placeholders": {
+      "capacity": {
+        "type": "int"
+      },
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "pickDistrict": "열 동네",
+  "districtNew": "새 동네 · 3채",
+  "districtHalf": "반쯤 열림 · 나머지 3채",
+  "buyDistrict": "{price}에 넓히기",
+  "@buyDistrict": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "priceLadder": "무료 6채 → 9채 {p1} → 12채 {p2} → 15채 {p3} → 그 뒤 3채마다 {p4} (최대 {max}채)",
+  "@priceLadder": {
+    "placeholders": {
+      "p1": {
+        "type": "String"
+      },
+      "p2": {
+        "type": "String"
+      },
+      "p3": {
+        "type": "String"
+      },
+      "p4": {
+        "type": "String"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "maxVillage": "이미 가장 큰 마을({max}채)이에요",
+  "@maxVillage": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  }
 }

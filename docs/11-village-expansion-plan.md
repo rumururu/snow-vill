@@ -1,62 +1,47 @@
 ---
 slug: snow-village-expansion-plan
-status: draft
-updated: 2026-11-10
+status: active
+updated: 2026-11-11
 ---
 
-# Snow Village — expansion redesign (owner request 2026-11-10)
+# Snow Village — expandable village (owner requests 2026-11-10 / 11)
 
-Owner feedback after the first store builds: every house looks the same, the layout is dull, and empty lots shown as grey
-houses look dirty. Decisions taken with the owner (AskUserQuestion, 2026-11-10):
+Feedback after the first store builds: every house looked the same, the layout was dull, empty lots shown as grey
+houses looked dirty; then (11-11) the big round disc looked bare — districts were asked for; then plots with baked-in
+fences were rejected as not scalable. This is what was built.
+
+## Decisions
 
 | Topic | Decision |
 |---|---|
-| House art | **8+ house types**, each in **4 directions**, generated with ChatGPT web in the original planning chat |
-| Direction | The friend **chooses the door direction** when moving in |
-| Empty lots | No grey house. A **dashed outline + "+"** drawn on the ground **in code** (not baked into art) |
-| Centre | **Cathedral and plaza** in the middle |
-| Facilities | Christmas tree, **ice rink (animated GIF)**, Santa's house, Rudolph statue, plus the existing sled / snowman family / aurora |
-| Size | Village really grows on screen; up to **60 houses**; pinch-zoom / pan |
-| Pricing | Free 6 → +3 ₩2,900 → +3 ₩6,900 → +3 ₩12,900 → +3 ₩25,800 → every further +3 ₩25,800, up to 60 |
+| House art | 9 types (log cabin, brick, bakery, tower, gingerbread, half-timbered, A-frame, windmill, greenhouse) × 4 directions; legacy sage/indigo keep rendering (view A only) but are not offered |
+| Direction | The friend picks the door direction when moving in (default: toward the district centre) |
+| Empty lots | Dashed outline + "+" drawn **in code**; no grey houses |
+| Structure | Cathedral **plaza** in the middle + up to **10 districts** ("동네") of 6 lots on a board around it |
+| Districts | Each has a facility in its centre (snowman family, ice rink, Santa's house, Rudolph statue, sled, forest, lamps …) and decoration; houses sit around it |
+| Ground | One continuous snow ground (code + ChatGPT seamless snow texture); **fence only along the outer edge** (modular ChatGPT parts: section, corner post), gate arch at the free district's front; cobble paths between districts; closed districts = dashed outline + name |
+| Expansion | Each paid step opens the next **half (3 lots) of a district the buyer picks**; tap a closed district to pick it |
+| Pricing | Free 6 → 9 ₩2,900 → 12 ₩6,900 → 15 ₩12,900 → every further +3 ₩25,800 (App Store: ₩25,900, no ₩25,800 price point), up to 60 |
+| Aurora | 18+ houses |
 
-## Art
+## Implementation
 
-- Houses: wood cabin (existing master), red brick, bakery, tower house, gingerbread, half-timbered, A-frame chalet,
-  windmill, greenhouse cottage (9 types). ChatGPT draws **view A** (door toward bottom-left) and **view B** (rotated
-  180°, door toward top-right). The other two directions are horizontal mirrors of A and B, so 4 directions = 2 images.
-- Landmarks (bigger footprints): cathedral + plaza (centre), Christmas tree, ice rink (animated), Santa's house,
-  Rudolph statue. Ground: snow ground drawn/tiled in code, with scattered edge props (pines, lamps).
-- Same QA as before (PROVENANCE.md): real alpha, silhouette/scale consistency, prompts recorded verbatim.
+- Art pipeline: `assets/source/*` (PROVENANCE.md) → `scripts/build_village.py` → `public/assets/v2` + `src/lib/village-geometry.json`
+  (copied to `mobile/assets/v2`). Geometry is measured from alpha (anchors, tile widths, hulls, part base slopes).
+- Board: plot cells of `plotTiles` = 8.2 tiles, plaza at (0,0), districts at fixed grid cells (district 0 front-right).
+  Inside a district a 3×3 grid: 6 lots (corners + side cells across the plaza axis), facility in the centre, walkways.
+- Web: `src/lib/map.ts`, `src/components/scene/VillageMapArt.tsx` (art), `VillageMap.tsx` (pan/zoom, hit layer).
+- App: `mobile/lib/scene/geometry.dart` (port of map.ts), `village_scene.dart` (InteractiveViewer + ground painter).
+- Server (`snowvill_`, deployed 2026-11-11): `villages.open_halves` bitmask, capacity = 3 × opened halves,
+  tiered credits (`snowvill_tier_credits`), `snowvill_upgrade_village(install, village, district)`, claims only in opened
+  halves, `houses.direction`. Old 2-argument upgrade opens districts in order (installed builds).
+- Tests: web 77, app 14, local SQL 128, live 73.
 
-## Layout model (shared by web and app via a generated geometry file)
+## Status
 
-- An isometric tile grid. The plaza with the cathedral sits at the centre; facility spots ring the plaza;
-  house lots are laid out in rings around it with generous spacing (paths between rings).
-- **Lot order is fixed** (lot 0 … 59, inner ring first), so capacity *n* means lots 0…n-1 exist.
-  Lots `capacity … capacity+2` are drawn faintly as "next expansion" with a lock.
-- A house stores `slot`, `style` (type) and `direction` (0–3). Rendering picks view A/B and mirroring from
-  `direction`; depth order is by screen y of the lot anchor.
-- Facilities unlock by house count (free, as before): tree from the start; sled 4; snowman family 6;
-  ice rink 9; Santa's house 12; Rudolph statue 15; aurora sky 18+ (thresholds can be tuned).
-- The camera fits the current village; larger villages are zoomable/pannable (app: InteractiveViewer;
-  web: pointer/wheel pan-zoom).
-
-## Server (Supabase `snowvill_`)
-
-- `villages.capacity` becomes 6, 9, 12, … 60 (check constraint). Existing capacity-8 villages migrate to 9.
-- `houses.direction smallint 0..3` (default 0); `houses.style` widened to the new type ids.
-- Expansion step price by current capacity: 6→9 tier 1, 9→12 tier 2, 12→15 tier 3, ≥15 tier 4.
-- Products (consumable, one credit each):
-  `snowvillage_big_village` ₩2,900 (tier 1, kept — already in both stores and RevenueCat),
-  `snowvillage_expand_2` ₩6,900, `snowvillage_expand_3` ₩12,900, `snowvillage_expand_4` ₩25,800.
-- Wallet keeps credits per product. `snowvill_upgrade_village` spends one credit of the tier the village needs
-  and adds 3 (max 60). Gifting stays possible (anyone holding the right credit can grow any village).
-- Webhook maps product → tier credit; refunds take back an unspent credit (spent ones keep the expansion).
-
-## Delivery order
-
-1. Art (ChatGPT) — in progress.
-2. Geometry generator + renderer (web first, then Flutter), dashed lots, direction picker in the claim sheet.
-3. Migration + functions + live tests; webhook product map.
-4. Store products ×3 new (ASC + Play), RevenueCat products/packages.
-5. Rebuild, device round trips (Android + iPad), docs.
+| Part | State |
+|---|---|
+| Server | deployed 2026-11-11, other games unchanged |
+| Web (snow.mkideabox.com) | deployed 2026-11-11 |
+| App | ported; new TestFlight / internal builds with the 4 expansion products |
+| Store products | App Store + Play + RevenueCat: `snowvillage_big_village`, `snowvillage_expand_2/3/4` (docs/10-store-iap-setup.md) |

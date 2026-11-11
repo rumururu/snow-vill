@@ -24,7 +24,7 @@ PRODUCTS = [
      ("Village +3 (step 2)", "Open 3 more lots: a 9-house village grows to 12. You pick the district.")),
     ("snowvillage_expand_3", "7.99", 12900, ("마을 넓히기 3단계", "12채 마을에 집터 3곳을 더 열어 15채로 넓혀요. 넓힐 동네는 직접 골라요."),
      ("Village +3 (step 3)", "Open 3 more lots: a 12-house village grows to 15. You pick the district.")),
-    ("snowvillage_expand_4", "14.99", 25800, ("마을 넓히기 4단계", "15채 이상 마을에 집터 3곳을 더 열어요. 최대 60채까지 넓힐 수 있어요."),
+    ("snowvillage_expand_4", "14.99", 25900, ("마을 넓히기 4단계", "15채 이상 마을에 집터 3곳을 더 열어요. 최대 60채까지 넓힐 수 있어요."),
      ("Village +3 (step 4)", "Open 3 more lots in a village of 15 or more, up to 60 houses.")),
 ]
 REGIONS_VERSION = "2026/01"

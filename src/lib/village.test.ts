@@ -132,7 +132,7 @@ describe("claimHouse", () => {
     }
   });
 
-  it("prices each +3 step by size (₩2,900 / 6,900 / 12,900 / then 25,800 up to 60)", () => {
+  it("prices each +3 step by size (₩2,900 / 6,900 / 12,900 / then 25,900 up to 60)", () => {
     expect([6, 9, 12, 15, 18, 57, 60].map(stepTier)).toEqual([1, 2, 3, 4, 4, 4, 0]);
   });
 

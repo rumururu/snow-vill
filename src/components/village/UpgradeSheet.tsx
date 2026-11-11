@@ -19,7 +19,7 @@ const FACILITY_LABEL: Record<string, string> = {
 
 /**
  * "마을 넓히기": each paid step (in the app) opens 3 lots — the next half of a district the buyer picks.
- * Free 6 → 9 ₩2,900 → 12 ₩6,900 → 15 ₩12,900 → then ₩25,800 per step, up to 60.
+ * Free 6 → 9 ₩2,900 → 12 ₩6,900 → 15 ₩12,900 → then ₩25,900 per step, up to 60.
  */
 export function UpgradeSheet({
   village,

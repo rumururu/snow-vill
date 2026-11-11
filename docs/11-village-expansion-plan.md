@@ -21,7 +21,7 @@ fences were rejected as not scalable. This is what was built.
 | Districts | Each has a facility in its centre (snowman family, ice rink, Santa's house, Rudolph statue, sled, forest, lamps …) and decoration; houses sit around it |
 | Ground | One continuous snow ground (code + ChatGPT seamless snow texture); **fence only along the outer edge** (modular ChatGPT parts: section, corner post), gate arch at the free district's front; cobble paths between districts; closed districts = dashed outline + name |
 | Expansion | Each paid step opens the next **half (3 lots) of a district the buyer picks**; tap a closed district to pick it |
-| Pricing | Free 6 → 9 ₩2,900 → 12 ₩6,900 → 15 ₩12,900 → every further +3 ₩25,800 (App Store: ₩25,900, no ₩25,800 price point), up to 60 |
+| Pricing | Free 6 → 9 ₩2,900 → 12 ₩6,900 → 15 ₩12,900 → every further +3 ₩25,900 on both stores (₩25,800 has no App Store price point), up to 60 |
 | Aurora | 18+ houses |
 
 ## Implementation

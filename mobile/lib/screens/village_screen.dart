@@ -1212,7 +1212,7 @@ class _FrameSheetState extends ConsumerState<_FrameSheet> {
 // ---------------------------------------------------------------- expansion sheet
 
 /// "마을 넓히기": pick a district; each paid step opens its next half (3 lots).
-/// Free 6 → 9 ₩2,900 → 12 ₩6,900 → 15 ₩12,900 → then ₩25,800 per step, up to 60.
+/// Free 6 → 9 ₩2,900 → 12 ₩6,900 → 15 ₩12,900 → then ₩25,900 per step, up to 60.
 class _UpgradeSheet extends ConsumerStatefulWidget {
   const _UpgradeSheet({
     required this.village,

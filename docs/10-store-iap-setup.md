@@ -20,9 +20,9 @@ server `snowvill_product_tier()`). Each opens 3 lots of a district the buyer pic
 | `snowvillage_big_village` | 6 → 9 | ₩2,900 (US$1.99) | ₩2,900 / US$1.99 | 6832824105 | prodfa2b1e56ee / prod6b9a86684b | pkgecc8b0777c5 |
 | `snowvillage_expand_2` | 9 → 12 | ₩6,900 (US$3.99) | ₩6,900 / US$3.99 | 6833285847 | prod53f60c16eb / prod7bad616f2f | pkge1c5e3056c4 |
 | `snowvillage_expand_3` | 12 → 15 | ₩12,900 (US$7.99) | ₩12,900 / US$7.99 | 6833285856 | prod2e4bf5bac5 / prod8d8a0fd2b6 | pkgec27bcd78e9 |
-| `snowvillage_expand_4` | 15 → 18 … → 60 | **₩25,900** (US$14.99) | ₩25,800 / US$14.99 | 6833286030 | prod2871387635 / prod06bbdc3f3d | pkge8829cd10c1 |
+| `snowvillage_expand_4` | 15 → 18 … → 60 | **₩25,900** (US$14.99) | ₩25,900 / US$14.99 | 6833286030 | prod2871387635 / prod06bbdc3f3d | pkge8829cd10c1 |
 
-- The App Store has no ₩25,800 price point (nearest 25,500 / 25,900) → ₩25,900 on iOS; Play keeps the owner's ₩25,800.
+- The App Store has no ₩25,800 price point (nearest 25,500 / 25,900), so the owner set ₩25,900 on both stores (2026-11-11).
 - ASC state: MISSING_METADATA until each product's review screenshot is attached (submitted with the first app version).
 - Play: all 4 purchase options ACTIVE, 174 regions, backwards compatible. Scripts: `mobile/tools/store/asc_iaps.py`,
   `mobile/tools/store/play_iaps.py --activate` (both idempotent).

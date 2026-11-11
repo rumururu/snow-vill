@@ -68,7 +68,7 @@ export const TIER_PRODUCT: Record<1 | 2 | 3 | 4, string> = {
   4: "snowvillage_expand_4",
 };
 /** Korean list price per tier (the stores show the localized price). */
-export const TIER_PRICE_KRW: Record<1 | 2 | 3 | 4, number> = { 1: 2900, 2: 6900, 3: 12900, 4: 25800 };
+export const TIER_PRICE_KRW: Record<1 | 2 | 3 | 4, number> = { 1: 2900, 2: 6900, 3: 12900, 4: 25900 };
 export const VILLAGE_NAME_MAX = 20;
 export const NICKNAME_MAX = 10;
 export const MESSAGE_MAX = 60;

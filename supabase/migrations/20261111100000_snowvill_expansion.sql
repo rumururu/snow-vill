@@ -3,7 +3,7 @@
 --   6→9  tier 1  snowvillage_big_village  ₩2,900 (product kept from the first release)
 --   9→12 tier 2  snowvillage_expand_2     ₩6,900
 --   12→15 tier 3 snowvillage_expand_3     ₩12,900
---   15→…→60 tier 4 snowvillage_expand_4   ₩25,800 per step
+--   15→…→60 tier 4 snowvillage_expand_4   ₩25,900 per step (comment only; price lives in the stores)
 -- Credits are kept per tier; a step spends one credit of the tier the village currently needs.
 -- Houses get a door direction (0..3) chosen by the friend, lots 0..59 and more house types.
 

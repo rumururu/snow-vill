@@ -1,0 +1,105 @@
+# Snow Village store settings — source for the App Store / Google Play listings
+# (written by mobile/tools/store/listing.py). Limits: Play title ≤30, short ≤80, full ≤4000;
+# App Store name/subtitle ≤30, keywords ≤100 bytes-ish (count characters), promo ≤170.
+app:
+  name: snow-vill
+  display_name: "Snow Village"
+  package_name: com.mkideabox.snowvillage
+  bundle_id: com.mkideabox.snowvillage
+  asc_app_id: "6832823869"
+
+checklist:
+  uses_google_ads: false
+  uses_third_party_ads: false
+  analytics_sdk: false
+  requires_login: false          # no accounts; a random install id + secrets on the device
+  target_stores: {google_play: true, app_store: true}
+  app_type: social               # friends share one village by link
+  has_in_app_purchase: true      # 4 consumables, docs/10-store-iap-setup.md
+  user_generated_content: true   # village/house names, one-line message, one photo; report + delete flows exist
+  permissions:
+    photos: picker only          # system photo picker, one photo, EXIF removed, 512px
+    camera: false
+    location: false
+    microphone: false
+    contacts: false
+
+urls:
+  marketing: https://snow.mkideabox.com/
+  support: https://snow.mkideabox.com/privacy/      # page carries the contact address (mkideabox.feedback@gmail.com)
+  privacy: https://snow.mkideabox.com/privacy/
+  contact_email: mkideabox.feedback@gmail.com
+
+copyright: "2026 mkideabox"
+category: {app_store: SOCIAL_NETWORKING, app_store_secondary: LIFESTYLE, google_play: SOCIAL}
+
+localizations:
+  ko:
+    google_play_locale: ko-KR
+    app_store_locale: ko
+    title: "Snow Village - 친구와 짓는 겨울 마을"
+    name: "Snow Village"
+    subtitle: "친구와 함께 짓는 겨울 마을"
+    short_description: "링크 하나로 친구를 초대해 집을 한 채씩 짓는 겨울 마을. 집을 누르면 사진 액자가 열려요."
+    keywords: "크리스마스,겨울,마을,친구,초대,사진,추억,연말,눈,모임,우정,선물,아이소메트릭"
+    promotional_text: "올해 연말엔 친구들과 작은 겨울 마을을 지어 보세요. 집마다 사진 한 장, 한마디 한 줄."
+    full_description: |
+      Snow Village는 친구들과 함께 짓는 작은 겨울 마을이에요.
+
+      마을을 만들고 링크를 보내면, 친구가 링크를 열어 빈 집터에 자기 집을 한 채 지어요. 집 모양과 문 방향을 고르고, 한마디와 사진 한 장을 남길 수 있어요. 마을에서 집을 누르면 그 친구의 사진 액자가 열려요.
+
+      ■ 이런 마을이에요
+      • 가운데 성당 광장을 두고 동네가 둘레에 이어져요
+      • 통나무집, 빵집, 풍차집, 진저브레드 하우스 등 9가지 집, 4가지 방향
+      • 동네마다 아이스링크, 산타의 집, 루돌프 동상 같은 시설이 생겨요
+      • 친구가 18명을 넘으면 마을 하늘에 오로라가 떠요
+
+      ■ 처음엔 무료로 6채
+      마을은 무료로 6채까지 지을 수 있어요. 친구가 더 많으면 원하는 동네를 골라 집터를 3곳씩 넓힐 수 있어요(최대 60채). 넓히기는 앱 안 구매로 하고, 넓힌 마을은 웹에서도 똑같이 보여요.
+
+      ■ 사진은 조용히
+      • 회원가입이 없어요. 이름·이메일·전화번호를 받지 않아요
+      • 사진은 비공개 저장소에 두고, 집을 눌렀을 때만 잠깐 유효한 주소로 보여 줘요
+      • 공유 카드에는 사진·닉네임이 들어가지 않아요
+      • 사진의 위치 정보(EXIF)는 올릴 때 지워요
+      • 내 집은 언제든 비울 수 있고, 마을을 만든 사람은 마을 전체를 지울 수 있어요
+      • 부적절한 집은 신고할 수 있어요
+
+      링크를 가진 사람은 마을을 볼 수 있으니 믿을 수 있는 친구에게만 보내 주세요.
+    review_notes: |
+      No login. Create a village on the home screen (새 마을 만들기), then move into a lot. To see the in-app purchase:
+      open the village → top-right menu (⋮) → 마을 넓히기 (Grow the village) → pick a district → buy.
+      Each purchase is consumable and opens 3 more lots in the chosen district. Content: user names, a one-line
+      message and one photo per house; report (집 신고) and delete (내 집 비우기 / 마을 삭제) are in the house and village menus.
+  en:
+    google_play_locale: en-US
+    app_store_locale: en-US
+    title: "Snow Village: Build Together"
+    name: "Snow Village: Build Together"   # "Snow Village" alone is taken on the App Store (en-US) by another developer
+    subtitle: "A winter village with friends"
+    short_description: "Invite friends by link; each builds a house. Tap one to see their photo."
+    keywords: "christmas,winter,village,friends,invite,photo,memories,holiday,snow,group,gift,isometric"
+    promotional_text: "Build a small winter village with your friends this holiday season — one photo and one line per house."
+    full_description: |
+      Snow Village is a small winter village you build with friends.
+
+      Create a village and share the link. Each friend opens it and builds a house on an empty lot, picks its style and door direction, and leaves a short message and one photo. Tap a house in the village to open that friend's photo frame.
+
+      ■ The village
+      • A cathedral plaza in the middle with districts around it
+      • 9 house types — log cabin, bakery, windmill, gingerbread and more — in 4 directions
+      • Districts bring an ice rink, Santa's house, a Rudolph statue and other sights
+      • With 18 or more houses the aurora appears
+
+      ■ Free for 6 houses
+      A village holds 6 houses for free. For more friends, pick a district and open 3 more lots at a time (up to 60) with an in-app purchase. The bigger village shows the same on the web.
+
+      ■ Quiet about photos
+      • No sign-up; no name, e-mail or phone number
+      • Photos live in private storage and are only shown through a short-lived link when a house is tapped
+      • Share cards never include photos or nicknames
+      • Location data (EXIF) is removed on upload
+      • Clear your house at any time; the village creator can delete the whole village
+      • Report a house that is not okay
+
+      Anyone with the link can see the village, so share it with people you trust.

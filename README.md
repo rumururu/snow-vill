@@ -28,6 +28,7 @@ npm run dev          # http://localhost:3000
 | `supabase/tests/local.sh` | SQL tests (58) on a throwaway local Postgres with Supabase's roles/default privileges |
 | `supabase/deploy.sh` | Deploy schema + photo bucket + Edge Function via Management API, verify other games unchanged, run live tests |
 | `supabase/tests/live.sh` | Live server tests (51) through the anon REST/Edge path; deletes its test data |
+| `supabase/moderation.py` | Report handling: `check` (alert mail, LaunchAgent `supabase/launchd/` every 15 min), `list`, `photo`, `remove`, `dismiss`, `log` |
 | `scripts/e2e-remote.sh` | Multi-device browser E2E against the live backend (needs a build with `.env.local`); verifies server cleanup |
 
 Without `.env.local` the app runs in simulation mode and needs no credentials. To use the real backend, copy `.env.example` to `.env.local` and fill in the **anon** key (public by design — never a service_role/secret key):

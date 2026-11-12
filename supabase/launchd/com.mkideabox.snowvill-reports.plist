@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Snow Village report alerts: every 15 minutes (and at login) mail the operator about new reports.
+     Install: mkdir -p ~/Library/Logs/mkideabox/snowvill-reports && cp supabase/launchd/com.mkideabox.snowvill-reports.plist ~/Library/LaunchAgents/ &&
+              launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.mkideabox.snowvill-reports.plist -->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.mkideabox.snowvill-reports</string>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PYTHONUNBUFFERED</key>
+		<string>1</string>
+		<key>TZ</key>
+		<string>Asia/Seoul</string>
+	</dict>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/opt/homebrew/opt/python@3.14/bin/python3.14</string>
+		<string>/Volumes/home_extension/AndroidStudioProjects/snow-vill/supabase/moderation.py</string>
+		<string>check</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StartInterval</key>
+	<integer>900</integer>
+	<key>StandardOutPath</key>
+	<string>/Users/mankil/Library/Logs/mkideabox/snowvill-reports/out.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/mankil/Library/Logs/mkideabox/snowvill-reports/err.log</string>
+	<key>WorkingDirectory</key>
+	<string>/Volumes/home_extension/AndroidStudioProjects/snow-vill</string>
+</dict>
+</plist>

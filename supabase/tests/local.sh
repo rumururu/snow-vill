@@ -21,7 +21,7 @@ alter default privileges in schema public grant all on tables to anon, authentic
 alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
 SQL
-for m in migrations/20261109100000_snowvill_core.sql migrations/20261110100000_snowvill_big_village.sql migrations/20261111100000_snowvill_expansion.sql migrations/20261111120000_snowvill_districts.sql migrations/20261112100000_snowvill_village_look.sql; do
+for m in migrations/20261109100000_snowvill_core.sql migrations/20261110100000_snowvill_big_village.sql migrations/20261111100000_snowvill_expansion.sql migrations/20261111120000_snowvill_districts.sql migrations/20261112100000_snowvill_village_look.sql migrations/20261113100000_snowvill_moderation.sql; do
   "${PSQL[@]}" -v ON_ERROR_STOP=1 -f "$m" >/dev/null || { echo "migration failed: $m"; exit 1; }
 done
 
@@ -224,6 +224,37 @@ ok "$(j "$(sql anon "select snowvill_set_village_look('$C', '$VL', '$OL', 'stone
 ok "$(j "$(sql anon "select snowvill_get_village('$VL')")" "(d['path_style'], d['decor'])")" "('stones', {})" "reset stored"
 ok "$(sql anon "select snowvill_valid_decor('{}')")" "ERR:42501" "validator not callable by anon"
 ok "$("${PSQL[@]}" -c "update snowvill_villages set path_style='gold' where id='$VL'" 2>&1 | grep -o 23514)" 23514 "column check rejects unknown style"
+
+echo "9. moderation (service_role only; reports reviewed, house removed or reports dismissed)"
+R=$(sql anon "select snowvill_create_village('$C', '신고 마을')"); VM=$(j "$R" "d['id']")
+H1=$(j "$(sql anon "select snowvill_claim_house('$A', '$VM', 0, '하나', 'wood', '안녕')")" "d['house']['id']")
+H2=$(j "$(sql anon "select snowvill_claim_house('$B', '$VM', 1, '둘', 'sage', '')")" "d['house']['id']")
+sql service_role "select snowvill_set_photo('$H1', '$VM/h1.jpg')" >/dev/null
+sql anon "select snowvill_report('$C', '$H1', '부적절한 사진')" >/dev/null
+sql anon "select snowvill_report('$D', '$H1', '')" >/dev/null
+sql anon "select snowvill_report('$C', '$H2', '욕설')" >/dev/null
+for f in "snowvill_mod_queue()" "snowvill_mod_mark_notified(array[1]::bigint[])" "snowvill_mod_dismiss('$H2', 'x')" "snowvill_mod_remove('$H1', 'x')"; do
+  ok "$(sql anon "select $f")" "ERR:42501" "anon $f denied"
+  ok "$(sql authenticated "select $f")" "ERR:42501" "authenticated $f denied"
+done
+ok "$(sql anon "select count(*) from snowvill_moderation_log")" "ERR:42501" "moderation log hidden from anon"
+Q=$(sql service_role "select snowvill_mod_queue()")
+ok "$(j "$Q" "[(x['nickname'], x['reports'], x['reporters'], x['has_photo'], x['unnotified']) for x in d if x['village_id']=='$VM']")" "[('하나', 2, 2, True, 2), ('둘', 1, 1, False, 1)]" "queue: grouped by house, oldest first, counts"
+ok "$(j "$Q" "'photo_path' in d[0] or 'claim_hash' in d[0]")" False "queue exposes no photo path or secret hash"
+IDS=$(j "$Q" "','.join(str(i) for x in d if x['village_id']=='$VM' for i in x['report_ids'])")
+ok "$(sql service_role "select snowvill_mod_mark_notified(array[$IDS]::bigint[])")" 3 "mark 3 reports notified"
+ok "$(sql service_role "select snowvill_mod_mark_notified(array[$IDS]::bigint[])")" 0 "already notified → 0"
+ok "$(j "$(sql service_role "select snowvill_mod_queue()")" "sum(x['unnotified'] for x in d if x['village_id']=='$VM')")" 0 "no unnotified left"
+ok "$(sql service_role "select snowvill_mod_dismiss('$H2', '문제 없음')")" 1 "dismiss closes 1 open report"
+ok "$(j "$(sql service_role "select snowvill_mod_queue()")" "[x['nickname'] for x in d if x['village_id']=='$VM']")" "['하나']" "dismissed house leaves the queue"
+ok "$("${PSQL[@]}" -c "select count(*) from snowvill_houses where id='$H2'")" 1 "dismissed house stays"
+ok "$(sql service_role "select snowvill_mod_remove('$H1', '아동 안전 위반')")" "$VM/h1.jpg" "remove returns the photo path"
+ok "$("${PSQL[@]}" -c "select count(*) from snowvill_houses where id='$H1'")" 0 "removed house deleted"
+ok "$("${PSQL[@]}" -c "select count(*) from snowvill_reports where house_id='$H1'")" 0 "its reports cascade"
+ok "$("${PSQL[@]}" -c "select string_agg(action||':'||reports||':'||note, ',' order by id) from snowvill_moderation_log where village_id='$VM'")" "dismissed:1:문제 없음,removed:2:아동 안전 위반" "both decisions logged (no house content)"
+ok "$(sql service_role "select snowvill_mod_remove('$H1', 'again')")" "ERR:P0002" "unknown house → P0002"
+ok "$(sql service_role "select snowvill_mod_dismiss('$H1', 'again')")" "ERR:P0002" "dismiss unknown house → P0002"
+ok "$(j "$(sql anon "select snowvill_get_village('$VM')")" "[h['nickname'] for h in d['houses']]")" "['둘']" "village shows only the kept house"
 
 echo "result: $pass passed, $fail failed"
 [ "$fail" = 0 ]

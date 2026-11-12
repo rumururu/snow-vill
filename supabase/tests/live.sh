@@ -22,8 +22,10 @@ cleanup() {
     [ -z "$pair" ] && continue
     fncall "$(js "action=delete_village" "install_id=$D" "village_id=${pair%%:*}" "secret=${pair#*:}")" >/dev/null
   done
-  local like="false"
-  for v in "${VIDS[@]:-}"; do [ -n "$v" ] && like="$like or name like '$v/%'"; done
+  local like="false" ids="''"
+  for v in "${VIDS[@]:-}"; do [ -n "$v" ] && like="$like or name like '$v/%'" && ids="$ids,'$v'"; done
+  # by the collected IDs: section 7 deletes the village before this runs
+  mq "delete from snowvill_moderation_log where village_id in ($ids)" >/dev/null
   mq "delete from snowvill_villages where created_by in ('$A','$B','$C','$D'); delete from snowvill_calls where install_id in ('$A','$B','$C','$D'); delete from snowvill_purchases where install_id in ('$A','$B','$C','$D'); delete from snowvill_wallets where install_id in ('$A','$B','$C','$D'); delete from snowvill_tier_credits where install_id in ('$A','$B','$C','$D'); select (select count(*) from snowvill_villages where created_by in ('$A','$B','$C','$D')) as villages, (select count(*) from snowvill_calls where install_id in ('$A','$B','$C','$D')) as calls, (select count(*) from storage.objects where bucket_id='snowvill-photos' and ($like)) as photos"
   echo; rm -rf "$W"
 }
@@ -130,6 +132,14 @@ ok "$(mq "select count(*) as n from storage.objects where bucket_id='snowvill-ph
 
 echo "6. report + rate limit"
 ok "$(rpc snowvill_report "$(js "p_install_id=$C" "p_house_id=$H1" "p_reason=live test")")" 204 "report accepted"
+# Mark it notified at once so the 15-minute alert job does not mail the operator about a test report.
+ok "$(mq "select snowvill_mod_mark_notified(array(select id from snowvill_reports where reporter='$C')) as n" | python3 -c 'import json,sys;print(json.load(sys.stdin)[0]["n"])')" 1 "test report marked notified"
+for f in snowvill_mod_queue snowvill_mod_dismiss snowvill_mod_remove snowvill_mod_mark_notified; do
+  code=$(rpc $f '{}'); [ "$code" != 200 ] && ok x x "$f via anon denied ($code)" || ok "$code" 4xx "$f via anon denied"
+done
+ok "$(mq "select snowvill_mod_queue() as q" | python3 -c "import json,sys;q=json.load(sys.stdin)[0]['q'];print([(h['nickname'],h['reports']) for h in q if h['village_id']=='$VID'])")" "[('도윤', 1)]" "report in the moderation queue"
+ok "$(mq "select snowvill_mod_dismiss('$H1', 'live test') as n" | python3 -c 'import json,sys;print(json.load(sys.stdin)[0]["n"])')" 1 "dismiss closes it"
+ok "$(mq "select count(*) as n from snowvill_reports where house_id='$H1' and status='open'" | python3 -c 'import json,sys;print(json.load(sys.stdin)[0]["n"])')" 0 "no open report left"
 last=0; for i in 1 2 3 4; do last=$(rpc snowvill_create_village "$(js "p_install_id=$D" "p_name=제한$i")"); [ "$last" = 200 ] && OWNERS+=("$(jb "d['id']"):$(jb "d['owner_secret']")") && VIDS+=("$(jb "d['id']")"); done
 ok "$last" 429 "4th create in a minute → 429"
 

@@ -42,6 +42,11 @@ case "$(q "select count(*) as n from information_schema.columns where table_name
   *) echo "village look migration already applied" ;;
 esac
 
+case "$(q "select count(*) as n from pg_tables where schemaname='public' and tablename='snowvill_moderation_log'")" in
+  *'"n":0'*) R=$(q "$(cat migrations/20261113100000_snowvill_moderation.sql)"); echo "moderation migration: $R" ;;
+  *) echo "moderation migration already applied" ;;
+esac
+
 AFTER=$(q "$HASH")
 [ "$BEFORE" = "$AFTER" ] && echo "other games unchanged ($AFTER)" || { echo "OTHER OBJECTS CHANGED: $BEFORE -> $AFTER"; exit 1; }
 

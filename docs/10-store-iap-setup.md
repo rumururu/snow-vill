@@ -111,7 +111,7 @@ Test data to remove after the refund check: villages "QA IAP test" (capacity 6),
 | ~~Play: production release 1.0.0 (build 8) sent for review~~ 2026-11-12 | Claude | review usually ≤ 7 days |
 | ~~ASC reviewer contact~~ set 2026-11-12 (company standard contact, passed as `REVIEW_*` env to `tools/store/listing.py`, not stored in the repo) | Claude | |
 | ASC: submit for review | owner approval | |
-| Moderation routine: reports land in `snowvill_reports` with no alert or dashboard; the published child safety standards promise review and removal, so someone must check them (or add an alert) | owner | before launch traffic |
+| Report handling built 2026-11-12 (`supabase/migrations/20261113100000_snowvill_moderation.sql`, `supabase/moderation.py`, LaunchAgent `supabase/launchd/com.mkideabox.snowvill-reports.plist`): deployed 2026-11-13 (live tests 86/86); one real alert mail verified end to end (report → `check` mail in the operator inbox → `remove`, test data cleaned). **LaunchAgent install pending** — the owner runs the install line in the plist header | owner | before launch traffic |
 | Lower the RevenueCat v2 key to read-only | Claude | after setup |
 
 ## 8. Play app content and first production release (2026-11-12, sent for review)

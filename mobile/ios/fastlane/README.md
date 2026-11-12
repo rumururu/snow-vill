@@ -23,6 +23,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Build and upload to TestFlight
 
+### ios screenshots
+
+```sh
+[bundle exec] fastlane ios screenshots
+```
+
+Upload store screenshots only (fastlane/screenshots/<locale>/, staged by docs/release_assets/tools/build_marketing.py --to-fastlane). No text, no binary, no submission
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

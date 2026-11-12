@@ -71,13 +71,15 @@ PLAZA_Z = 0.55                       # the cathedral mound; everything else is o
 PLAZA = [
     {"id": "cathedral", "sprite": "landmark_cathedral", "at": [-0.9, -0.9], "tiles": 2.5},
     {"id": "tree", "sprite": "tree_complete", "at": [1.5, 1.2], "tiles": 1.05},
-    {"id": "plaza-lamp-a", "sprite": "prop_lamp", "at": [2.6, -1.0], "tiles": 0.5},
-    {"id": "plaza-lamp-b", "sprite": "prop_lamp", "at": [-1.0, 2.6], "tiles": 0.5},
-    {"id": "plaza-bench", "sprite": "prop_bench", "at": [0.4, 2.6], "tiles": 0.8},
+    {"id": "plaza-lamp-a", "sprite": "prop_lamp", "at": [2.6, -1.0], "tiles": 0.36},
+    {"id": "plaza-lamp-b", "sprite": "prop_lamp", "at": [-1.0, 2.6], "tiles": 0.36},
+    {"id": "plaza-bench", "sprite": "prop_bench", "at": [0.4, 2.6], "tiles": 0.5},
 ]
 # id, name (ko), name (en), landmark sprite (None = drawn in code), landmark size in tiles (houses are 1.7)
 DISTRICTS = [
-    ("snowflake", "눈송이 동네", "Snowflake Lane", "decor_snowfamily", 1.15),
+    # district 0 is the free village: owner 2026-11-12 "the smallest village has no cathedral; houses around the tree,
+    # like the first concept" — its landmark is the Christmas tree (the plaza and cathedral appear on the first expansion)
+    ("snowflake", "눈송이 동네", "Snowflake Lane", "tree_complete", 1.3),
     ("rink", "링크 동네", "Ice Rink Lane", "landmark_rink", 1.8),
     ("santa", "산타 동네", "Santa's Lane", "landmark_santa", 1.7),
     ("rudolph", "루돌프 동네", "Rudolph Lane", "landmark_rudolph", 1.2),
@@ -88,6 +90,32 @@ DISTRICTS = [
     ("hill", "언덕 동네", "Hill Lane", "prop_pines", 1.4),
     ("lake", "호숫가 동네", "Lakeside Lane", None, 0),      # frozen pond drawn in code
 ]
+# Names in the other 8 store languages (ko/en are in DISTRICTS / HOUSES). One glossary for the app, web and store.
+NAMES_I18N = {
+    # districts             ja            zh        es                          fr                      de                    pt                         ru                    id
+    "snowflake": dict(ja="雪の結晶通り", zh="雪花巷", es="Calle Copo de Nieve", fr="Rue des Flocons", de="Schneeflockengasse", pt="Rua do Floco de Neve", ru="Переулок Снежинок", id="Lorong Kepingan Salju"),
+    "rink": dict(ja="スケートリンク通り", zh="冰场巷", es="Calle de la Pista de Hielo", fr="Rue de la Patinoire", de="Eisbahngasse", pt="Rua da Pista de Gelo", ru="Переулок Катка", id="Lorong Arena Es"),
+    "santa": dict(ja="サンタ通り", zh="圣诞老人巷", es="Calle de Papá Noel", fr="Rue du Père Noël", de="Weihnachtsmanngasse", pt="Rua do Papai Noel", ru="Переулок Санты", id="Lorong Sinterklas"),
+    "rudolph": dict(ja="ルドルフ通り", zh="鲁道夫巷", es="Calle Rodolfo", fr="Rue de Rudolph", de="Rudolfgasse", pt="Rua do Rudolph", ru="Переулок Рудольфа", id="Lorong Rudolph"),
+    "sled": dict(ja="そり通り", zh="雪橇巷", es="Calle del Trineo", fr="Rue du Traîneau", de="Schlittengasse", pt="Rua do Trenó", ru="Переулок Саней", id="Lorong Kereta Salju"),
+    "forest": dict(ja="森の通り", zh="森林巷", es="Calle del Bosque", fr="Rue de la Forêt", de="Waldgasse", pt="Rua da Floresta", ru="Лесной переулок", id="Lorong Hutan"),
+    "lantern": dict(ja="ランタン通り", zh="灯笼巷", es="Calle de los Faroles", fr="Rue des Lanternes", de="Laternengasse", pt="Rua das Lanternas", ru="Фонарный переулок", id="Lorong Lentera"),
+    "starlight": dict(ja="星あかり通り", zh="星光巷", es="Calle Luz de Estrellas", fr="Rue des Étoiles", de="Sternenlichtgasse", pt="Rua da Luz das Estrelas", ru="Звёздный переулок", id="Lorong Cahaya Bintang"),
+    "hill": dict(ja="丘の通り", zh="山丘巷", es="Calle de la Colina", fr="Rue de la Colline", de="Hügelgasse", pt="Rua da Colina", ru="Холмистый переулок", id="Lorong Bukit"),
+    "lake": dict(ja="湖畔通り", zh="湖畔巷", es="Calle del Lago", fr="Rue du Lac", de="Seegasse", pt="Rua do Lago", ru="Озёрный переулок", id="Lorong Tepi Danau"),
+    # house types
+    "house:wood": dict(ja="ログハウス", zh="小木屋", es="Cabaña de troncos", fr="Chalet en rondins", de="Blockhaus", pt="Cabana de madeira", ru="Бревенчатый домик", id="Pondok kayu"),
+    "house:brick": dict(ja="レンガの家", zh="砖房", es="Casa de ladrillo", fr="Maison en briques", de="Backsteinhaus", pt="Casa de tijolos", ru="Кирпичный дом", id="Rumah bata"),
+    "house:bakery": dict(ja="パン屋", zh="面包店", es="Panadería", fr="Boulangerie", de="Bäckerei", pt="Padaria", ru="Пекарня", id="Toko roti"),
+    "house:tower": dict(ja="塔の家", zh="塔楼", es="Casa torre", fr="Maison-tour", de="Turmhaus", pt="Casa-torre", ru="Дом с башней", id="Rumah menara"),
+    "house:gingerbread": dict(ja="ジンジャーブレッドの家", zh="姜饼屋", es="Casa de jengibre", fr="Maison en pain d'épices", de="Lebkuchenhaus", pt="Casa de gengibre", ru="Пряничный домик", id="Rumah jahe"),
+    "house:timber": dict(ja="木組みの家", zh="半木结构屋", es="Casa de entramado", fr="Maison à colombages", de="Fachwerkhaus", pt="Casa enxaimel", ru="Фахверковый дом", id="Rumah rangka kayu"),
+    "house:aframe": dict(ja="山小屋", zh="尖顶木屋", es="Cabaña alpina", fr="Chalet en A", de="Berghütte", pt="Chalé alpino", ru="Горный домик", id="Pondok gunung"),
+    "house:windmill": dict(ja="風車の家", zh="风车屋", es="Molino", fr="Moulin", de="Windmühle", pt="Moinho", ru="Мельница", id="Kincir angin"),
+    "house:greenhouse": dict(ja="温室の家", zh="温室小屋", es="Invernadero", fr="Serre", de="Gewächshaus", pt="Estufa", ru="Оранжерея", id="Rumah kaca"),
+    "house:sage": dict(ja="セージの家", zh="鼠尾草小屋", es="Cabaña salvia", fr="Chalet sauge", de="Salbeihütte", pt="Cabana sálvia", ru="Шалфейный домик", id="Pondok sage"),
+    "house:indigo": dict(ja="インディゴの家", zh="靛蓝小屋", es="Cabaña índigo", fr="Chalet indigo", de="Indigohütte", pt="Cabana índigo", ru="Домик индиго", id="Pondok nila"),
+}
 # (ring radius, angle in degrees on the ground plane, elevation). Angle 45° = toward the viewer (+i+j).
 PLACES = [
     # inner ring: district 0 in front of the plaza, district 1 behind it (the village first grows along the
@@ -105,12 +133,13 @@ POND_RADIUS = 1.7
 # House positions around the landmark, relative to the entrance direction (degrees, radius in tiles).
 # First three = first half (nearest the entrance).
 HOUSE_RING = [(55, 3.6), (-55, 3.6), (105, 3.9), (-105, 3.9), (155, 3.5), (-155, 3.5)]
-# Decoration around each clearing (degrees from the entrance, radius, sprite, tiles)
+# Decoration around each clearing (degrees from the entrance, radius, sprite, tiles). Sized to the houses
+# (1.7 tiles, ~215 px tall): lamp ~0.55x a house, bench/signpost/snowman well under half (owner: props looked too big).
 DECOR = [
-    (25, 5.0, "prop_lamp", 0.5), (-25, 5.0, "prop_lamp", 0.5),
-    (12, 3.0, "prop_signpost", 0.7),
-    (180, 2.1, "prop_bench", 0.8),
-    (128, 5.1, "prop_bush", 0.7), (-128, 5.1, "prop_snowman_lantern", 0.7),
+    (25, 5.0, "prop_lamp", 0.36), (-25, 5.0, "prop_lamp", 0.36),
+    (12, 3.0, "prop_signpost", 0.42),
+    (180, 2.1, "prop_bench", 0.5),
+    (128, 5.1, "prop_bush", 0.55), (-128, 5.1, "prop_snowman_lantern", 0.5),
     (180, 5.1, "prop_pines", 1.0),
 ]
 FOREST_RADIUS = 30.0
@@ -155,6 +184,32 @@ def blob(ci: float, cj: float, r: float, seed: int, n: int = 32) -> list[list[fl
 
 def smooth(t: float) -> float:
     return t * t * (3 - 2 * t)
+
+
+PATH_CLEARANCE = 0.85                # decor keeps this far (tiles) from a path's centre line (owner: paths looked bad)
+
+
+def clear_of_path(item: dict, line: list[list[float]]) -> dict:
+    """Push a decoration sideways off the path's stepping stones, if it sits on them."""
+    i, j = item["at"]
+    best, foot = 1e9, None
+    for a, b in zip(line, line[1:]):
+        di, dj = b[0] - a[0], b[1] - a[1]
+        L2 = di * di + dj * dj or 1e-9
+        t = max(0.0, min(1.0, ((i - a[0]) * di + (j - a[1]) * dj) / L2))
+        pi, pj = a[0] + di * t, a[1] + dj * t
+        d = math.hypot(i - pi, j - pj)
+        if d < best:
+            best, foot = d, (pi, pj, di, dj)
+    if best >= PATH_CLEARANCE:
+        return item
+    pi, pj, di, dj = foot
+    if best > 1e-6:
+        ni, nj = (i - pi) / best, (j - pj) / best
+    else:
+        L = math.hypot(di, dj) or 1.0
+        ni, nj = -dj / L, di / L
+    return {**item, "at": [round(pi + ni * PATH_CLEARANCE, 3), round(pj + nj * PATH_CLEARANCE, 3)]}
 
 
 def path_line(a: tuple[float, float, float], b: tuple[float, float, float], bend: float, n: int = 18) -> list[list[float]]:
@@ -203,14 +258,16 @@ def districts_and_lots() -> tuple[list[dict], list[dict], list[dict], dict]:
         if key == "lantern":                      # a small ring of lamps around the centre lamp
             for k in range(3):
                 i, j = polar(ci, cj, entrance + 60 + k * 120, 1.1)
-                decor.append({"sprite": "prop_lamp", "at": [round(i, 3), round(j, 3)], "z": z, "tiles": 0.5})
+                decor.append({"sprite": "prop_lamp", "at": [round(i, 3), round(j, 3)], "z": z, "tiles": 0.36})
         start = polar(0, 0, ang, PLAZA_RADIUS - 1.2)
         end = polar(ci, cj, entrance, 1.9 if sprite or key == "lake" else 1.2)
         bend = (1.2 if d % 2 else -1.2) * (1.6 if R > 20 else 1)
+        line = path_line((start[0], start[1], PLAZA_Z), (end[0], end[1], z), bend)
+        decor = [clear_of_path(x, line) for x in decor]
         districts.append({
-            "index": d, "id": key, "name": {"ko": ko, "en": en}, "at": [round(ci, 3), round(cj, 3)], "z": z,
+            "index": d, "id": key, "name": {"ko": ko, "en": en, **NAMES_I18N[key]}, "at": [round(ci, 3), round(cj, 3)], "z": z,
             "radius": DISTRICT_RADIUS, "outline": blob(ci, cj, DISTRICT_RADIUS, d + 1),
-            "path": path_line((start[0], start[1], PLAZA_Z), (end[0], end[1], z), bend),
+            "path": line,
             "facility": {"sprite": sprite, "at": [round(ci, 3), round(cj, 3)], "z": z, "tiles": tiles} if sprite else None,
             "pond": blob(ci, cj, POND_RADIUS, d + 50, 24) if key == "lake" else None,
             "decor": decor,
@@ -234,8 +291,11 @@ def districts_and_lots() -> tuple[list[dict], list[dict], list[dict], dict]:
             k += 1
             i = gi * FOREST_PITCH + (rand(k) - 0.5) * 1.4
             j = gj * FOREST_PITCH + (rand(k + 999) - 0.5) * 1.4
-            if math.hypot(i, j) > FOREST_RADIUS or math.hypot(i, j) < PLAZA_RADIUS + 1.2:
+            if math.hypot(i, j) > FOREST_RADIUS:
                 continue
+            # Trees where the plaza stands are kept but flagged: they show only while the plaza is not there yet
+            # (the free village, district 0 alone), so the small village is not framed by a bare snowfield.
+            on_plaza = math.hypot(i, j) < PLAZA_RADIUS + 1.2
             # clumps: a smooth density field leaves open snowfields between groves
             dens = 0.5 + 0.3 * math.sin(i * 0.31 + 1.3) * math.cos(j * 0.27 - 0.4) + 0.25 * math.sin((i + j) * 0.17 + 2.1)
             near = min(math.dist((i, j), dd["at"]) - DISTRICT_RADIUS for dd in districts)
@@ -250,7 +310,10 @@ def districts_and_lots() -> tuple[list[dict], list[dict], list[dict], dict]:
                 if pick <= 0:
                     break
             tiles = round(lo + rand(k + 77) * (hi - lo), 2)
-            forest.append({"sprite": sprite, "at": [round(i, 3), round(j, 3)], "z": zz, "tiles": tiles, "mirror": rand(k + 5) > 0.5})
+            tree = {"sprite": sprite, "at": [round(i, 3), round(j, 3)], "z": zz, "tiles": tiles, "mirror": rand(k + 5) > 0.5}
+            if on_plaza:
+                tree["plaza"] = True
+            forest.append(tree)
     return districts, lots, forest, plaza
 
 
@@ -304,7 +367,7 @@ def main() -> None:
                  "plaza": [{**f, "z": PLAZA_Z} for f in PLAZA], "districts": districts, "forest": forest, "houses": {}, "sprites": {},
                  "auroraMinHouses": AURORA_MIN_HOUSES, "props": PROPS, "lots": lot_list}
     for key, (ko, en, a, b) in HOUSES.items():
-        geo["houses"][key] = {"label": {"ko": ko, "en": en}, "a": a, "b": b}
+        geo["houses"][key] = {"label": {"ko": ko, "en": en, **NAMES_I18N["house:" + key]}, "a": a, "b": b}
         for name in {a, b}:
             if name not in geo["sprites"]:
                 geo["sprites"][name] = measure(name, "house", SPRITE_SIZE)

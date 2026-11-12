@@ -313,7 +313,7 @@
     2.6,
     -1.0
    ],
-   "tiles": 0.5,
+   "tiles": 0.36,
    "z": 0.55
   },
   {
@@ -323,7 +323,7 @@
     -1.0,
     2.6
    ],
-   "tiles": 0.5,
+   "tiles": 0.36,
    "z": 0.55
   },
   {
@@ -333,7 +333,7 @@
     0.4,
     2.6
    ],
-   "tiles": 0.8,
+   "tiles": 0.5,
    "z": 0.55
   }
  ],
@@ -343,7 +343,15 @@
    "id": "snowflake",
    "name": {
     "ko": "눈송이 동네",
-    "en": "Snowflake Lane"
+    "en": "Snowflake Lane",
+    "ja": "雪の結晶通り",
+    "zh": "雪花巷",
+    "es": "Calle Copo de Nieve",
+    "fr": "Rue des Flocons",
+    "de": "Schneeflockengasse",
+    "pt": "Rua do Floco de Neve",
+    "ru": "Переулок Снежинок",
+    "id": "Lorong Kepingan Salju"
    },
    "at": [
     8.839,
@@ -579,13 +587,13 @@
     ]
    ],
    "facility": {
-    "sprite": "decor_snowfamily",
+    "sprite": "tree_complete",
     "at": [
      8.839,
      8.839
     ],
     "z": 0.0,
-    "tiles": 1.15
+    "tiles": 1.3
    },
    "pond": null,
    "decor": [
@@ -596,7 +604,7 @@
       4.14
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_lamp",
@@ -605,16 +613,16 @@
       7.129
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_signpost",
      "at": [
-      7.205,
-      6.323
+      7.648,
+      6.047
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.42
     },
     {
      "sprite": "prop_bench",
@@ -623,7 +631,7 @@
       10.324
      ],
      "z": 0.0,
-     "tiles": 0.8
+     "tiles": 0.5
     },
     {
      "sprite": "prop_bush",
@@ -632,7 +640,7 @@
       8.217
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.55
     },
     {
      "sprite": "prop_snowman_lantern",
@@ -641,7 +649,7 @@
       13.901
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.5
     },
     {
      "sprite": "prop_pines",
@@ -659,7 +667,15 @@
    "id": "rink",
    "name": {
     "ko": "링크 동네",
-    "en": "Ice Rink Lane"
+    "en": "Ice Rink Lane",
+    "ja": "スケートリンク通り",
+    "zh": "冰场巷",
+    "es": "Calle de la Pista de Hielo",
+    "fr": "Rue de la Patinoire",
+    "de": "Eisbahngasse",
+    "pt": "Rua da Pista de Gelo",
+    "ru": "Переулок Катка",
+    "id": "Lorong Arena Es"
    },
    "at": [
     -8.839,
@@ -912,7 +928,7 @@
       -4.14
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_lamp",
@@ -921,7 +937,7 @@
       -7.129
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_signpost",
@@ -930,7 +946,7 @@
       -6.323
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.42
     },
     {
      "sprite": "prop_bench",
@@ -939,7 +955,7 @@
       -10.324
      ],
      "z": 0.0,
-     "tiles": 0.8
+     "tiles": 0.5
     },
     {
      "sprite": "prop_bush",
@@ -948,7 +964,7 @@
       -8.217
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.55
     },
     {
      "sprite": "prop_snowman_lantern",
@@ -957,7 +973,7 @@
       -13.901
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.5
     },
     {
      "sprite": "prop_pines",
@@ -975,7 +991,15 @@
    "id": "santa",
    "name": {
     "ko": "산타 동네",
-    "en": "Santa's Lane"
+    "en": "Santa's Lane",
+    "ja": "サンタ通り",
+    "zh": "圣诞老人巷",
+    "es": "Calle de Papá Noel",
+    "fr": "Rue du Père Noël",
+    "de": "Weihnachtsmanngasse",
+    "pt": "Rua do Papai Noel",
+    "ru": "Переулок Санты",
+    "id": "Lorong Sinterklas"
    },
    "at": [
     -3.235,
@@ -1228,7 +1252,7 @@
       8.244
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_lamp",
@@ -1237,16 +1261,16 @@
       7.15
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_signpost",
      "at": [
-      -1.873,
-      9.401
+      -1.413,
+      9.648
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.42
     },
     {
      "sprite": "prop_bench",
@@ -1255,7 +1279,7 @@
       14.103
      ],
      "z": 0.0,
-     "tiles": 0.8
+     "tiles": 0.5
     },
     {
      "sprite": "prop_bush",
@@ -1264,7 +1288,7 @@
       16.147
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.55
     },
     {
      "sprite": "prop_snowman_lantern",
@@ -1273,7 +1297,7 @@
       14.067
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.5
     },
     {
      "sprite": "prop_pines",
@@ -1291,7 +1315,15 @@
    "id": "rudolph",
    "name": {
     "ko": "루돌프 동네",
-    "en": "Rudolph Lane"
+    "en": "Rudolph Lane",
+    "ja": "ルドルフ通り",
+    "zh": "鲁道夫巷",
+    "es": "Calle Rodolfo",
+    "fr": "Rue de Rudolph",
+    "de": "Rudolfgasse",
+    "pt": "Rua do Rudolph",
+    "ru": "Переулок Рудольфа",
+    "id": "Lorong Rudolph"
    },
    "at": [
     12.074,
@@ -1544,7 +1576,7 @@
       -4.103
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_lamp",
@@ -1553,7 +1585,7 @@
       -0.021
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_signpost",
@@ -1562,7 +1594,7 @@
       -3.078
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.42
     },
     {
      "sprite": "prop_bench",
@@ -1571,7 +1603,7 @@
       -3.779
      ],
      "z": 0.0,
-     "tiles": 0.8
+     "tiles": 0.5
     },
     {
      "sprite": "prop_bush",
@@ -1580,7 +1612,7 @@
       -7.93
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.55
     },
     {
      "sprite": "prop_snowman_lantern",
@@ -1589,7 +1621,7 @@
       -0.166
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.5
     },
     {
      "sprite": "prop_pines",
@@ -1607,7 +1639,15 @@
    "id": "sled",
    "name": {
     "ko": "썰매 동네",
-    "en": "Sled Lane"
+    "en": "Sled Lane",
+    "ja": "そり通り",
+    "zh": "雪橇巷",
+    "es": "Calle del Trineo",
+    "fr": "Rue du Traîneau",
+    "de": "Schlittengasse",
+    "pt": "Rua do Trenó",
+    "ru": "Переулок Саней",
+    "id": "Lorong Kereta Salju"
    },
    "at": [
     -12.074,
@@ -1860,7 +1900,7 @@
       4.103
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_lamp",
@@ -1869,16 +1909,16 @@
       0.021
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_signpost",
      "at": [
-      -9.078,
-      3.078
+      -9.061,
+      3.6
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.42
     },
     {
      "sprite": "prop_bench",
@@ -1887,7 +1927,7 @@
       3.779
      ],
      "z": 0.0,
-     "tiles": 0.8
+     "tiles": 0.5
     },
     {
      "sprite": "prop_bush",
@@ -1896,7 +1936,7 @@
       7.93
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.55
     },
     {
      "sprite": "prop_snowman_lantern",
@@ -1905,7 +1945,7 @@
       0.166
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.5
     },
     {
      "sprite": "prop_pines",
@@ -1923,7 +1963,15 @@
    "id": "forest",
    "name": {
     "ko": "숲속 동네",
-    "en": "Forest Lane"
+    "en": "Forest Lane",
+    "ja": "森の通り",
+    "zh": "森林巷",
+    "es": "Calle del Bosque",
+    "fr": "Rue de la Forêt",
+    "de": "Waldgasse",
+    "pt": "Rua da Floresta",
+    "ru": "Лесной переулок",
+    "id": "Lorong Hutan"
    },
    "at": [
     3.235,
@@ -2176,7 +2224,7 @@
       -8.244
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_lamp",
@@ -2185,7 +2233,7 @@
       -7.15
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_signpost",
@@ -2194,7 +2242,7 @@
       -9.401
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.42
     },
     {
      "sprite": "prop_bench",
@@ -2203,7 +2251,7 @@
       -14.103
      ],
      "z": 0.0,
-     "tiles": 0.8
+     "tiles": 0.5
     },
     {
      "sprite": "prop_bush",
@@ -2212,7 +2260,7 @@
       -16.147
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.55
     },
     {
      "sprite": "prop_snowman_lantern",
@@ -2221,7 +2269,7 @@
       -14.067
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.5
     },
     {
      "sprite": "prop_pines",
@@ -2239,7 +2287,15 @@
    "id": "lantern",
    "name": {
     "ko": "등불 동네",
-    "en": "Lantern Lane"
+    "en": "Lantern Lane",
+    "ja": "ランタン通り",
+    "zh": "灯笼巷",
+    "es": "Calle de los Faroles",
+    "fr": "Rue des Lanternes",
+    "de": "Laternengasse",
+    "pt": "Rua das Lanternas",
+    "ru": "Фонарный переулок",
+    "id": "Lorong Lentera"
    },
    "at": [
     5.694,
@@ -2492,7 +2548,7 @@
       16.326
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_lamp",
@@ -2501,16 +2557,16 @@
       17.42
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_signpost",
      "at": [
-      5.537,
-      18.254
+      5.989,
+      18.22
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.42
     },
     {
      "sprite": "prop_bench",
@@ -2519,7 +2575,7 @@
       23.279
      ],
      "z": 0.0,
-     "tiles": 0.8
+     "tiles": 0.5
     },
     {
      "sprite": "prop_bush",
@@ -2528,7 +2584,7 @@
       23.243
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.55
     },
     {
      "sprite": "prop_snowman_lantern",
@@ -2537,7 +2593,7 @@
       25.323
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.5
     },
     {
      "sprite": "prop_pines",
@@ -2555,7 +2611,7 @@
       20.473
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_lamp",
@@ -2564,7 +2620,7 @@
       22.313
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_lamp",
@@ -2573,7 +2629,7 @@
       20.966
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     }
    ]
   },
@@ -2582,7 +2638,15 @@
    "id": "starlight",
    "name": {
     "ko": "별빛 동네",
-    "en": "Starlight Lane"
+    "en": "Starlight Lane",
+    "ja": "星あかり通り",
+    "zh": "星光巷",
+    "es": "Calle Luz de Estrellas",
+    "fr": "Rue des Étoiles",
+    "de": "Sternenlichtgasse",
+    "pt": "Rua da Luz das Estrelas",
+    "ru": "Звёздный переулок",
+    "id": "Lorong Cahaya Bintang"
    },
    "at": [
     21.25,
@@ -2835,7 +2899,7 @@
       2.48
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_lamp",
@@ -2844,16 +2908,16 @@
       6.562
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_signpost",
      "at": [
-      18.577,
-      4.332
+      18.578,
+      4.309
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.42
     },
     {
      "sprite": "prop_bench",
@@ -2862,7 +2926,7 @@
       6.238
      ],
      "z": 0.0,
-     "tiles": 0.8
+     "tiles": 0.5
     },
     {
      "sprite": "prop_bush",
@@ -2871,7 +2935,7 @@
       2.625
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.55
     },
     {
      "sprite": "prop_snowman_lantern",
@@ -2880,7 +2944,7 @@
       10.389
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.5
     },
     {
      "sprite": "prop_pines",
@@ -2898,7 +2962,15 @@
    "id": "hill",
    "name": {
     "ko": "언덕 동네",
-    "en": "Hill Lane"
+    "en": "Hill Lane",
+    "ja": "丘の通り",
+    "zh": "山丘巷",
+    "es": "Calle de la Colina",
+    "fr": "Rue de la Colline",
+    "de": "Hügelgasse",
+    "pt": "Rua da Colina",
+    "ru": "Холмистый переулок",
+    "id": "Lorong Bukit"
    },
    "at": [
     -15.556,
@@ -3151,7 +3223,7 @@
       13.846
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_lamp",
@@ -3160,16 +3232,16 @@
       10.858
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_signpost",
      "at": [
-      -13.04,
-      13.922
+      -12.785,
+      14.296
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.42
     },
     {
      "sprite": "prop_bench",
@@ -3178,7 +3250,7 @@
       17.041
      ],
      "z": 0.0,
-     "tiles": 0.8
+     "tiles": 0.5
     },
     {
      "sprite": "prop_bush",
@@ -3187,7 +3259,7 @@
       20.618
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.55
     },
     {
      "sprite": "prop_snowman_lantern",
@@ -3196,7 +3268,7 @@
       14.935
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.5
     },
     {
      "sprite": "prop_pines",
@@ -3214,7 +3286,15 @@
    "id": "lake",
    "name": {
     "ko": "호숫가 동네",
-    "en": "Lakeside Lane"
+    "en": "Lakeside Lane",
+    "ja": "湖畔通り",
+    "zh": "湖畔巷",
+    "es": "Calle del Lago",
+    "fr": "Rue du Lac",
+    "de": "Seegasse",
+    "pt": "Rua do Lago",
+    "ru": "Озёрный переулок",
+    "id": "Lorong Tepi Danau"
    },
    "at": [
     15.556,
@@ -3556,7 +3636,7 @@
       -13.846
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_lamp",
@@ -3565,16 +3645,16 @@
       -10.858
      ],
      "z": 0.0,
-     "tiles": 0.5
+     "tiles": 0.36
     },
     {
      "sprite": "prop_signpost",
      "at": [
-      13.04,
-      -13.922
+      13.021,
+      -13.935
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.42
     },
     {
      "sprite": "prop_bush",
@@ -3583,7 +3663,7 @@
       -20.618
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.55
     },
     {
      "sprite": "prop_snowman_lantern",
@@ -3592,7 +3672,7 @@
       -14.935
      ],
      "z": 0.0,
-     "tiles": 0.7
+     "tiles": 0.5
     },
     {
      "sprite": "prop_pines",
@@ -5300,6 +5380,50 @@
   {
    "sprite": "prop_fir_mid",
    "at": [
+    -3.269,
+    -1.731
+   ],
+   "z": 0.0,
+   "tiles": 1.11,
+   "mirror": false,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_mid",
+   "at": [
+    -3.837,
+    0.132
+   ],
+   "z": 0.0,
+   "tiles": 1.04,
+   "mirror": true,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_tall",
+   "at": [
+    -4.407,
+    2.137
+   ],
+   "z": 0.0,
+   "tiles": 1.07,
+   "mirror": true,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_tall",
+   "at": [
+    -3.988,
+    3.465
+   ],
+   "z": 0.0,
+   "tiles": 1.13,
+   "mirror": true,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_mid",
+   "at": [
     -3.565,
     5.88
    ],
@@ -5450,6 +5574,61 @@
   {
    "sprite": "prop_rock",
    "at": [
+    -1.382,
+    -3.739
+   ],
+   "z": 0.0,
+   "tiles": 0.78,
+   "mirror": true,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_mid",
+   "at": [
+    -1.744,
+    -1.22
+   ],
+   "z": 0.0,
+   "tiles": 1.22,
+   "mirror": false,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_tall",
+   "at": [
+    -1.722,
+    0.111
+   ],
+   "z": 0.0,
+   "tiles": 1.07,
+   "mirror": false,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_rock",
+   "at": [
+    -2.302,
+    1.805
+   ],
+   "z": 0.0,
+   "tiles": 0.71,
+   "mirror": false,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_rock",
+   "at": [
+    -2.354,
+    4.388
+   ],
+   "z": 0.0,
+   "tiles": 0.73,
+   "mirror": false,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_rock",
+   "at": [
     -1.964,
     7.715
    ],
@@ -5556,6 +5735,61 @@
    "z": 0.0,
    "tiles": 0.91,
    "mirror": true
+  },
+  {
+   "sprite": "prop_fir_small",
+   "at": [
+    0.614,
+    -3.166
+   ],
+   "z": 0.0,
+   "tiles": 0.88,
+   "mirror": false,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_mid",
+   "at": [
+    0.181,
+    -1.711
+   ],
+   "z": 0.0,
+   "tiles": 1.07,
+   "mirror": true,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_small",
+   "at": [
+    -0.674,
+    -0.346
+   ],
+   "z": 0.0,
+   "tiles": 1.0,
+   "mirror": false,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_tall",
+   "at": [
+    0.619,
+    1.872
+   ],
+   "z": 0.0,
+   "tiles": 1.14,
+   "mirror": false,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_small",
+   "at": [
+    0.605,
+    3.463
+   ],
+   "z": 0.0,
+   "tiles": 0.98,
+   "mirror": false,
+   "plaza": true
   },
   {
    "sprite": "prop_fir_small",
@@ -5708,6 +5942,61 @@
    "mirror": true
   },
   {
+   "sprite": "prop_fir_tall",
+   "at": [
+    2.4,
+    -3.242
+   ],
+   "z": 0.0,
+   "tiles": 1.2,
+   "mirror": false,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_tall",
+   "at": [
+    1.955,
+    -1.641
+   ],
+   "z": 0.0,
+   "tiles": 1.15,
+   "mirror": true,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_tall",
+   "at": [
+    2.248,
+    0.217
+   ],
+   "z": 0.0,
+   "tiles": 0.99,
+   "mirror": false,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_small",
+   "at": [
+    1.68,
+    2.132
+   ],
+   "z": 0.0,
+   "tiles": 0.9,
+   "mirror": true,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_mid",
+   "at": [
+    2.279,
+    3.773
+   ],
+   "z": 0.0,
+   "tiles": 1.05,
+   "mirror": true,
+   "plaza": true
+  },
+  {
    "sprite": "prop_fir_mid",
    "at": [
     1.829,
@@ -5856,6 +6145,61 @@
    "z": 0.0,
    "tiles": 0.93,
    "mirror": true
+  },
+  {
+   "sprite": "prop_fir_small",
+   "at": [
+    3.437,
+    -3.431
+   ],
+   "z": 0.0,
+   "tiles": 0.98,
+   "mirror": false,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_mid",
+   "at": [
+    3.43,
+    -1.301
+   ],
+   "z": 0.0,
+   "tiles": 1.02,
+   "mirror": false,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_small",
+   "at": [
+    3.202,
+    -0.583
+   ],
+   "z": 0.0,
+   "tiles": 1.0,
+   "mirror": true,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_mid",
+   "at": [
+    4.225,
+    2.397
+   ],
+   "z": 0.0,
+   "tiles": 1.07,
+   "mirror": true,
+   "plaza": true
+  },
+  {
+   "sprite": "prop_fir_tall",
+   "at": [
+    3.861,
+    3.455
+   ],
+   "z": 0.0,
+   "tiles": 1.08,
+   "mirror": true,
+   "plaza": true
   },
   {
    "sprite": "prop_fir_mid",
@@ -7682,7 +8026,15 @@
   "wood": {
    "label": {
     "ko": "통나무집",
-    "en": "Log cabin"
+    "en": "Log cabin",
+    "ja": "ログハウス",
+    "zh": "小木屋",
+    "es": "Cabaña de troncos",
+    "fr": "Chalet en rondins",
+    "de": "Blockhaus",
+    "pt": "Cabana de madeira",
+    "ru": "Бревенчатый домик",
+    "id": "Pondok kayu"
    },
    "a": "house_wood_lit",
    "b": "house_wood_b"
@@ -7690,7 +8042,15 @@
   "brick": {
    "label": {
     "ko": "벽돌집",
-    "en": "Brick house"
+    "en": "Brick house",
+    "ja": "レンガの家",
+    "zh": "砖房",
+    "es": "Casa de ladrillo",
+    "fr": "Maison en briques",
+    "de": "Backsteinhaus",
+    "pt": "Casa de tijolos",
+    "ru": "Кирпичный дом",
+    "id": "Rumah bata"
    },
    "a": "house_brick_a",
    "b": "house_brick_b"
@@ -7698,7 +8058,15 @@
   "bakery": {
    "label": {
     "ko": "빵집",
-    "en": "Bakery"
+    "en": "Bakery",
+    "ja": "パン屋",
+    "zh": "面包店",
+    "es": "Panadería",
+    "fr": "Boulangerie",
+    "de": "Bäckerei",
+    "pt": "Padaria",
+    "ru": "Пекарня",
+    "id": "Toko roti"
    },
    "a": "house_bakery_a",
    "b": "house_bakery_b"
@@ -7706,7 +8074,15 @@
   "tower": {
    "label": {
     "ko": "탑 집",
-    "en": "Tower house"
+    "en": "Tower house",
+    "ja": "塔の家",
+    "zh": "塔楼",
+    "es": "Casa torre",
+    "fr": "Maison-tour",
+    "de": "Turmhaus",
+    "pt": "Casa-torre",
+    "ru": "Дом с башней",
+    "id": "Rumah menara"
    },
    "a": "house_tower_a",
    "b": "house_tower_b"
@@ -7714,7 +8090,15 @@
   "gingerbread": {
    "label": {
     "ko": "진저브레드 집",
-    "en": "Gingerbread"
+    "en": "Gingerbread",
+    "ja": "ジンジャーブレッドの家",
+    "zh": "姜饼屋",
+    "es": "Casa de jengibre",
+    "fr": "Maison en pain d'épices",
+    "de": "Lebkuchenhaus",
+    "pt": "Casa de gengibre",
+    "ru": "Пряничный домик",
+    "id": "Rumah jahe"
    },
    "a": "house_gingerbread_a",
    "b": "house_gingerbread_b"
@@ -7722,7 +8106,15 @@
   "timber": {
    "label": {
     "ko": "반목조 집",
-    "en": "Timber house"
+    "en": "Timber house",
+    "ja": "木組みの家",
+    "zh": "半木结构屋",
+    "es": "Casa de entramado",
+    "fr": "Maison à colombages",
+    "de": "Fachwerkhaus",
+    "pt": "Casa enxaimel",
+    "ru": "Фахверковый дом",
+    "id": "Rumah rangka kayu"
    },
    "a": "house_timber_a",
    "b": "house_timber_b"
@@ -7730,7 +8122,15 @@
   "aframe": {
    "label": {
     "ko": "산장",
-    "en": "A-frame"
+    "en": "A-frame",
+    "ja": "山小屋",
+    "zh": "尖顶木屋",
+    "es": "Cabaña alpina",
+    "fr": "Chalet en A",
+    "de": "Berghütte",
+    "pt": "Chalé alpino",
+    "ru": "Горный домик",
+    "id": "Pondok gunung"
    },
    "a": "house_aframe_a",
    "b": "house_aframe_b"
@@ -7738,7 +8138,15 @@
   "windmill": {
    "label": {
     "ko": "풍차 집",
-    "en": "Windmill"
+    "en": "Windmill",
+    "ja": "風車の家",
+    "zh": "风车屋",
+    "es": "Molino",
+    "fr": "Moulin",
+    "de": "Windmühle",
+    "pt": "Moinho",
+    "ru": "Мельница",
+    "id": "Kincir angin"
    },
    "a": "house_windmill_a",
    "b": "house_windmill_b"
@@ -7746,7 +8154,15 @@
   "greenhouse": {
    "label": {
     "ko": "온실 집",
-    "en": "Greenhouse"
+    "en": "Greenhouse",
+    "ja": "温室の家",
+    "zh": "温室小屋",
+    "es": "Invernadero",
+    "fr": "Serre",
+    "de": "Gewächshaus",
+    "pt": "Estufa",
+    "ru": "Оранжерея",
+    "id": "Rumah kaca"
    },
    "a": "house_greenhouse_a",
    "b": "house_greenhouse_b"
@@ -7754,7 +8170,15 @@
   "sage": {
    "label": {
     "ko": "세이지 집",
-    "en": "Sage cabin"
+    "en": "Sage cabin",
+    "ja": "セージの家",
+    "zh": "鼠尾草小屋",
+    "es": "Cabaña salvia",
+    "fr": "Chalet sauge",
+    "de": "Salbeihütte",
+    "pt": "Cabana sálvia",
+    "ru": "Шалфейный домик",
+    "id": "Pondok sage"
    },
    "a": "house_sage_lit",
    "b": "house_sage_lit"
@@ -7762,74 +8186,21 @@
   "indigo": {
    "label": {
     "ko": "인디고 집",
-    "en": "Indigo cabin"
+    "en": "Indigo cabin",
+    "ja": "インディゴの家",
+    "zh": "靛蓝小屋",
+    "es": "Cabaña índigo",
+    "fr": "Chalet indigo",
+    "de": "Indigohütte",
+    "pt": "Cabana índigo",
+    "ru": "Домик индиго",
+    "id": "Pondok nila"
    },
    "a": "house_indigo_lit",
    "b": "house_indigo_lit"
   }
  },
  "sprites": {
-  "house_wood_b": {
-   "src": "/assets/v2/house/house_wood_b.webp",
-   "anchor": [
-    0.4964,
-    0.756
-   ],
-   "tileWidth": 0.7185,
-   "bbox": [
-    0.1372,
-    0.0287,
-    0.8557,
-    0.937
-   ],
-   "hull": [
-    [
-     0.1367,
-     0.75
-    ],
-    [
-     0.1758,
-     0.4492
-    ],
-    [
-     0.2852,
-     0.0586
-    ],
-    [
-     0.3281,
-     0.0273
-    ],
-    [
-     0.3516,
-     0.0312
-    ],
-    [
-     0.6289,
-     0.1758
-    ],
-    [
-     0.8125,
-     0.4414
-    ],
-    [
-     0.8477,
-     0.7812
-    ],
-    [
-     0.5195,
-     0.9258
-    ],
-    [
-     0.4648,
-     0.9336
-    ],
-    [
-     0.1484,
-     0.7891
-    ]
-   ],
-   "aspect": 1.0
-  },
   "house_wood_lit": {
    "src": "/assets/v2/house/house_wood_lit.webp",
    "anchor": [
@@ -7895,18 +8266,18 @@
    ],
    "aspect": 1.0
   },
-  "house_brick_a": {
-   "src": "/assets/v2/house/house_brick_a.webp",
+  "house_wood_b": {
+   "src": "/assets/v2/house/house_wood_b.webp",
    "anchor": [
-    0.4996,
-    0.7568
+    0.4964,
+    0.756
    ],
-   "tileWidth": 0.7265,
+   "tileWidth": 0.7185,
    "bbox": [
-    0.1356,
-    0.0327,
-    0.8628,
-    0.9258
+    0.1372,
+    0.0287,
+    0.8557,
+    0.937
    ],
    "hull": [
     [
@@ -7914,44 +8285,44 @@
      0.75
     ],
     [
-     0.1875,
+     0.1758,
      0.4492
     ],
     [
-     0.2266,
-     0.3945
+     0.2852,
+     0.0586
+    ],
+    [
+     0.3281,
+     0.0273
     ],
     [
      0.3516,
-     0.2539
+     0.0312
     ],
     [
-     0.6992,
-     0.0391
+     0.6289,
+     0.1758
     ],
     [
-     0.7539,
-     0.0352
+     0.8125,
+     0.4414
     ],
     [
-     0.8398,
-     0.4336
+     0.8477,
+     0.7812
     ],
     [
-     0.8555,
-     0.7695
+     0.5195,
+     0.9258
     ],
     [
-     0.543,
-     0.9141
-    ],
-    [
-     0.4766,
-     0.9219
+     0.4648,
+     0.9336
     ],
     [
      0.1484,
-     0.7969
+     0.7891
     ]
    ],
    "aspect": 1.0
@@ -8013,18 +8384,18 @@
    ],
    "aspect": 1.0
   },
-  "house_bakery_b": {
-   "src": "/assets/v2/house/house_bakery_b.webp",
+  "house_brick_a": {
+   "src": "/assets/v2/house/house_brick_a.webp",
    "anchor": [
-    0.4984,
-    0.7608
+    0.4996,
+    0.7568
    ],
-   "tileWidth": 0.7241,
+   "tileWidth": 0.7265,
    "bbox": [
-    0.1364,
-    0.0175,
-    0.8604,
-    0.9338
+    0.1356,
+    0.0327,
+    0.8628,
+    0.9258
    ],
    "hull": [
     [
@@ -8032,36 +8403,44 @@
      0.75
     ],
     [
-     0.25,
+     0.1875,
+     0.4492
+    ],
+    [
+     0.2266,
+     0.3945
+    ],
+    [
+     0.3516,
+     0.2539
+    ],
+    [
+     0.6992,
+     0.0391
+    ],
+    [
+     0.7539,
      0.0352
     ],
     [
-     0.3008,
-     0.0195
+     0.8398,
+     0.4336
     ],
     [
-     0.6406,
-     0.1758
+     0.8555,
+     0.7695
     ],
     [
-     0.8125,
-     0.4414
+     0.543,
+     0.9141
     ],
     [
-     0.8516,
-     0.7852
-    ],
-    [
-     0.5273,
+     0.4766,
      0.9219
     ],
     [
-     0.4648,
-     0.9297
-    ],
-    [
-     0.1445,
-     0.7852
+     0.1484,
+     0.7969
     ]
    ],
    "aspect": 1.0
@@ -8122,6 +8501,59 @@
     ],
     [
      0.1406,
+     0.7852
+    ]
+   ],
+   "aspect": 1.0
+  },
+  "house_bakery_b": {
+   "src": "/assets/v2/house/house_bakery_b.webp",
+   "anchor": [
+    0.4984,
+    0.7608
+   ],
+   "tileWidth": 0.7241,
+   "bbox": [
+    0.1364,
+    0.0175,
+    0.8604,
+    0.9338
+   ],
+   "hull": [
+    [
+     0.1367,
+     0.75
+    ],
+    [
+     0.25,
+     0.0352
+    ],
+    [
+     0.3008,
+     0.0195
+    ],
+    [
+     0.6406,
+     0.1758
+    ],
+    [
+     0.8125,
+     0.4414
+    ],
+    [
+     0.8516,
+     0.7852
+    ],
+    [
+     0.5273,
+     0.9219
+    ],
+    [
+     0.4648,
+     0.9297
+    ],
+    [
+     0.1445,
      0.7852
     ]
    ],
@@ -8245,55 +8677,6 @@
    ],
    "aspect": 1.0
   },
-  "house_gingerbread_a": {
-   "src": "/assets/v2/house/house_gingerbread_a.webp",
-   "anchor": [
-    0.4988,
-    0.7648
-   ],
-   "tileWidth": 0.7265,
-   "bbox": [
-    0.1356,
-    0.0136,
-    0.862,
-    0.9394
-   ],
-   "hull": [
-    [
-     0.1367,
-     0.7539
-    ],
-    [
-     0.168,
-     0.457
-    ],
-    [
-     0.332,
-     0.2188
-    ],
-    [
-     0.7227,
-     0.0156
-    ],
-    [
-     0.7656,
-     0.0234
-    ],
-    [
-     0.8555,
-     0.7852
-    ],
-    [
-     0.4805,
-     0.9375
-    ],
-    [
-     0.1602,
-     0.8008
-    ]
-   ],
-   "aspect": 1.0
-  },
   "house_gingerbread_b": {
    "src": "/assets/v2/house/house_gingerbread_b.webp",
    "anchor": [
@@ -8343,6 +8726,55 @@
     [
      0.1406,
      0.8047
+    ]
+   ],
+   "aspect": 1.0
+  },
+  "house_gingerbread_a": {
+   "src": "/assets/v2/house/house_gingerbread_a.webp",
+   "anchor": [
+    0.4988,
+    0.7648
+   ],
+   "tileWidth": 0.7265,
+   "bbox": [
+    0.1356,
+    0.0136,
+    0.862,
+    0.9394
+   ],
+   "hull": [
+    [
+     0.1367,
+     0.7539
+    ],
+    [
+     0.168,
+     0.457
+    ],
+    [
+     0.332,
+     0.2188
+    ],
+    [
+     0.7227,
+     0.0156
+    ],
+    [
+     0.7656,
+     0.0234
+    ],
+    [
+     0.8555,
+     0.7852
+    ],
+    [
+     0.4805,
+     0.9375
+    ],
+    [
+     0.1602,
+     0.8008
     ]
    ],
    "aspect": 1.0
@@ -8453,59 +8885,6 @@
    ],
    "aspect": 1.0
   },
-  "house_aframe_b": {
-   "src": "/assets/v2/house/house_aframe_b.webp",
-   "anchor": [
-    0.4996,
-    0.7863
-   ],
-   "tileWidth": 0.7855,
-   "bbox": [
-    0.1069,
-    0.0271,
-    0.8923,
-    0.9721
-   ],
-   "hull": [
-    [
-     0.1055,
-     0.7852
-    ],
-    [
-     0.2461,
-     0.043
-    ],
-    [
-     0.293,
-     0.0273
-    ],
-    [
-     0.625,
-     0.1445
-    ],
-    [
-     0.8359,
-     0.5508
-    ],
-    [
-     0.8867,
-     0.8008
-    ],
-    [
-     0.5117,
-     0.9648
-    ],
-    [
-     0.4648,
-     0.9688
-    ],
-    [
-     0.125,
-     0.8203
-    ]
-   ],
-   "aspect": 1.0
-  },
   "house_aframe_a": {
    "src": "/assets/v2/house/house_aframe_a.webp",
    "anchor": [
@@ -8559,6 +8938,59 @@
     [
      0.125,
      0.8242
+    ]
+   ],
+   "aspect": 1.0
+  },
+  "house_aframe_b": {
+   "src": "/assets/v2/house/house_aframe_b.webp",
+   "anchor": [
+    0.4996,
+    0.7863
+   ],
+   "tileWidth": 0.7855,
+   "bbox": [
+    0.1069,
+    0.0271,
+    0.8923,
+    0.9721
+   ],
+   "hull": [
+    [
+     0.1055,
+     0.7852
+    ],
+    [
+     0.2461,
+     0.043
+    ],
+    [
+     0.293,
+     0.0273
+    ],
+    [
+     0.625,
+     0.1445
+    ],
+    [
+     0.8359,
+     0.5508
+    ],
+    [
+     0.8867,
+     0.8008
+    ],
+    [
+     0.5117,
+     0.9648
+    ],
+    [
+     0.4648,
+     0.9688
+    ],
+    [
+     0.125,
+     0.8203
     ]
    ],
    "aspect": 1.0
@@ -8665,6 +9097,63 @@
    ],
    "aspect": 1.0
   },
+  "house_greenhouse_b": {
+   "src": "/assets/v2/house/house_greenhouse_b.webp",
+   "anchor": [
+    0.4908,
+    0.7831
+   ],
+   "tileWidth": 0.7982,
+   "bbox": [
+    0.0917,
+    0.0112,
+    0.89,
+    0.9729
+   ],
+   "hull": [
+    [
+     0.0898,
+     0.7852
+    ],
+    [
+     0.1328,
+     0.5586
+    ],
+    [
+     0.3438,
+     0.0352
+    ],
+    [
+     0.3984,
+     0.0117
+    ],
+    [
+     0.6641,
+     0.2109
+    ],
+    [
+     0.8477,
+     0.4414
+    ],
+    [
+     0.8867,
+     0.7969
+    ],
+    [
+     0.5078,
+     0.9648
+    ],
+    [
+     0.4531,
+     0.9688
+    ],
+    [
+     0.1211,
+     0.8242
+    ]
+   ],
+   "aspect": 1.0
+  },
   "house_greenhouse_a": {
    "src": "/assets/v2/house/house_greenhouse_a.webp",
    "anchor": [
@@ -8722,63 +9211,6 @@
     [
      0.1133,
      0.8477
-    ]
-   ],
-   "aspect": 1.0
-  },
-  "house_greenhouse_b": {
-   "src": "/assets/v2/house/house_greenhouse_b.webp",
-   "anchor": [
-    0.4908,
-    0.7831
-   ],
-   "tileWidth": 0.7982,
-   "bbox": [
-    0.0917,
-    0.0112,
-    0.89,
-    0.9729
-   ],
-   "hull": [
-    [
-     0.0898,
-     0.7852
-    ],
-    [
-     0.1328,
-     0.5586
-    ],
-    [
-     0.3438,
-     0.0352
-    ],
-    [
-     0.3984,
-     0.0117
-    ],
-    [
-     0.6641,
-     0.2109
-    ],
-    [
-     0.8477,
-     0.4414
-    ],
-    [
-     0.8867,
-     0.7969
-    ],
-    [
-     0.5078,
-     0.9648
-    ],
-    [
-     0.4531,
-     0.9688
-    ],
-    [
-     0.1211,
-     0.8242
     ]
    ],
    "aspect": 1.0

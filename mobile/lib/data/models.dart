@@ -5,6 +5,8 @@
 /// each paid step opens the next half of a district the buyer picks (up to 60 houses).
 library;
 
+import 'dart:ui' show Offset;
+
 const int freeCapacity = 6;
 const int expansionStep = 3;
 const int maxCapacity = 60;
@@ -153,6 +155,35 @@ class House {
   );
 }
 
+/// Path styles the village owner can pick, one for the whole village. Mirrors `PATH_STYLES` in village.ts.
+enum PathStyle { dirt, stones, brick, snow }
+
+PathStyle pathStyleFrom(Object? v) => PathStyle.values.firstWhere(
+  (s) => s.name == v,
+  orElse: () => PathStyle.dirt,
+);
+
+/// Ids of decorations the owner may move (plaza lamps/bench, district decoration). Same rule on the
+/// server and the web (`MOVABLE_DECOR_ID`).
+final movableDecorId = RegExp(
+  r'^(plaza-(lamp-a|lamp-b|bench)|d[0-9]-decor[0-9]{1,2})$',
+);
+
+/// Server decor map → only well-formed entries (unknown ids and bad numbers dropped).
+Map<String, Offset> cleanDecor(Object? raw) {
+  final out = <String, Offset>{};
+  if (raw is! Map) return out;
+  for (final MapEntry(:key, :value) in raw.entries) {
+    if (key is! String || !movableDecorId.hasMatch(key)) continue;
+    if (value is! List || value.length != 2) continue;
+    final (i, j) = (value[0], value[1]);
+    if (i is num && j is num && i.abs() <= 40 && j.abs() <= 40) {
+      out[key] = Offset(i.toDouble(), j.toDouble());
+    }
+  }
+  return out;
+}
+
 class Village {
   const Village({
     required this.id,
@@ -160,7 +191,15 @@ class Village {
     required this.createdAt,
     required this.houses,
     this.openHalves = freeOpenHalves,
+    this.pathStyle = PathStyle.dirt,
+    this.decor = const {},
   });
+
+  /// One path style for the whole village (owner's choice).
+  final PathStyle pathStyle;
+
+  /// Decorations the owner moved: decoration id → ground spot (tiles).
+  final Map<String, Offset> decor;
 
   final String id;
   final String name;
@@ -181,6 +220,8 @@ class Village {
       name: j['name'] as String,
       createdAt: DateTime.parse(j['created_at'] as String),
       openHalves: open != null && open > 0 ? open : halvesForCapacity(cap),
+      pathStyle: pathStyleFrom(j['path_style']),
+      decor: cleanDecor(j['decor']),
       houses:
           ((j['houses'] as List?) ?? const [])
               .map((h) => House.fromJson(h as Map<String, dynamic>))
@@ -189,12 +230,19 @@ class Village {
     );
   }
 
-  Village copyWith({int? openHalves, List<House>? houses}) => Village(
+  Village copyWith({
+    int? openHalves,
+    List<House>? houses,
+    PathStyle? pathStyle,
+    Map<String, Offset>? decor,
+  }) => Village(
     id: id,
     name: name,
     createdAt: createdAt,
     houses: houses ?? this.houses,
     openHalves: openHalves ?? this.openHalves,
+    pathStyle: pathStyle ?? this.pathStyle,
+    decor: decor ?? this.decor,
   );
 
   House? houseAt(int slot) {

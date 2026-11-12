@@ -1,0 +1,27 @@
+{
+  "brand": "Snow Village",
+  "tagline": "Un pueblo invernal con amigos",
+  "lang": "es",
+  "slots": [
+    [
+      "El último regalo del año:\nnuestro pueblo",
+      "Invita con un enlace y cada amigo enciende una casa"
+    ],
+    [
+      "Cada casa guarda\nun recuerdo del año",
+      "Toca una casa iluminada para ver la foto y el mensaje de tu amigo"
+    ],
+    [
+      "Cada amigo elige\nuna casa a su medida",
+      "9 tipos de casa y hasta la dirección de la puerta"
+    ],
+    [
+      "Cuantos más seamos,\nmás grande el pueblo",
+      "Abre calles nuevas cuando lleguen amigos, hasta 60 casas"
+    ],
+    [
+      "Sin registro,\nsolo envía un enlace",
+      "Crea un pueblo y comparte el enlace. ¡Listo!"
+    ]
+  ]
+}

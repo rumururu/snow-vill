@@ -1,0 +1,2 @@
+/* Photo picker permission */
+"NSPhotoLibraryUsageDescription" = "Wird verwendet, um ein Foto für den Bilderrahmen deines Hauses auszuwählen.";

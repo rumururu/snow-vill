@@ -59,3 +59,7 @@ app.*.map.json
 
 # fastlane get_provisioning_profile output (regenerated each build)
 *.mobileprovision
+
+# Store images staged from docs/release_assets/marketing (build_marketing.py --to-fastlane)
+/ios/fastlane/screenshots/
+/android/fastlane/metadata/

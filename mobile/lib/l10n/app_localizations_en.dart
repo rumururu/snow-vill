@@ -437,4 +437,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String maxVillage(int max) {
     return 'Already the largest village ($max)';
   }
+
+  @override
+  String get editLook => '🎨 Decorate';
+
+  @override
+  String get editLookMenu => 'Decorate (paths & decorations)';
+
+  @override
+  String get pathStyleTitle => 'Path';
+
+  @override
+  String get pathDirt => 'Dirt';
+
+  @override
+  String get pathStones => 'Stones';
+
+  @override
+  String get pathBrick => 'Brick';
+
+  @override
+  String get pathSnow => 'Snow';
+
+  @override
+  String get lookHint =>
+      'Drag the ring under a decoration to move it. Not on a house, path or landmark, and not outside the village.';
+
+  @override
+  String get resetDecor => 'Reset decorations';
+
+  @override
+  String get saveLook => 'Save';
+
+  @override
+  String get savingLook => 'Saving…';
+
+  @override
+  String get lookSaved => 'Saved the village look.';
 }

@@ -135,6 +135,7 @@ function fakeApi(over: Partial<RemoteApi> = {}): RemoteApi {
     photoUrl: vi.fn(async () => "https://example.test/signed.jpg"),
     removeHouse: vi.fn(async () => undefined),
     deleteVillage: vi.fn(async () => undefined),
+    setVillageLook: vi.fn(async () => ({ ok: true as const })),
     ...over,
   } as RemoteApi;
 }
@@ -160,6 +161,22 @@ describe("remote village store", () => {
     // A new page load restores ownership from local storage.
     const again = createVillageStore({ remote: fakeApi(), identityStorage });
     expect(again.getState().ownedVillages).toContain("abcdefghjk");
+  });
+
+  it("village look: only the owner (secret held) may change it; the secret goes to the server", async () => {
+    const api = fakeApi();
+    const store = createVillageStore({ remote: api, identityStorage: memoryStorage() });
+    await store.createVillage("꾸미기");
+    expect(store.canEditLook("abcdefghjk")).toBe(true);
+    expect(store.canEditLook("someoneelse")).toBe(false);
+    const r = await store.setVillageLook("abcdefghjk", "brick", { "plaza-bench": [1.234, 2.5] });
+    expect(r).toEqual({ ok: true });
+    expect(api.setVillageLook).toHaveBeenCalledWith(expect.any(String), "abcdefghjk", "owner-secret", "brick", { "plaza-bench": [1.23, 2.5] });
+    expect(store.getState().villages.abcdefghjk).toMatchObject({ pathStyle: "brick", decor: { "plaza-bench": [1.23, 2.5] } });
+    const denied = createVillageStore({ remote: fakeApi({ setVillageLook: vi.fn(async () => ({ ok: false as const, reason: "FORBIDDEN" as const })) }), identityStorage: memoryStorage() });
+    await denied.createVillage("남의 마을");
+    const d = await denied.setVillageLook("abcdefghjk", "snow", {});
+    expect(d).toMatchObject({ ok: false });
   });
 
   it("maps server failures to Korean messages", async () => {

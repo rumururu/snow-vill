@@ -1,1 +1,9 @@
 captures/
+# designed set: HTML sources hold absolute file:// paths; contact sheets are for review only
+marketing/*/html/
+marketing/review/
+# generated store images (~30 MB per locale): rebuild with tools/build_marketing.py; the uploaded copies live in Play / App Store Connect
+marketing/*/phone/
+marketing/*/play_phone/
+marketing/*/tablet/
+marketing/*/common/

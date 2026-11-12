@@ -8,6 +8,7 @@
  * - Local/simulated: the bundled sample village ("demo") always, and every village when no
  *   Supabase config exists. Data stays in memory + this tab's sessionStorage.
  */
+import { tr, trList } from "@/lib/i18n";
 import { dataUrlToBlob, remoteErrorMessage, type RemoteApi } from "@/lib/remote";
 import {
   claimHouse as claimHouseRule,
@@ -24,8 +25,10 @@ import {
   SAMPLE_VILLAGE_ID,
   validateHouseInput,
   validateVillageName,
+  type DecorSpots,
   type FieldErrors,
   type House,
+  type PathStyle,
   type HouseInput,
   type Village,
 } from "@/lib/village";
@@ -101,8 +104,6 @@ function initialState(hydrated: boolean): VillageState {
   };
 }
 
-const FRIEND_NAMES = ["지우", "민준", "하린", "예준", "소율", "시우", "다은", "윤호", "채원", "준서"];
-const FRIEND_MESSAGES = ["메리 크리스마스!", "내년에도 같이 놀자 ⛄", "", "따뜻한 연말 보내", "선물 기대해도 돼?"];
 
 export type VillageStore = ReturnType<typeof createVillageStore>;
 
@@ -167,7 +168,7 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
         storage.setItem(STORAGE_KEY, JSON.stringify({ villages, myHouses, ownedVillages }));
         if (state.persistWarning) state = { ...state, persistWarning: null };
       } catch {
-        state = { ...state, persistWarning: "브라우저 임시 저장 공간이 부족해 새로고침하면 일부 내용이 사라질 수 있어요." };
+        state = { ...state, persistWarning: tr("store.persistWarning") };
       }
     }
   }
@@ -298,7 +299,7 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
         return { ok: true };
       }
       const mine = identity.houses[villageId];
-      if (!mine || mine.houseId !== houseId) return { ok: false, message: "내 집에만 사진을 올릴 수 있어요." };
+      if (!mine || mine.houseId !== houseId) return { ok: false, message: tr("store.photoOnlyMine") };
       try {
         await remote!.uploadPhoto(identity.installId, houseId, mine.secret, dataUrlToBlob(dataUrl));
         updateHouse(villageId, houseId, { hasPhoto: true });
@@ -317,11 +318,11 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
 
     async removeHouse(villageId: string, houseId: string): Promise<ActionResult> {
       const village = state.villages[villageId];
-      if (!village) return { ok: false, message: "마을을 찾을 수 없어요." };
+      if (!village) return { ok: false, message: tr("store.villageNotFound") };
       if (!isLocal(villageId)) {
         const mine = identity.houses[villageId];
         const secret = mine?.houseId === houseId ? mine.secret : identity.owners[villageId];
-        if (!secret) return { ok: false, message: "이 집을 비울 권한이 없어요." };
+        if (!secret) return { ok: false, message: tr("store.noRemovePermission") };
         try {
           await remote!.removeHouse(identity.installId, houseId, secret);
         } catch (err) {
@@ -340,6 +341,30 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
       return { ok: true };
     },
 
+    /** May this browser change the village's look? Owner (secret held) or a simulated village. */
+    canEditLook(villageId: string): boolean {
+      return isLocal(villageId) || Boolean(identity.owners[villageId]);
+    },
+
+    /** Owner only: one path style for the whole village and the moved decorations. */
+    async setVillageLook(villageId: string, pathStyle: PathStyle, decor: DecorSpots): Promise<ActionResult> {
+      const village = state.villages[villageId];
+      if (!village) return { ok: false, message: tr("store.villageNotFound") };
+      const spots = Object.fromEntries(Object.entries(decor).map(([k, [i, j]]) => [k, [Math.round(i * 100) / 100, Math.round(j * 100) / 100]])) as DecorSpots;
+      if (!isLocal(villageId)) {
+        const secret = identity.owners[villageId];
+        if (!secret) return { ok: false, message: tr("store.ownerOnlyLook") };
+        try {
+          const r = await remote!.setVillageLook(identity.installId, villageId, secret, pathStyle, spots);
+          if (!r.ok) return { ok: false, message: r.reason === "FORBIDDEN" ? tr("store.ownerOnlyLook") : tr("store.villageNotFound") };
+        } catch (err) {
+          return { ok: false, message: remoteErrorMessage(err) };
+        }
+      }
+      set(withVillage({ ...state.villages[villageId]!, pathStyle, decor: spots }));
+      return { ok: true };
+    },
+
     async report(villageId: string, houseId: string, reason: string): Promise<ActionResult & { simulated?: boolean }> {
       if (isLocal(villageId)) return { ok: true, simulated: true };
       try {
@@ -353,7 +378,7 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
     async deleteVillage(villageId: string): Promise<ActionResult> {
       if (!isLocal(villageId)) {
         const secret = identity.owners[villageId];
-        if (!secret) return { ok: false, message: "마을을 만든 브라우저에서만 삭제할 수 있어요." };
+        if (!secret) return { ok: false, message: tr("store.deleteCreatorOnly") };
         try {
           await remote!.deleteVillage(identity.installId, villageId, secret);
         } catch (err) {
@@ -386,14 +411,16 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
       if (!village || !isLocal(villageId)) return { ok: false, reason: "NOT_FOUND" };
       const target = slot ?? freeSlots(village)[0];
       const n = village.houses.length;
+      const names = trList("sim.friendNames");
+      const messages = trList("sim.friendMessages", "|");
       const result = claimHouseRule(
         village,
         target ?? -1,
         {
-          nickname: FRIEND_NAMES[(n * 3 + (target ?? 0)) % FRIEND_NAMES.length],
+          nickname: names[(n * 3 + (target ?? 0)) % names.length],
           style: FRIEND_STYLES[(n * 5 + (target ?? 0)) % FRIEND_STYLES.length],
           direction: LOTS[target ?? 0]?.facing ?? 0,
-          message: FRIEND_MESSAGES[n % FRIEND_MESSAGES.length],
+          message: messages[n % messages.length],
         },
         { id: idGen(), now: now() },
       );
@@ -408,11 +435,11 @@ export function createVillageStore(opts: VillageStoreOptions = {}) {
      */
     upgradeVillage(villageId: string, district: number): ActionResult {
       const village = state.villages[villageId];
-      if (!village) return { ok: false, message: "마을을 찾을 수 없어요." };
-      if (!isLocal(villageId)) return { ok: false, message: "마을 넓히기는 Snow Village 앱에서 할 수 있어요." };
-      if (village.capacity >= MAX_CAPACITY) return { ok: false, message: "이미 가장 큰 마을이에요." };
+      if (!village) return { ok: false, message: tr("store.villageNotFound") };
+      if (!isLocal(villageId)) return { ok: false, message: tr("store.expandInApp") };
+      if (village.capacity >= MAX_CAPACITY) return { ok: false, message: tr("store.alreadyMax") };
       const open = openNextHalf(village.openHalves, district);
-      if (open === null) return { ok: false, message: "이 동네는 이미 다 열렸어요." };
+      if (open === null) return { ok: false, message: tr("store.districtFull") };
       set(withVillage({ ...village, openHalves: open, capacity: capacityOf(open) }));
       return { ok: true };
     },

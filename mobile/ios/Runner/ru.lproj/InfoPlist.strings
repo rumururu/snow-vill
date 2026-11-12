@@ -1,0 +1,2 @@
+/* Photo picker permission */
+"NSPhotoLibraryUsageDescription" = "Нужно, чтобы выбрать фото для рамки в вашем доме.";

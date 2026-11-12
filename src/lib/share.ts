@@ -1,5 +1,5 @@
 import type { MapHouseArt } from "@/components/scene/VillageMapArt";
-import { isFull, type Village } from "@/lib/village";
+import { isFull, type DecorSpots, type PathStyle, type Village } from "@/lib/village";
 
 export const SHARE_CARD_WIDTH = 1080;
 export const SHARE_CARD_HEIGHT = 1350;
@@ -12,6 +12,8 @@ export interface ShareCardData {
   openHalves: number;
   houses: MapHouseArt[];
   complete: boolean;
+  pathStyle?: PathStyle;
+  decor?: DecorSpots;
 }
 
 export function toShareCardData(village: Village): ShareCardData {
@@ -19,6 +21,8 @@ export function toShareCardData(village: Village): ShareCardData {
     openHalves: village.openHalves,
     houses: village.houses.map((h) => ({ slot: h.slot, style: h.style, direction: h.direction })),
     complete: isFull(village),
+    pathStyle: village.pathStyle,
+    decor: village.decor,
   };
 }
 

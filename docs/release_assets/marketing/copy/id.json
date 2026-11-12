@@ -1,0 +1,27 @@
+{
+  "brand": "Snow Village",
+  "tagline": "Desa salju bersama teman",
+  "lang": "id",
+  "slots": [
+    [
+      "Hadiah terakhir tahun ini:\ndesa kita",
+      "Undang lewat satu tautan, tiap teman menyalakan satu rumah"
+    ],
+    [
+      "Setiap rumah menyimpan\nkenangan tahun ini",
+      "Ketuk rumah yang menyala untuk melihat foto dan pesan teman"
+    ],
+    [
+      "Tiap teman memilih\nrumah yang mirip dirinya",
+      "9 jenis rumah, sampai arah pintunya"
+    ],
+    [
+      "Makin ramai,\nmakin besar desanya",
+      "Buka lorong baru saat teman bertambah, hingga 60 rumah"
+    ],
+    [
+      "Tanpa daftar,\ncukup kirim tautan",
+      "Buat desa dan bagikan tautannya. Selesai!"
+    ]
+  ]
+}

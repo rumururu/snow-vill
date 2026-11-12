@@ -1,10 +1,13 @@
 ---
 slug: snow-village-store-assets
-status: active
-updated: 2026-11-11
+status: superseded
+updated: 2026-11-12
 ---
 
-# Snow Village — store images (layout v5)
+# Snow Village — store images (layout v5, ko/en) — superseded
+
+> 2026-11-12: replaced by the 10-language designed set in `MARKETING.md` (`marketing/<locale>/`), uploaded to both
+> stores as drafts. This page records the earlier ko/en set only.
 
 Made 2026-11-11 from real app captures (no mock screens). Upload is a separate approved release step.
 

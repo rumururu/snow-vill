@@ -166,6 +166,15 @@ for t in snowvill_wallets snowvill_purchases snowvill_upgrades snowvill_tier_cre
   [ "$code" != 200 ] && ok x x "$t select denied ($code)" || ok "$code" 4xx "$t select denied"
 done
 
+echo "6b. village look (owner only)"
+look() { rpc snowvill_set_village_look "$(js "p_install_id=$1" "p_village_id=$VID" "p_owner_secret=$2" "p_path_style=$3" "p_decor:=$4")"; }
+ok "$(look $B wrong snow '{}')" 200 "non-owner look request"
+ok "$(jb "d['reason']")" FORBIDDEN "non-owner cannot change the look"
+ok "$(look $A "$OWNER" brick '{"plaza-bench": [0.5, 2.8]}')" 200 "owner sets brick + moved bench"
+rpc snowvill_get_village "$(js "p_village_id=$VID")" >/dev/null
+ok "$(jb "d['path_style'], d['decor']['plaza-bench']")" "('brick', [0.5, 2.8])" "look returned by get_village"
+ok "$(look $A "$OWNER" gold '{}')" 400 "unknown style → 400"
+
 echo "7. delete village"
 ok "$(fncall "$(js "action=delete_village" "install_id=$B" "village_id=$VID" "secret=$(python3 -c "print('C'*32)")")")" 403 "non-owner cannot delete village"
 ok "$(fncall "$(js "action=delete_village" "install_id=$A" "village_id=$VID" "secret=$OWNER")")" 200 "owner deletes village"

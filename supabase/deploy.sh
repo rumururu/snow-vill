@@ -37,6 +37,10 @@ case "$(q "select count(*) as n from information_schema.columns where table_name
   *'"n":0'*) R=$(q "$(cat migrations/20261111120000_snowvill_districts.sql)"); echo "districts migration: $R" ;;
   *) echo "districts migration already applied" ;;
 esac
+case "$(q "select count(*) as n from information_schema.columns where table_name='snowvill_villages' and column_name='path_style'")" in
+  *'"n":0'*) R=$(q "$(cat migrations/20261112100000_snowvill_village_look.sql)"); echo "village look migration: $R" ;;
+  *) echo "village look migration already applied" ;;
+esac
 
 AFTER=$(q "$HASH")
 [ "$BEFORE" = "$AFTER" ] && echo "other games unchanged ($AFTER)" || { echo "OTHER OBJECTS CHANGED: $BEFORE -> $AFTER"; exit 1; }

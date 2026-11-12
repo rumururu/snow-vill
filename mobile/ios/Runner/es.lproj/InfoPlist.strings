@@ -1,0 +1,2 @@
+/* Photo picker permission */
+"NSPhotoLibraryUsageDescription" = "Se usa para elegir una foto para el marco de tu casa.";

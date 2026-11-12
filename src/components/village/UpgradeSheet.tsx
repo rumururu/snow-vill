@@ -2,19 +2,22 @@
 
 import { useState } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
-import { DISTRICTS } from "@/lib/map";
+import { useT } from "@/lib/i18n/I18nProvider";
+import type { MessageKey } from "@/lib/i18n";
+import { districtName, DISTRICTS } from "@/lib/map";
 import { districtState, EXPANSION_STEP, MAX_CAPACITY, stepTier, TIER_PRICE_KRW, type Village } from "@/lib/village";
 
 const won = (n: number) => `₩${n.toLocaleString("ko-KR")}`;
 
-const FACILITY_LABEL: Record<string, string> = {
-  decor_snowfamily: "눈사람 가족",
-  landmark_rink: "아이스링크",
-  landmark_santa: "산타의 집",
-  landmark_rudolph: "루돌프 동상",
-  decor_sled: "선물 썰매",
-  prop_pines: "전나무 숲",
-  prop_lamp: "가로등 길",
+/** District facility sprite → its name (message key). */
+const FACILITY_LABEL: Record<string, MessageKey> = {
+  decor_snowfamily: "facility.decor_snowfamily",
+  landmark_rink: "facility.landmark_rink",
+  landmark_santa: "facility.landmark_santa",
+  landmark_rudolph: "facility.landmark_rudolph",
+  decor_sled: "facility.decor_sled",
+  prop_pines: "facility.prop_pines",
+  prop_lamp: "facility.prop_lamp",
 };
 
 /**
@@ -37,6 +40,7 @@ export function UpgradeSheet({
   onClose: () => void;
   onSimulatedUpgrade: (district: number) => void;
 }) {
+  const t = useT();
   const tier = stepTier(village.capacity);
   const choices = DISTRICTS.filter((d) => districtState(village.openHalves, d.index) < 2);
   const [picked, setPicked] = useState<number | null>(null);
@@ -50,41 +54,43 @@ export function UpgradeSheet({
     <BottomSheet
       open={open}
       onClose={close}
-      title="마을 넓히기"
+      title={t("common.expand")}
       footer={
         tier === 0 || !sel ? (
-          <p className="rounded-2xl bg-sky px-4 py-3 text-center text-sm font-semibold text-night">이미 가장 큰 마을({MAX_CAPACITY}채)이에요</p>
+          <p className="rounded-2xl bg-sky px-4 py-3 text-center text-sm font-semibold text-night">{t("upgrade.maxed", { max: MAX_CAPACITY })}</p>
         ) : simulated ? (
           <button type="button" onClick={() => (setPicked(null), onSimulatedUpgrade(sel.index))} className="min-h-12 w-full rounded-2xl bg-night font-bold text-ivory">
-            {sel.name.ko} 열기 (시뮬레이션)
+            {t("upgrade.simOpen", { district: districtName(sel.index, t.locale) })}
           </button>
         ) : (
           <p className="rounded-2xl bg-sky px-4 py-3 text-center text-sm font-semibold text-night">
-            Snow Village 앱에서 {won(TIER_PRICE_KRW[tier])}에 {sel.name.ko}를 열 수 있어요
+            {/* KRW list prices only in Korean; other languages see the local store price in the app. */}
+            {t("upgrade.inApp", { price: won(TIER_PRICE_KRW[tier]), district: districtName(sel.index, t.locale) })}
           </p>
         )
       }
     >
       <div className="space-y-3 text-[15px] leading-relaxed text-night">
         <p>
-          <b>{village.name}</b>은(는) 지금 집 {village.capacity}채 마을이에요. 동네를 고르면 집터 {EXPANSION_STEP}곳이 열려요 (한 동네는 6채, 두 번에 걸쳐 열려요).
+          {t.rich("upgrade.lead", { name: <b>{village.name}</b>, step: EXPANSION_STEP }, village.capacity)}
         </p>
         {tier > 0 && (
           <fieldset>
-            <legend className="mb-2 text-sm font-semibold">열 동네</legend>
+            <legend className="mb-2 text-sm font-semibold">{t("upgrade.pick")}</legend>
             <div className="grid grid-cols-2 gap-2">
               {choices.map((d) => {
                 const half = districtState(village.openHalves, d.index) === 1;
-                const fac = d.facility ? FACILITY_LABEL[d.facility.sprite] : null;
+                const facKey = d.facility ? FACILITY_LABEL[d.facility.sprite] : undefined;
+                const fac = facKey ? t(facKey) : null;
                 return (
                   <label
                     key={d.index}
                     className="flex cursor-pointer flex-col rounded-xl border-2 border-transparent bg-white px-3 py-2 text-sm has-[:checked]:border-night has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-night/30"
                   >
                     <input type="radio" name="district" value={d.index} checked={selected === d.index} onChange={() => setPicked(d.index)} className="sr-only" />
-                    <span className="font-semibold">{d.name.ko}</span>
+                    <span className="font-semibold">{districtName(d.index, t.locale)}</span>
                     <span className="text-xs text-night/65">
-                      {half ? "반쯤 열림 · 나머지 3채" : "새 동네 · 3채"}
+                      {half ? t("upgrade.halfOpen") : t("upgrade.newDistrict")}
                       {fac && !half ? ` · ${fac}` : ""}
                     </span>
                   </label>
@@ -94,8 +100,14 @@ export function UpgradeSheet({
           </fieldset>
         )}
         <p className="text-xs text-night/65">
-          무료 6채 → 9채 {won(TIER_PRICE_KRW[1])} → 12채 {won(TIER_PRICE_KRW[2])} → 15채 {won(TIER_PRICE_KRW[3])} → 그 뒤 3채마다 {won(TIER_PRICE_KRW[4])} (최대 {MAX_CAPACITY}채).
-          마을 주인이 아니어도 넓혀 줄 수 있고, 넓히면 웹과 앱의 모두에게 적용돼요.
+          {t("upgrade.prices", {
+            p1: won(TIER_PRICE_KRW[1]),
+            p2: won(TIER_PRICE_KRW[2]),
+            p3: won(TIER_PRICE_KRW[3]),
+            p4: won(TIER_PRICE_KRW[4]),
+            max: MAX_CAPACITY,
+          })}{" "}
+          {t("upgrade.anyone")}
         </p>
       </div>
     </BottomSheet>

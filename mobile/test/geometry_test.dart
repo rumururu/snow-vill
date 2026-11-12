@@ -31,11 +31,11 @@ void main() {
     expect(File(g.snowTexture).existsSync(), isTrue);
   });
 
-  test('free village: district 0 lots inside one village shape with the plaza', () {
+  test('free village: district 0 lots inside one village shape, no plaza yet', () {
     final v = Village(id: 'x', name: 'x', createdAt: DateTime(2026), houses: const []);
     expect(g.visibleLots(v.openHalves).map((l) => l.slot), [0, 1, 2, 3, 4, 5]);
     final shape = g.villageShape(v.openHalves);
-    expect(pointInPolygon(Offset.zero, shape), isTrue);
+    expect(pointInPolygon(Offset.zero, shape), isFalse);
     for (final l in g.visibleLots(v.openHalves)) {
       expect(pointInPolygon(Offset(l.i, l.j), shape), isTrue, reason: 'lot ${l.slot}');
     }
@@ -88,5 +88,68 @@ void main() {
     final v = Village(id: 'x', name: 'x', createdAt: DateTime(2026), houses: const [], openHalves: (1 << 20) - 1);
     final depth = g.mapOrder(v).map((e) => e.depth).toList();
     expect(depth, [...depth]..sort());
+  });
+
+  test('village look: default decoration spots pass the placement rule (same rule as the web)', () {
+    for (final open in [freeOpenHalves, (1 << 20) - 1]) {
+      for (final f in g.movableDecor(open)) {
+        expect(g.decorSpotOk(open, const {}, f.id, Offset(f.i, f.j)), isTrue, reason: f.id);
+      }
+    }
+    // Same count as the web's movableDecor for an all-open village (75).
+    expect(g.movableDecor((1 << 20) - 1), hasLength(75));
+  });
+
+  test('village look: blocked spots and moved decorations', () {
+    const open = freeOpenHalves;
+    final d0 = g.districts[0];
+    final id = g.movableDecor(open).firstWhere((f) => f.id.startsWith('d0-')).id;
+    expect(g.decorSpotOk(open, const {}, id, Offset(g.lots[0].i, g.lots[0].j)), isFalse);
+    expect(g.decorSpotOk(open, const {}, id, Offset(d0.path[12].$1, d0.path[12].$2)), isFalse);
+    expect(g.decorSpotOk(open, const {}, id, Offset(d0.i, d0.j)), isFalse);
+    expect(g.decorSpotOk(open, const {}, id, Offset.zero), isFalse);
+    expect(g.decorSpotOk(open, const {}, id, const Offset(-14, -14)), isFalse);
+    expect(g.decorSpotOk(open, const {}, 'plaza-bench', const Offset(-0.9, -0.9)), isFalse);
+    expect(g.decorSpotOk(open, const {}, 'cathedral', const Offset(0.5, 2.5)), isFalse);
+    final moved = g.facilitiesFor(open | (1 << 2), const {'plaza-bench': Offset(1, 2.4), 'cathedral': Offset(5, 5)});
+    expect(moved.firstWhere((f) => f.id == 'plaza-bench').i, 1);
+    expect(moved.firstWhere((f) => f.id == 'cathedral').i, isNot(5));
+    final p = project(1.2, -3.4, 0.55);
+    final back = groundAt(p, 0.55);
+    expect(back.dx, closeTo(1.2, 1e-9));
+    expect(back.dy, closeTo(-3.4, 1e-9));
+  });
+
+  test('village look: server JSON (unknown style → dirt, malformed decor dropped)', () {
+    final v = Village.fromJson({
+      'id': 'abcdefghjk', 'name': 'x', 'created_at': '2026-11-11T00:00:00Z', 'houses': const [],
+      'path_style': 'gold',
+      'decor': {'plaza-bench': [1, 2], 'cathedral': [0, 0], 'd0-decor1': ['x', 1]},
+    });
+    expect(v.pathStyle, PathStyle.dirt);
+    expect(v.decor, {'plaza-bench': const Offset(1, 2)});
+    expect(Village.fromJson({'id': 'a', 'name': 'x', 'created_at': '2026-11-11T00:00:00Z', 'path_style': 'brick'}).pathStyle, PathStyle.brick);
+  });
+
+  test('free village = the first concept: tree in the middle, fenced, no plaza until another district opens', () {
+    const free = 3; // district 0, both halves
+    final bigger = free | (1 << 2);
+    expect(plazaShown(free), isFalse);
+    expect(plazaShown(bigger), isTrue);
+    expect(g.facilitiesFor(free).where((f) => !f.id.contains('decor')).map((f) => f.sprite).toList(), ['tree_complete']);
+    expect(g.facilitiesFor(bigger).map((f) => f.id), contains('cathedral'));
+    expect(pointInPolygon(Offset.zero, g.villageShape(free)), isFalse);
+    expect(pointInPolygon(Offset.zero, g.villageShape(bigger)), isTrue);
+    final onPlaza = g.forest.where((t) => t.plaza).length;
+    expect(onPlaza, greaterThan(10));
+    expect(g.forestFor(free).where((t) => t.plaza).length, onPlaza);
+    expect(g.forestFor(bigger).where((t) => t.plaza), isEmpty);
+    final shape = g.villageShape(free);
+    final runs = villageFence(shape);
+    expect(runs, hasLength(1));
+    expect(runs.first.length, greaterThan(30));
+    for (final p in runs.first) {
+      expect(pointInPolygon(p, shape), isTrue);
+    }
   });
 }

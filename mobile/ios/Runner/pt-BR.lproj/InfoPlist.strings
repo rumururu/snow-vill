@@ -1,0 +1,2 @@
+/* Photo picker permission */
+"NSPhotoLibraryUsageDescription" = "Usado para escolher uma foto para o porta-retrato da sua casa.";

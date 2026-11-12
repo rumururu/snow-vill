@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useT } from "@/lib/i18n/I18nProvider";
 import { LandingHero } from "@/components/landing/LandingHero";
 import { remoteConfig } from "@/lib/remote";
 import { villagePath } from "@/lib/share";
@@ -6,6 +9,7 @@ import { SAMPLE_VILLAGE_ID } from "@/lib/village";
 
 /** S01 — landing. Invite links (/v/?id=…) bypass this page. */
 export default function LandingPage() {
+  const t = useT();
   const online = Boolean(remoteConfig());
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))]">
@@ -13,18 +17,18 @@ export default function LandingPage() {
         <span aria-hidden className="text-2xl">❄️</span>
         <span className="text-lg font-extrabold tracking-tight text-night">Snow Village</span>
         <span className="ml-auto rounded-full border border-dashed border-night/40 px-2.5 py-1 text-[11px] font-semibold text-night/70">
-          {online ? "베타" : "시뮬레이션"}
+          {online ? t("landing.beta") : t("landing.simulation")}
         </span>
       </header>
 
       <section className="mt-6" aria-labelledby="hero-title">
         <h1 id="hero-title" className="text-[28px] font-extrabold leading-tight text-night min-[400px]:text-[32px]">
-          친구들과 만드는
+          {t("landing.titleLine1")}
           <br />
-          우리만의 겨울 마을
+          {t("landing.titleLine2")}
         </h1>
         <p className="mt-3 text-base leading-relaxed text-night/75">
-          친구 한 명이 집 한 채. 성당 광장을 둘러싼 마을에 친구가 늘수록 썰매·눈사람·아이스링크·산타의 집이 생기고, 마을은 60채까지 넓어져요. 사진은 집을 눌렀을 때만 보여요.
+          {t("landing.lead")}
         </p>
       </section>
 
@@ -35,23 +39,23 @@ export default function LandingPage() {
           href="/create"
           className="flex min-h-14 items-center justify-center rounded-2xl bg-night text-lg font-bold text-ivory shadow-md"
         >
-          무료로 마을 만들기
+          {t("landing.cta")}
         </Link>
-        <p className="text-center text-sm text-night/70">회원가입 없이 바로 시작</p>
+        <p className="text-center text-sm text-night/70">{t("landing.noSignup")}</p>
         <Link
           href={villagePath(SAMPLE_VILLAGE_ID)}
           className="flex min-h-12 items-center justify-center rounded-2xl bg-white/80 text-base font-semibold text-night"
         >
-          샘플 마을 둘러보기
+          {t("common.browseSample")}
         </Link>
         <p className="text-center text-[11px] leading-relaxed text-night/55">
           <Link href="/privacy/" className="underline underline-offset-2">
-            개인정보처리방침
+            {t("common.privacy")}
           </Link>
           {" · "}
           {online
-            ? "베타 서비스예요. 사진은 집을 눌렀을 때만 보이고, 공유 카드에는 들어가지 않아요."
-            : "서버 없이 동작하는 시뮬레이션 모드예요. 데이터는 이 브라우저 탭에만 임시 저장돼요."}
+            ? t("landing.footerOnline")
+            : t("landing.footerOffline")}
         </p>
       </div>
     </main>

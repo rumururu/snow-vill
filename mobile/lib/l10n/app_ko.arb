@@ -284,5 +284,17 @@
         "type": "int"
       }
     }
-  }
+  },
+  "editLook": "🎨 꾸미기",
+  "editLookMenu": "마을 꾸미기 (길·장식)",
+  "pathStyleTitle": "길 모양",
+  "pathDirt": "흙길",
+  "pathStones": "디딤돌",
+  "pathBrick": "벽돌길",
+  "pathSnow": "눈길",
+  "lookHint": "장식 아래 동그라미를 끌어서 옮겨요. 집·길·랜드마크 위나 마을 밖에는 놓을 수 없어요.",
+  "resetDecor": "장식 처음 자리로",
+  "saveLook": "저장",
+  "savingLook": "저장하는 중…",
+  "lookSaved": "마을 꾸미기를 저장했어요."
 }

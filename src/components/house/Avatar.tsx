@@ -1,15 +1,17 @@
 import { HOUSE_COLORS, PALETTE } from "@/lib/assets";
 import type { HouseStyle } from "@/lib/village";
+import { useT } from "@/lib/i18n/I18nProvider";
 
 /** Original fallback profile illustration (snow buddy in a knit hat). */
 export function FallbackAvatar({ style, className, label }: { style: HouseStyle; className?: string; label?: string }) {
+  const t = useT();
   const c = HOUSE_COLORS[style];
   return (
     <svg
       viewBox="0 0 200 200"
       className={className}
       role="img"
-      aria-label={label ?? "기본 프로필 그림"}
+      aria-label={label ?? t("avatar.default")}
       xmlns="http://www.w3.org/2000/svg"
     >
       <rect width="200" height="200" fill="#EAF1F5" />

@@ -24,6 +24,19 @@ describe("remote api", () => {
     expect(v?.houses[0]).toMatchObject({ slot: 2, style: "sage", hasPhoto: true, photo: null });
   });
 
+  it("reads the village look (unknown style → dirt, malformed decor dropped) and saves it owner-only", async () => {
+    const api = createRemoteApi(config, (async () =>
+      json(200, { id: "abcdefghjk", name: "마을", created_at: "2026-12-01T00:00:00Z", houses: [], path_style: "gold",
+        decor: { "plaza-bench": [1, 2], cathedral: [0, 0], "d0-decor1": ["x", 1] } })) as typeof fetch);
+    expect(await api.getVillage("abcdefghjk")).toMatchObject({ pathStyle: "dirt", decor: { "plaza-bench": [1, 2] } });
+    const fetchMock = vi.fn(async () => json(200, { ok: true, path_style: "brick", decor: {} }));
+    const api2 = createRemoteApi(config, fetchMock as unknown as typeof fetch);
+    expect(await api2.setVillageLook("i", "abcdefghjk", "sec", "brick", {})).toEqual({ ok: true });
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe("https://proj.supabase.co/rest/v1/rpc/snowvill_set_village_look");
+    expect(JSON.parse(init.body as string)).toEqual({ p_install_id: "i", p_village_id: "abcdefghjk", p_owner_secret: "sec", p_path_style: "brick", p_decor: {} });
+  });
+
   it("returns null for a missing village", async () => {
     const api = createRemoteApi(config, (async () => new Response("null", { status: 200 })) as typeof fetch);
     expect(await api.getVillage("x")).toBeNull();

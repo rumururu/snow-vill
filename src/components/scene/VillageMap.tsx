@@ -5,8 +5,9 @@
  * lot or house, plus pan (drag), zoom (wheel, pinch, buttons) and "fit". A drag never triggers a tap.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { areaOutline, DISTRICTS, fullView, HOUSE_TILES, houseView, LOTS, spriteHull, tileDiamond, visibleLots, type Point } from "@/lib/map";
-import { districtState, houseAt, HOUSE_STYLE_LABEL, type Village } from "@/lib/village";
+import { useT } from "@/lib/i18n/I18nProvider";
+import { areaOutline, decorSpotOk, districtName, DISTRICTS, fullView, groundAt, HOUSE_TILES, houseStyleLabel, houseView, LOTS, movableDecor, project, spriteHull, tileDiamond, visibleLots, type Point, clampToLand } from "@/lib/map";
+import { districtState, houseAt, type DecorSpots, type PathStyle, type Village } from "@/lib/village";
 import { defaultView, VillageMapArt } from "./VillageMapArt";
 import { Snowfall } from "./Snowfall";
 
@@ -20,15 +21,22 @@ interface Props {
   className?: string;
   /** Fill the parent's height (village screen); otherwise keep the village's own aspect ratio. */
   fill?: boolean;
+  /**
+   * Edit mode (village owner): the draft look is drawn, every movable decoration gets a drag handle, and
+   * lots / districts are not tappable. A drop on a spot that breaks the placement rule snaps back.
+   */
+  edit?: { pathStyle: PathStyle; decor: DecorSpots; onMove: (id: string, at: [number, number]) => void };
 }
 
 type View = [number, number, number, number];
 const pts = (p: Point[]) => p.map((q) => `${q.x.toFixed(1)},${q.y.toFixed(1)}`).join(" ");
 
-export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot, onSelectDistrict, className, fill = false }: Props) {
+export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot, onSelectDistrict, className, fill = false, edit }: Props) {
+  const t = useT();
   const base = useMemo(() => defaultView(village.openHalves), [village.openHalves]);
   // Container aspect (h / w), measured; the camera grows the short side so the map fills the box.
   const [aspect, setAspect] = useState<number | null>(null);
+  const [boxWidth, setBoxWidth] = useState(390);
   const fit = useMemo<View>(() => {
     if (!fill || !aspect) return base;
     const [x, y, w, h] = base;
@@ -37,7 +45,7 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
     let nw = aspect > h / w ? Math.max(w * 0.92, h / aspect) : h / aspect;
     nw = Math.min(nw, MAX_W);
     const nh = nw * aspect;
-    return [x + (w - nw) / 2, y + (h - nh) / 2, nw, nh];
+    return clampToLand([x + (w - nw) / 2, y + (h - nh) / 2, nw, nh]);
   }, [base, aspect, fill]);
   const [view, setView] = useState<View>(fit);
   // Re-fit when the village grows (new lots appear): reset during render, not in an effect.
@@ -51,13 +59,19 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
   const pinch = useRef<Map<number, { x: number; y: number }>>(new Map());
   const pinchStart = useRef<{ dist: number; view: View } | null>(null);
   const suppressClick = useRef(false);
+  const hitSvg = useRef<SVGSVGElement>(null);
+  // Decoration being dragged (edit mode): where it is now and whether it may stay there.
+  const [moving, setMoving] = useState<{ id: string; pointer: number; z: number; at: [number, number]; ok: boolean } | null>(null);
 
   useEffect(() => {
     const el = wrap.current;
     if (!fill || !el || typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(([e]) => {
       const { width, height } = e.contentRect;
-      if (width > 0 && height > 0) setAspect(Math.round((height / width) * 100) / 100);
+      if (width > 0 && height > 0) {
+        setAspect(Math.round((height / width) * 100) / 100);
+        setBoxWidth(width);
+      }
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -160,7 +174,24 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
     mine: Boolean(myHouseId && h.id === myHouseId),
   }));
   const lots = visibleLots(village);
-  const interactive = Boolean(onSelectSlot);
+  const interactive = Boolean(onSelectSlot) && !edit;
+  const look = edit
+    ? { pathStyle: edit.pathStyle, decor: moving ? { ...edit.decor, [moving.id]: moving.at } : edit.decor }
+    : { pathStyle: village.pathStyle, decor: village.decor };
+  const handles = edit ? movableDecor({ openHalves: village.openHalves, decor: look.decor }) : [];
+  // Drag handle: a ring ≥ 28 px across on screen, a 44 px touch circle, whatever the zoom.
+  const handleR = Math.max(30, (14 * view[2]) / boxWidth);
+  const touchR = Math.max(34, (22 * view[2]) / boxWidth);
+
+  /** Client point → ground tile at elevation z, through the hit layer's own transform. */
+  const toGround = (clientX: number, clientY: number, z: number): [number, number] | null => {
+    const svg = hitSvg.current;
+    const m = svg?.getScreenCTM();
+    if (!svg || !m) return null;
+    const p = new DOMPoint(clientX, clientY).matrixTransform(m.inverse());
+    return groundAt(p.x, p.y, z);
+  };
+  const decorOk = (id: string, at: [number, number]) => decorSpotOk({ openHalves: village.openHalves, decor: look.decor }, id, at);
   const zoomed = view[2] < fit[2] * 0.97;
 
   const select = (slot: number, el: Element) => {
@@ -182,14 +213,58 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
         openHalves={village.openHalves}
         houses={art}
         view={view}
+        chipArea={fit}
         names
         igniteSlot={igniteSlot}
+        pathStyle={look.pathStyle}
+        decor={look.decor}
         className="absolute inset-0 h-full w-full"
-        title={`${village.name} 지도, ${village.capacity}채 중 ${village.houses.length}채에 불이 켜져 있어요`}
+        title={t("map.title", { name: village.name, capacity: village.capacity, count: village.houses.length })}
       />
       <Snowfall />
+      {edit && (
+        <svg ref={hitSvg} viewBox={view.join(" ")} className="absolute inset-0 h-full w-full" role="group" aria-label={t("map.decorGroup")}>
+          {handles.map((f) => {
+            const c = project(f.at[0], f.at[1], f.z);
+            const active = moving?.id === f.id;
+            const bad = active && !moving.ok;
+            return (
+              <g key={f.id} data-decor={f.id} data-state={bad ? "blocked" : active ? "moving" : "idle"}>
+                <ellipse cx={c.x} cy={c.y} rx={handleR} ry={handleR / 2} fill={bad ? "#E0604A" : "#FFFFFF"} fillOpacity={bad ? 0.45 : 0.35}
+                  stroke={bad ? "#C2412C" : "#5B4FA0"} strokeWidth={handleR * 0.09} strokeDasharray={active ? undefined : `${handleR * 0.18} ${handleR * 0.15}`} />
+                <circle
+                  cx={c.x}
+                  cy={c.y}
+                  r={touchR}
+                  fill="transparent"
+                  role="button"
+                  aria-label={t("map.moveDecor", { id: f.id })}
+                  className="cursor-grab touch-none outline-none"
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                    setMoving({ id: f.id, pointer: e.pointerId, z: f.z, at: f.at, ok: true });
+                  }}
+                  onPointerMove={(e) => {
+                    e.stopPropagation();
+                    if (!moving || moving.pointer !== e.pointerId) return;
+                    const at = toGround(e.clientX, e.clientY, moving.z);
+                    if (at) setMoving({ ...moving, at, ok: decorOk(moving.id, at) });
+                  }}
+                  onPointerUp={(e) => {
+                    e.stopPropagation();
+                    if (moving && moving.pointer === e.pointerId && moving.ok) edit.onMove(moving.id, moving.at);
+                    setMoving(null);
+                  }}
+                  onPointerCancel={() => setMoving(null)}
+                />
+              </g>
+            );
+          })}
+        </svg>
+      )}
       {interactive && (
-        <svg viewBox={view.join(" ")} className="absolute inset-0 h-full w-full" aria-label={`마을의 집터 ${village.capacity}곳과 아직 열리지 않은 동네`} role="group">
+        <svg viewBox={view.join(" ")} className="absolute inset-0 h-full w-full" aria-label={t("map.lotsGroup", { count: village.capacity })} role="group">
           {/* Closed districts (behind everything): tap to open one. */}
           {DISTRICTS.filter((d) => districtState(village.openHalves, d.index) === 0).map((d) => {
             const ring = areaOutline(d);
@@ -199,7 +274,7 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
                 points={pts(ring)}
                 role="button"
                 tabIndex={0}
-                aria-label={`${d.name.ko} (아직 열리지 않음), 마을 넓히기로 열기`}
+                aria-label={t("map.closedDistrict", { district: districtName(d.index, t.locale) })}
                 data-district={d.index}
                 data-state="closed"
                 fill="transparent"
@@ -228,10 +303,10 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
                   })()
                 : tileDiamond(lot.at[0], lot.at[1], HOUSE_TILES * 0.9, lot.z);
               const label = house
-                ? `${lot.slot + 1}번 집, ${house.nickname}의 ${HOUSE_STYLE_LABEL[house.style]}${mine ? ", 내 집" : ""} 열기`
+                ? t(mine ? "map.houseMine" : "map.house", { n: lot.slot + 1, name: house.nickname, style: houseStyleLabel(house.style, t.locale) })
                 : locked
-                  ? `${lot.slot + 1}번 집터 (잠김), ${DISTRICTS[lot.district].name.ko}의 나머지 절반을 열면 입주할 수 있어요`
-                  : `${lot.slot + 1}번 빈 집터, 내 집 만들기`;
+                  ? t("map.lockedLot", { n: lot.slot + 1, district: districtName(lot.district, t.locale) })
+                  : t("map.emptyLot", { n: lot.slot + 1 });
               return (
                 <polygon
                   key={lot.slot}
@@ -257,15 +332,15 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
         </svg>
       )}
       <div className="absolute bottom-2 right-2 flex gap-1" onPointerDown={(e) => e.stopPropagation()}>
-        <button type="button" aria-label="확대" className="grid h-11 w-11 place-items-center rounded-full bg-ivory/90 text-lg font-bold text-night shadow" onClick={() => zoomBy(1.35)}>
+        <button type="button" aria-label={t("map.zoomIn")} className="grid h-11 w-11 place-items-center rounded-full bg-ivory/90 text-lg font-bold text-night shadow" onClick={() => zoomBy(1.35)}>
           +
         </button>
-        <button type="button" aria-label="축소" className="grid h-11 w-11 place-items-center rounded-full bg-ivory/90 text-lg font-bold text-night shadow" onClick={() => zoomBy(1 / 1.35)}>
+        <button type="button" aria-label={t("map.zoomOut")} className="grid h-11 w-11 place-items-center rounded-full bg-ivory/90 text-lg font-bold text-night shadow" onClick={() => zoomBy(1 / 1.35)}>
           −
         </button>
         {zoomed && (
           <button type="button" className="h-11 rounded-full bg-ivory/90 px-3 text-sm font-semibold text-night shadow" onClick={() => setView(fit)}>
-            전체 보기
+            {t("map.fit")}
           </button>
         )}
       </div>

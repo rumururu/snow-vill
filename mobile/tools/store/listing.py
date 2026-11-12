@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Push the store listing text in docs/release_info/snowvillage.yaml to Google Play and App Store Connect.
 
-Idempotent; saves drafts only (no review submission, no release). Screenshots are separate (screenshots.py).
+Idempotent; saves drafts only (no review submission, no release). Images are separate: fastlane lanes `screenshots` (iOS) and `images` (Play), staged by docs/release_assets/tools/build_marketing.py --to-fastlane.
 Run from mobile/:  python3 tools/store/listing.py [--play] [--asc]   (both when no flag)
 Keys: android/fastlane/play-store-key.json and the ASC API key used by asc.py (never printed)."""
 import json
@@ -83,6 +83,8 @@ def asc(cfg):
                 "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": ver}}}}})
         print("asc version loc", loc, s, "" if s < 300 else j)
         iattrs = {"name": l10n["name"], "subtitle": l10n["subtitle"], "privacyPolicyUrl": u["privacy"]}
+        if loc not in ihave:  # adding a version localization makes Apple create the app info one: reload
+            ihave = {d["attributes"]["locale"]: d["id"] for d in call("GET", f"/v1/appInfos/{info}/appInfoLocalizations")[1]["data"]}
         if loc in ihave:
             s, j = call("PATCH", f"/v1/appInfoLocalizations/{ihave[loc]}", {"data": {
                 "type": "appInfoLocalizations", "id": ihave[loc], "attributes": iattrs}})

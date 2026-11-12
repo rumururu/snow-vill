@@ -1,0 +1,27 @@
+{
+  "brand": "Snow Village",
+  "tagline": "Uma vila de inverno com amigos",
+  "lang": "pt",
+  "slots": [
+    [
+      "O último presente do ano:\nnossa vila",
+      "Convide com um link e cada amigo acende uma casa"
+    ],
+    [
+      "Cada casa guarda\numa lembrança do ano",
+      "Toque numa casa acesa para ver a foto e o recado do amigo"
+    ],
+    [
+      "Cada amigo escolhe\numa casa com a sua cara",
+      "9 tipos de casa, até a direção da porta"
+    ],
+    [
+      "Quanto mais gente,\nmaior a vila",
+      "Abra novas ruas quando chegarem amigos, até 60 casas"
+    ],
+    [
+      "Sem cadastro,\né só mandar o link",
+      "Crie uma vila e compartilhe o link. Pronto!"
+    ]
+  ]
+}

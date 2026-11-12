@@ -4,6 +4,7 @@ library;
 
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:ui' show Offset;
 
 import 'package:http/http.dart' as http;
 
@@ -193,6 +194,32 @@ class RemoteApi {
             'p_install_id': installId,
             'p_village_id': villageId,
             'p_district': district,
+          })
+          as Map,
+    );
+    return r['ok'] == true ? null : r['reason'] as String?;
+  }
+
+  /// Owner only: one path style for the whole village and the moved decorations (replaces the old map).
+  /// Returns null on success or 'FORBIDDEN' | 'NOT_FOUND'.
+  Future<String?> setVillageLook(
+    String installId,
+    String villageId,
+    String ownerSecret,
+    PathStyle pathStyle,
+    Map<String, Offset> decor,
+  ) async {
+    double r2(double v) => (v * 100).roundToDouble() / 100;
+    final r = Map<String, dynamic>.from(
+      await _rpc('snowvill_set_village_look', {
+            'p_install_id': installId,
+            'p_village_id': villageId,
+            'p_owner_secret': ownerSecret,
+            'p_path_style': pathStyle.name,
+            'p_decor': {
+              for (final MapEntry(:key, :value) in decor.entries)
+                key: [r2(value.dx), r2(value.dy)],
+            },
           })
           as Map,
     );

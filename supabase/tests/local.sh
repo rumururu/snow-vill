@@ -21,7 +21,7 @@ alter default privileges in schema public grant all on tables to anon, authentic
 alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
 SQL
-for m in migrations/20261109100000_snowvill_core.sql migrations/20261110100000_snowvill_big_village.sql migrations/20261111100000_snowvill_expansion.sql migrations/20261111120000_snowvill_districts.sql; do
+for m in migrations/20261109100000_snowvill_core.sql migrations/20261110100000_snowvill_big_village.sql migrations/20261111100000_snowvill_expansion.sql migrations/20261111120000_snowvill_districts.sql migrations/20261112100000_snowvill_village_look.sql; do
   "${PSQL[@]}" -v ON_ERROR_STOP=1 -f "$m" >/dev/null || { echo "migration failed: $m"; exit 1; }
 done
 
@@ -45,7 +45,7 @@ VID=$(j "$R" "d['id']"); OWNER=$(j "$R" "d['owner_secret']")
 ok "$(j "$R" "len(d['id'])==10 and len(d['owner_secret'])==32")" True "village id + 32-char owner secret"
 G=$(sql anon "select snowvill_get_village('$VID')")
 ok "$(j "$G" "d['name']")" "눈송이 마을" "name sanitized (tab → space, trimmed)"
-ok "$(j "$G" "sorted(d.keys())")" "['capacity', 'created_at', 'houses', 'id', 'name', 'open_halves']" "get_village exposes no secret/owner fields"
+ok "$(j "$G" "sorted(d.keys())")" "['capacity', 'created_at', 'decor', 'houses', 'id', 'name', 'open_halves', 'path_style']" "get_village exposes no secret/owner fields"
 ok "$(j "$G" "d['capacity']")" 6 "new village is a free 6-house village"
 ok "$(sql anon "select snowvill_get_village('nonexistent') is null")" t "unknown village → null"
 ok "$(sql anon "select snowvill_create_village('$A', '   ')")" "ERR:22023" "blank name → 22023"
@@ -204,6 +204,26 @@ ok "$(sql service_role "select snowvill_photo_path('$V2', '$H0') is null")" t "h
 ok "$(sql service_role "select snowvill_delete_village('$VID')")" "$VID/b.jpg" "delete village returns photo paths"
 ok "$("${PSQL[@]}" -c "select count(*) from snowvill_houses where village_id='$VID'")" 0 "houses cascade-deleted"
 ok "$("${PSQL[@]}" -c "select count(*) from snowvill_reports where house_id='$H0'")" 0 "reports cascade-deleted"
+
+echo "8. village look (path style + moved decorations, owner only)"
+R=$(sql anon "select snowvill_create_village('$C', '꾸미기 마을')"); VL=$(j "$R" "d['id']"); OL=$(j "$R" "d['owner_secret']")
+G=$(sql anon "select snowvill_get_village('$VL')")
+ok "$(j "$G" "(d['path_style'], d['decor'])")" "('dirt', {})" "new village: dirt path, no moved decor"
+ok "$(j "$(sql anon "select snowvill_set_village_look('$C', '$VL', '$OL', 'brick', '{\"plaza-bench\": [1.25, 2.5], \"d0-decor3\": [-3, 7.5]}')")" "d['ok']")" True "owner sets brick + 2 moved decorations"
+G=$(sql anon "select snowvill_get_village('$VL')")
+ok "$(j "$G" "(d['path_style'], d['decor']['plaza-bench'], d['decor']['d0-decor3'])")" "('brick', [1.25, 2.5], [-3, 7.5])" "look stored and returned"
+ok "$(j "$(sql anon "select snowvill_set_village_look('$C', '$VL', 'wrong-secret', 'snow', '{}')")" "d['reason']")" FORBIDDEN "wrong secret → FORBIDDEN"
+ok "$(j "$(sql anon "select snowvill_get_village('$VL')")" "d['path_style']")" brick "rejected change leaves the look"
+ok "$(j "$(sql anon "select snowvill_set_village_look('$C', 'nope', '$OL', 'snow', '{}')")" "d['reason']")" NOT_FOUND "unknown village → NOT_FOUND"
+ok "$(sql anon "select snowvill_set_village_look('$C', '$VL', '$OL', 'gold', '{}')")" "ERR:22023" "unknown path style → 22023"
+ok "$(sql anon "select snowvill_set_village_look('$C', '$VL', '$OL', 'snow', '{\"cathedral\": [0, 0]}')")" "ERR:22023" "non-decoration id → 22023"
+ok "$(sql anon "select snowvill_set_village_look('$C', '$VL', '$OL', 'snow', '{\"plaza-bench\": [0, 99]}')")" "ERR:22023" "coordinate out of range → 22023"
+ok "$(sql anon "select snowvill_set_village_look('$C', '$VL', '$OL', 'snow', '{\"plaza-bench\": [\"a\", 1]}')")" "ERR:22023" "non-number coordinate → 22023"
+ok "$(sql anon "select snowvill_set_village_look('$C', '$VL', '$OL', 'snow', '[]')")" "ERR:22023" "decor not an object → 22023"
+ok "$(j "$(sql anon "select snowvill_set_village_look('$C', '$VL', '$OL', 'stones', '{}')")" "d['ok']")" True "reset decorations"
+ok "$(j "$(sql anon "select snowvill_get_village('$VL')")" "(d['path_style'], d['decor'])")" "('stones', {})" "reset stored"
+ok "$(sql anon "select snowvill_valid_decor('{}')")" "ERR:42501" "validator not callable by anon"
+ok "$("${PSQL[@]}" -c "update snowvill_villages set path_style='gold' where id='$VL'" 2>&1 | grep -o 23514)" 23514 "column check rejects unknown style"
 
 echo "result: $pass passed, $fail failed"
 [ "$fail" = 0 ]

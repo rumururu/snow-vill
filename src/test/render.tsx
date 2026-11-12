@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import { vi } from "vitest";
 import { createVillageStore, type VillageStore } from "@/store/villageStore";
 import { VillageStoreProvider } from "@/store/VillageStoreProvider";
+import { LocaleProvider } from "@/lib/i18n/I18nProvider";
 
 export const routerMock = { push: vi.fn(), replace: vi.fn(), back: vi.fn(), prefetch: vi.fn(), refresh: vi.fn(), forward: vi.fn() };
 
@@ -16,9 +17,11 @@ export function renderWithStore(ui: ReactElement, store: VillageStore = createVi
   return {
     store,
     ...render(
-      <VillageStoreProvider store={store}>
-        <div id="app-root">{ui}</div>
-      </VillageStoreProvider>,
+      <LocaleProvider>
+        <VillageStoreProvider store={store}>
+          <div id="app-root">{ui}</div>
+        </VillageStoreProvider>
+      </LocaleProvider>,
     ),
   };
 }

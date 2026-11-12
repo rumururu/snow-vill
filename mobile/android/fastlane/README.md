@@ -31,6 +31,14 @@ Build the release AAB
 
 Build and upload to the internal testing track (pass draft:true while the app is still a draft app)
 
+### android images
+
+```sh
+[bundle exec] fastlane android images
+```
+
+Upload store images only (fastlane/metadata/android/<locale>/images, staged by build_marketing.py --to-fastlane). Text goes through tools/store/listing.py
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

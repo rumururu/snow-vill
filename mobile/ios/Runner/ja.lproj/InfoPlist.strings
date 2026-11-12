@@ -1,0 +1,2 @@
+/* Photo picker permission */
+"NSPhotoLibraryUsageDescription" = "自分の家の写真フレームに入れる写真を選ぶときに使います。";

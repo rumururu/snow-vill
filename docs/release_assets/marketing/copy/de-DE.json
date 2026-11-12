@@ -1,0 +1,27 @@
+{
+  "brand": "Snow Village",
+  "tagline": "Ein Winterdorf mit Freunden",
+  "lang": "de",
+  "slots": [
+    [
+      "Unser Dorf –\ndas Geschenk zum Jahresende",
+      "Mit einem Link einladen: Jeder Freund lässt ein Haus leuchten"
+    ],
+    [
+      "In jedem Haus\nein Stück dieses Jahres",
+      "Tippe auf ein beleuchtetes Haus: Foto und Gruß deines Freundes"
+    ],
+    [
+      "Jeder Freund wählt\nsein eigenes Haus",
+      "9 Hausarten, sogar die Türrichtung"
+    ],
+    [
+      "Je mehr wir sind,\ndesto größer das Dorf",
+      "Neue Gassen öffnen, wenn Freunde kommen, bis zu 60 Häuser"
+    ],
+    [
+      "Ohne Anmeldung,\nnur einen Link senden",
+      "Dorf erstellen, Link teilen, fertig"
+    ]
+  ]
+}

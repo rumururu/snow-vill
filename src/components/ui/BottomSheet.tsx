@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useT } from "@/lib/i18n/I18nProvider";
 
 interface BottomSheetProps {
   open: boolean;
@@ -23,6 +24,7 @@ const FOCUSABLE =
  * returns to the element that opened it. Background is made inert.
  */
 export function BottomSheet({ open, onClose, title, children, footer, initialFocusRef }: BottomSheetProps) {
+  const t = useT();
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -100,7 +102,7 @@ export function BottomSheet({ open, onClose, title, children, footer, initialFoc
             type="button"
             onClick={() => onCloseRef.current()}
             className="mt-2 grid h-11 w-11 shrink-0 place-items-center rounded-full text-2xl text-night/70 hover:bg-night/5 focus-visible:ring-4 focus-visible:ring-night/40 focus-visible:outline-none"
-            aria-label="닫기"
+            aria-label={t("common.close")}
           >
             ×
           </button>

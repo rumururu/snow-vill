@@ -6,6 +6,19 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>ko</string>
+		<string>en</string>
+		<string>ja</string>
+		<string>zh-Hans</string>
+		<string>es</string>
+		<string>fr</string>
+		<string>de</string>
+		<string>pt-BR</string>
+		<string>ru</string>
+		<string>id</string>
+	</array>
 	<key>CFBundleDisplayName</key>
 	<string>Snow Village</string>
 	<key>CFBundleExecutable</key>

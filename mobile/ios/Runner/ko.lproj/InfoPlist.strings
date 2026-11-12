@@ -1,0 +1,2 @@
+/* Photo picker permission */
+"NSPhotoLibraryUsageDescription" = "내 집 사진 액자에 넣을 사진을 고를 때 사용해요.";

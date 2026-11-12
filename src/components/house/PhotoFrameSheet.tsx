@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { PhotoError, preparePhoto } from "@/lib/image";
-import { HOUSE_STYLE_LABEL, type House } from "@/lib/village";
+import { INTL_LOCALE, type Locale } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/I18nProvider";
+import { houseStyleLabel } from "@/lib/map";
+import type { House } from "@/lib/village";
 import { useVillageStore } from "@/store/VillageStoreProvider";
 import { FallbackAvatar } from "./Avatar";
 
@@ -17,13 +20,19 @@ interface PhotoFrameSheetProps {
   onRemove: (house: House) => Promise<string | null>;
 }
 
-const dateFormat = new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long", day: "numeric" });
+const dateFormats = new Map<Locale, Intl.DateTimeFormat>();
+function formatDate(iso: string, locale: Locale): string {
+  let f = dateFormats.get(locale);
+  if (!f) dateFormats.set(locale, (f = new Intl.DateTimeFormat(INTL_LOCALE[locale], { year: "numeric", month: "long", day: "numeric" })));
+  return f.format(new Date(iso));
+}
 
 type PhotoState = { key: string; status: "loading" | "ready" | "error"; url: string | null };
 
 /** S05 — occupied house: private photo frame, shown only after tapping the house. */
 export function PhotoFrameSheet({ villageId, house, isMine, isVillageOwner, onClose, onRemove }: PhotoFrameSheetProps) {
   const store = useVillageStore();
+  const t = useT();
   const [photo, setPhoto] = useState<PhotoState | null>(null);
   const [reload, setReload] = useState(0);
   const [reported, setReported] = useState<{ houseId: string; text: string } | null>(null);
@@ -70,8 +79,8 @@ export function PhotoFrameSheet({ villageId, house, isMine, isVillageOwner, onCl
       text: !result.ok
         ? result.message
         : "simulated" in result && result.simulated
-          ? "신고가 접수된 것처럼 표시만 했어요. (시뮬레이션 — 실제 전송 없음)"
-          : "신고가 접수됐어요. 확인 후 조치할게요.",
+          ? t("frame.reportSimulated")
+          : t("frame.reported"),
     });
   }
 
@@ -85,7 +94,7 @@ export function PhotoFrameSheet({ villageId, house, isMine, isVillageOwner, onCl
       if (!result.ok) setActionError(result.message);
       else setReload((n) => n + 1);
     } catch (err) {
-      setActionError(err instanceof PhotoError ? err.message : "사진을 처리하지 못했어요.");
+      setActionError(err instanceof PhotoError ? err.message : t("frame.photoFailed"));
     } finally {
       setBusy(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -93,7 +102,7 @@ export function PhotoFrameSheet({ villageId, house, isMine, isVillageOwner, onCl
   }
 
   return (
-    <BottomSheet open={Boolean(house)} onClose={close} title={`${house.nickname}의 작은 집`}>
+    <BottomSheet open={Boolean(house)} onClose={close} title={t("frame.title", { name: house.nickname })}>
       <figure className="mx-auto w-full max-w-[300px]">
         <div className="rounded-[28px] bg-wood p-3 shadow-[inset_0_-6px_0_rgba(0,0,0,.12)]">
           <div className="rounded-[20px] bg-[#FFF8EA] p-3">
@@ -102,24 +111,24 @@ export function PhotoFrameSheet({ villageId, house, isMine, isVillageOwner, onCl
                 // eslint-disable-next-line @next/next/no-img-element -- private signed URL / local data URL
                 <img
                   src={current.url}
-                  alt={`${house.nickname}님이 올린 사진`}
+                  alt={t("frame.photoAlt", { name: house.nickname })}
                   className="h-full w-full object-cover"
                   data-testid="frame-photo"
                   referrerPolicy="no-referrer"
                 />
               ) : photoStatus === "loading" ? (
-                <div className="grid h-full w-full place-items-center" role="status" aria-label="사진을 불러오는 중">
+                <div className="grid h-full w-full place-items-center" role="status" aria-label={t("frame.photoLoading")}>
                   <span className="h-8 w-8 animate-spin rounded-full border-4 border-night/20 border-t-night motion-reduce:animate-none" />
                 </div>
               ) : photoStatus === "error" ? (
                 <div className="grid h-full w-full place-items-center gap-2 p-4 text-center text-sm text-night">
-                  <p>사진을 불러오지 못했어요.</p>
+                  <p>{t("frame.photoLoadFailed")}</p>
                   <button type="button" onClick={() => setReload((n) => n + 1)} className="min-h-11 rounded-xl bg-white px-4 font-semibold">
-                    다시 시도
+                    {t("common.retry")}
                   </button>
                 </div>
               ) : (
-                <FallbackAvatar style={house.style} className="h-full w-full" label={`${house.nickname}님의 기본 프로필 그림`} />
+                <FallbackAvatar style={house.style} className="h-full w-full" label={t("frame.avatar", { name: house.nickname })} />
               )}
             </div>
           </div>
@@ -128,10 +137,13 @@ export function PhotoFrameSheet({ villageId, house, isMine, isVillageOwner, onCl
           {house.message ? (
             <p className="whitespace-pre-line break-words text-base leading-relaxed text-night">“{house.message}”</p>
           ) : (
-            <p className="text-sm text-night/60">남긴 메시지가 없어요.</p>
+            <p className="text-sm text-night/60">{t("frame.noMessage")}</p>
           )}
           <p className="text-xs text-night/60">
-            {HOUSE_STYLE_LABEL[house.style]} 집 · <time dateTime={house.createdAt}>{dateFormat.format(new Date(house.createdAt))}</time> 입주
+            {t.rich("frame.meta", {
+              style: houseStyleLabel(house.style, t.locale),
+              date: <time dateTime={house.createdAt}>{formatDate(house.createdAt, t.locale)}</time>,
+            })}
           </p>
         </figcaption>
       </figure>
@@ -139,7 +151,7 @@ export function PhotoFrameSheet({ villageId, house, isMine, isVillageOwner, onCl
       <div className="mt-5 space-y-2 border-t border-night/10 pt-4">
         {isMine && (
           <label className="flex min-h-11 w-full cursor-pointer items-center justify-center rounded-xl border border-night/20 bg-white px-3 text-sm font-semibold text-night has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-night/30">
-            {busy ? "사진 올리는 중…" : house.hasPhoto ? "사진 바꾸기" : "사진 올리기"}
+            {busy ? t("frame.uploading") : house.hasPhoto ? t("frame.changePhoto") : t("frame.uploadPhoto")}
             <input
               ref={fileRef}
               type="file"
@@ -167,17 +179,17 @@ export function PhotoFrameSheet({ villageId, house, isMine, isVillageOwner, onCl
               disabled={reporting}
               className="min-h-11 w-full rounded-xl px-3 text-sm font-medium text-night/70 underline-offset-4 hover:underline disabled:opacity-60"
             >
-              부적절한 내용 신고하기
+              {t("frame.report")}
             </button>
           )
         )}
         {canRemove &&
           (confirmRemove ? (
             <div className="rounded-xl bg-[#F8E6DD] p-3 text-sm text-night">
-              <p className="mb-2">이 집을 비울까요? 사진과 메시지가 함께 지워져요.</p>
+              <p className="mb-2">{t("frame.removeConfirm")}</p>
               <div className="flex gap-2">
                 <button type="button" onClick={() => setConfirmRemove(false)} className="min-h-11 flex-1 rounded-xl bg-ivory font-medium">
-                  취소
+                  {t("common.cancel")}
                 </button>
                 <button
                   type="button"
@@ -191,7 +203,7 @@ export function PhotoFrameSheet({ villageId, house, isMine, isVillageOwner, onCl
                   }}
                   className="min-h-11 flex-1 rounded-xl bg-[#B5523B] font-semibold text-white disabled:opacity-60"
                 >
-                  집 비우기
+                  {t("frame.remove")}
                 </button>
               </div>
             </div>
@@ -201,7 +213,7 @@ export function PhotoFrameSheet({ villageId, house, isMine, isVillageOwner, onCl
               onClick={() => setConfirmRemove(true)}
               className="min-h-11 w-full rounded-xl px-3 text-sm font-medium text-[#B5523B]"
             >
-              {isMine ? "내 집 비우기" : "마을 주인으로 이 집 비우기"}
+              {isMine ? t("frame.removeMine") : t("frame.removeAsOwner")}
             </button>
           ))}
       </div>

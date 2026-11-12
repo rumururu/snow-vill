@@ -2,8 +2,15 @@ import { forwardRef } from "react";
 import { VillageMapArt } from "@/components/scene/VillageMapArt";
 import { PALETTE } from "@/lib/assets";
 import { SHARE_CARD_HEIGHT, SHARE_CARD_WIDTH, type ShareCardData } from "@/lib/share";
+import { useT } from "@/lib/i18n/I18nProvider";
 
 const FONT = "'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',system-ui,sans-serif";
+
+/** Font size that keeps one line of `text` within `width` (wide CJK glyphs ≈ 1em, others ≈ 0.56em). */
+function fitFont(text: string, max: number, width: number): number {
+  const em = Array.from(text).reduce((w, ch) => w + (/[\u1100-\u11ff\u2e80-\ua4cf\uac00-\ud7af\uf900-\ufaff\uff00-\uffef]/.test(ch) ? 1 : 0.56), 0);
+  return Math.min(max, Math.floor(width / Math.max(em, 1)));
+}
 
 /**
  * 1080×1350 photo-free share card. Accepts only ShareCardData (styles +
@@ -13,6 +20,9 @@ export const ShareCard = forwardRef<SVGSVGElement, { data: ShareCardData; classN
   { data, className },
   ref,
 ) {
+  const t = useT();
+  const headline = data.complete ? t("common.villageComplete") : t("card.inProgress");
+  const tagline = t("card.tagline");
   return (
     <svg
       ref={ref}
@@ -22,7 +32,7 @@ export const ShareCard = forwardRef<SVGSVGElement, { data: ShareCardData; classN
       height={SHARE_CARD_HEIGHT}
       className={className}
       role="img"
-      aria-label="사진이 들어가지 않는 마을 공유 카드"
+      aria-label={t("card.aria")}
       data-testid="share-card"
     >
       <defs>
@@ -35,12 +45,12 @@ export const ShareCard = forwardRef<SVGSVGElement, { data: ShareCardData; classN
       <text x="540" y="120" textAnchor="middle" fontFamily={FONT} fontSize="40" fontWeight="600" fill={PALETTE.sage} letterSpacing="6">
         SNOW VILLAGE
       </text>
-      <text x="540" y="200" textAnchor="middle" fontFamily={FONT} fontSize="64" fontWeight="800" fill={PALETTE.indigo}>
-        {data.complete ? "우리 마을이 완성됐어요!" : "우리 마을에 불이 켜지고 있어요"}
+      <text x="540" y="200" textAnchor="middle" fontFamily={FONT} fontSize={fitFont(headline, 64, 980)} fontWeight="800" fill={PALETTE.indigo}>
+        {headline}
       </text>
-      <VillageMapArt openHalves={data.openHalves} houses={data.houses} ghosts={false} frame={{ x: 48, y: 250, width: 984, height: 984 }} title="마을 장면" />
-      <text x="540" y="1290" textAnchor="middle" fontFamily={FONT} fontSize="34" fill={PALETTE.indigo} opacity=".75">
-        친구들과 만드는 우리만의 겨울 마을 ❄
+      <VillageMapArt openHalves={data.openHalves} houses={data.houses} pathStyle={data.pathStyle} decor={data.decor} ghosts={false} frame={{ x: 48, y: 250, width: 984, height: 984 }} title={t("card.scene")} />
+      <text x="540" y="1290" textAnchor="middle" fontFamily={FONT} fontSize={fitFont(tagline, 34, 980)} fill={PALETTE.indigo} opacity=".75">
+        {tagline}
       </text>
     </svg>
   );

@@ -123,5 +123,17 @@
   "districtHalf": "Half open · last 3 lots",
   "buyDistrict": "Grow for {price}",
   "priceLadder": "Free 6 → 9 for {p1} → 12 for {p2} → 15 for {p3} → then {p4} per 3 (up to {max})",
-  "maxVillage": "Already the largest village ({max})"
+  "maxVillage": "Already the largest village ({max})",
+  "editLook": "🎨 Decorate",
+  "editLookMenu": "Decorate (paths & decorations)",
+  "pathStyleTitle": "Path",
+  "pathDirt": "Dirt",
+  "pathStones": "Stones",
+  "pathBrick": "Brick",
+  "pathSnow": "Snow",
+  "lookHint": "Drag the ring under a decoration to move it. Not on a house, path or landmark, and not outside the village.",
+  "resetDecor": "Reset decorations",
+  "saveLook": "Save",
+  "savingLook": "Saving…",
+  "lookSaved": "Saved the village look."
 }

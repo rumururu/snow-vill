@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui' show Offset;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -288,6 +289,39 @@ class VillageNotifier extends AsyncNotifier<Village?> {
       await Future<void>.delayed(const Duration(milliseconds: 1500));
     }
     return const ActionOutcome.fail('errPurchasePending');
+  }
+
+  /// May this device change the village's look? Only the owner (owner secret held).
+  bool get canEditLook => _identity.owners.containsKey(villageId);
+
+  /// Owner only: one path style for the whole village and the moved decorations.
+  Future<ActionOutcome> setLook(
+    PathStyle pathStyle,
+    Map<String, Offset> decor,
+  ) async {
+    final secret = _identity.owners[villageId];
+    if (secret == null) return const ActionOutcome.fail('errForbidden');
+    try {
+      final reason = await _api.setVillageLook(
+        _identity.installId,
+        villageId,
+        secret,
+        pathStyle,
+        decor,
+      );
+      if (reason != null) {
+        return ActionOutcome.fail(
+          reason == 'FORBIDDEN' ? 'errForbidden' : 'errNotFound',
+        );
+      }
+      final v = state.value;
+      if (v != null) {
+        state = AsyncData(v.copyWith(pathStyle: pathStyle, decor: decor));
+      }
+      return const ActionOutcome.ok();
+    } catch (e) {
+      return ActionOutcome.fail(errorKey(e));
+    }
   }
 
   Future<ActionOutcome> deleteVillage() async {

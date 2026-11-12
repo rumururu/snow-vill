@@ -45,6 +45,7 @@ curl -s -H "Authorization: Bearer $TOK" "https://api.supabase.com/v1/projects/qf
 - Tap a lit house → photo-frame sheet (photo or fallback illustration, message, date, report, remove).
 - **친구 초대** → copy link / Web Share. `⋯` → *친구 입주 시뮬레이션* fills empty slots with fictional friends; at 8/8 the completion share sheet opens with a **photo-free** 1080×1350 card (PNG download).
 - In the claim sheet, *테스트용 시뮬레이션* can force a **slot collision** or a **failed upload** to demo those states.
+- Language follows the browser (unsupported → English); append `&lang=ja` (or `?lang=…`) to force one. The static HTML is Korean and switches right after hydration. KRW prices are shown only in Korean; other languages point to the app store price. The privacy policy has all 10 languages in `src/app/privacy/policy/`.
 
 ### Browser smoke test / screenshots
 
@@ -116,6 +117,8 @@ src/
   lib/image.ts             photo signature check, 10MB limit, 1:1 crop + canvas re-encode (drops EXIF)
   lib/share.ts             photo-free share-card data, invite URL (non-PII src token), Web Share/copy
   lib/remote.ts            Supabase REST/Edge Function client, error mapping (anon key only)
+  lib/i18n/                10 UI languages (ko source + en ja zh es fr de pt ru id): messages/<lang>.ts typed against ko,
+                           detectLocale (navigator.languages, ?lang=xx), LocaleProvider/useT; tr() for store/validation text
   store/                   store: remote villages via lib/remote, simulated ones in memory + sessionStorage
   components/scene/        SceneArt (inline SVG placeholders), VillageScene (8 accessible HTML hotspots)
   components/house/        ClaimHouseSheet (S04), PhotoFrameSheet (S05), fallback avatar

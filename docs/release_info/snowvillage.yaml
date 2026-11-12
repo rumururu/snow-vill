@@ -103,3 +103,259 @@ localizations:
       • Report a house that is not okay
 
       Anyone with the link can see the village, so share it with people you trust.
+  ja:
+    google_play_locale: ja-JP
+    app_store_locale: ja
+    title: "Snow Village - 友だちと作る冬の村"
+    name: "Snow Village: みんなの冬の村"
+    subtitle: "友だちと一緒に作る冬の村"
+    short_description: "リンクで友だちを招待して、一人一軒ずつ家を建てる冬の村。家をタップすると写真フレームが開きます。"
+    keywords: "クリスマス,冬,村,友だち,招待,写真,思い出,年末,雪,グループ,プレゼント,アイソメトリック"
+    promotional_text: "今年の年末は、友だちと小さな冬の村を作ってみませんか。家ごとに写真1枚と、ひとこと。"
+    full_description: |
+      Snow Villageは、友だちと一緒に作る小さな冬の村です。
+
+      村を作ってリンクを送ると、友だちがリンクを開いて空いている区画に自分の家を一軒建てます。家の形とドアの向きを選び、ひとことと写真1枚を残せます。村で家をタップすると、その友だちの写真フレームが開きます。
+
+      ■ こんな村です
+      • 真ん中の大聖堂広場を囲むように通りが広がります
+      • ログハウス、パン屋、風車の家、ジンジャーブレッドの家など9種類の家、4つの向き
+      • 通りごとにスケートリンク、サンタの家、ルドルフ像などの名所ができます
+      • 家が18軒以上になると、村の空にオーロラが現れます
+
+      ■ 最初の6軒は無料
+      村には無料で6軒まで家を建てられます。友だちがもっと多いときは、好きな通りを選んで区画を3つずつ開けます（最大60軒）。拡張はアプリ内課金で行い、広げた村はウェブでも同じように表示されます。
+
+      ■ 写真はそっと
+      • 会員登録はありません。名前・メールアドレス・電話番号は受け取りません
+      • 写真は非公開のストレージに保存され、家をタップしたときだけ短時間有効なリンクで表示されます
+      • 共有カードに写真やニックネームは入りません
+      • 写真の位置情報（EXIF）はアップロード時に削除します
+      • 自分の家はいつでも空けられ、村を作った人は村全体を削除できます
+      • 不適切な家は通報できます
+
+      リンクを知っている人は誰でも村を見られるので、信頼できる友だちにだけ送ってください。
+  zh:
+    google_play_locale: zh-CN
+    app_store_locale: zh-Hans
+    title: "Snow Village - 和好友一起建冬日小镇"
+    name: "Snow Village: 好友冬日小镇"
+    subtitle: "和好友一起建造的冬日小镇"
+    short_description: "用一个链接邀请好友，每人盖一栋房子。点一下房子，就能打开好友的相框。"
+    keywords: "圣诞,冬天,小镇,村庄,好友,邀请,照片,回忆,年末,下雪,聚会,礼物,等距"
+    promotional_text: "今年年末，和好友一起建一座小小的冬日小镇吧。每栋房子一张照片、一句话。"
+    full_description: |
+      Snow Village 是一座和好友一起建造的冬日小镇。
+
+      创建小镇并分享链接，好友打开链接后，就能在空地上盖一栋自己的房子：选择房子样式和门的朝向，留下一句话和一张照片。在小镇里点一下房子，就会打开那位好友的相框。
+
+      ■ 小镇是这样的
+      • 中央是大教堂广场，各条街巷环绕四周
+      • 小木屋、面包店、风车屋、姜饼屋等 9 种房子，4 种朝向
+      • 每条街巷都会带来冰场、圣诞老人之家、鲁道夫雕像等地标
+      • 好友超过 18 位时，小镇上空会出现极光
+
+      ■ 前 6 栋免费
+      每座小镇可免费建 6 栋房子。好友更多时，可以选择一条街巷，每次再开放 3 块空地（最多 60 栋）。扩建通过应用内购买完成，扩建后的小镇在网页上也会同样显示。
+
+      ■ 照片低调保管
+      • 无需注册，不收集姓名、电子邮箱或电话号码
+      • 照片存放在私密存储中，只有点开房子时才通过短时有效的链接显示
+      • 分享卡片中不会包含照片或昵称
+      • 上传时会删除照片的位置信息（EXIF）
+      • 随时可以清空自己的房子；小镇创建者可以删除整座小镇
+      • 可以举报不当的房子
+
+      拥有链接的人都能看到小镇，所以请只分享给你信任的人。
+  es:
+    google_play_locale: es-419
+    app_store_locale: es-MX
+    title: "Snow Village: Entre amigos"
+    name: "Snow Village: Entre amigos"
+    subtitle: "Un pueblo invernal con amigos"
+    short_description: "Invita amigos con un enlace: cada uno hace su casa. Toca una para ver su foto."
+    keywords: "navidad,invierno,pueblo,amigos,invitar,foto,recuerdos,fiestas,nieve,grupo,regalo,isométrico"
+    promotional_text: "Construye un pequeño pueblo invernal con tus amigos estas fiestas: una foto y una frase por casa."
+    full_description: |
+      Snow Village es un pequeño pueblo invernal que construyes con tus amigos.
+
+      Crea un pueblo y comparte el enlace. Cada amigo lo abre, construye una casa en un lote libre, elige su estilo y la dirección de la puerta, y deja un mensaje corto y una foto. Toca una casa del pueblo para abrir el marco de fotos de ese amigo.
+
+      ■ El pueblo
+      • Una plaza con catedral en el centro y calles alrededor
+      • 9 tipos de casa (cabaña de troncos, panadería, molino, casa de jengibre y más) en 4 direcciones
+      • Las calles traen una pista de hielo, la casa de Papá Noel, una estatua de Rodolfo y otros lugares
+      • Con 18 casas o más aparece la aurora
+
+      ■ Gratis para 6 casas
+      Un pueblo admite 6 casas gratis. Si tienes más amigos, elige una calle y abre 3 lotes más cada vez (hasta 60) con una compra dentro de la app. El pueblo ampliado se ve igual en la web.
+
+      ■ Discreto con las fotos
+      • Sin registro: no pedimos nombre, correo ni número de teléfono
+      • Las fotos se guardan en un almacenamiento privado y solo se muestran mediante un enlace temporal al tocar una casa
+      • Las tarjetas para compartir nunca incluyen fotos ni apodos
+      • Los datos de ubicación (EXIF) se eliminan al subir la foto
+      • Vacía tu casa cuando quieras; quien creó el pueblo puede eliminarlo por completo
+      • Puedes denunciar una casa inapropiada
+
+      Cualquiera con el enlace puede ver el pueblo, así que compártelo solo con personas de confianza.
+  fr:
+    google_play_locale: fr-FR
+    app_store_locale: fr-FR
+    title: "Snow Village : entre amis"
+    name: "Snow Village : entre amis"
+    subtitle: "Un village d'hiver entre amis"
+    short_description: "Invite tes amis par lien, une maison chacun. Touches-en une pour voir la photo."
+    keywords: "noël,hiver,village,amis,invitation,photo,souvenirs,fêtes,neige,groupe,cadeau,isométrique"
+    promotional_text: "Construis un petit village d'hiver avec tes amis pour les fêtes : une photo et un mot par maison."
+    full_description: |
+      Snow Village est un petit village d'hiver que l'on construit entre amis.
+
+      Crée un village et partage le lien. Chaque ami l'ouvre, construit une maison sur un terrain libre, choisit son style et l'orientation de la porte, puis laisse un petit mot et une photo. Touche une maison du village pour ouvrir le cadre photo de cet ami.
+
+      ■ Le village
+      • Une place avec une cathédrale au centre, entourée de rues
+      • 9 types de maisons (chalet en rondins, boulangerie, moulin, maison en pain d'épices…) dans 4 orientations
+      • Les rues apportent une patinoire, la maison du Père Noël, une statue de Rudolph et d'autres lieux
+      • À partir de 18 maisons, une aurore boréale apparaît
+
+      ■ Gratuit jusqu'à 6 maisons
+      Un village accueille 6 maisons gratuitement. Pour plus d'amis, choisis une rue et ouvre 3 terrains de plus à chaque fois (jusqu'à 60) grâce à un achat intégré. Le village agrandi s'affiche de la même façon sur le web.
+
+      ■ Discret avec les photos
+      • Aucune inscription : ni nom, ni e-mail, ni numéro de téléphone
+      • Les photos sont stockées en privé et ne s'affichent que via un lien temporaire lorsqu'on touche une maison
+      • Les cartes de partage ne contiennent jamais de photos ni de pseudos
+      • Les données de localisation (EXIF) sont supprimées à l'envoi
+      • Vide ta maison à tout moment ; le créateur du village peut supprimer tout le village
+      • Signale une maison inappropriée
+
+      Toute personne disposant du lien peut voir le village : partage-le uniquement avec des personnes de confiance.
+  de:
+    google_play_locale: de-DE
+    app_store_locale: de-DE
+    title: "Snow Village: Mit Freunden"
+    name: "Snow Village: Mit Freunden"
+    subtitle: "Ein Winterdorf mit Freunden"
+    short_description: "Lade Freunde per Link ein – jeder baut ein Haus. Antippen öffnet den Fotorahmen."
+    keywords: "weihnachten,winter,dorf,freunde,einladen,foto,erinnerungen,feiertage,schnee,gruppe,geschenk"
+    promotional_text: "Bau in dieser Weihnachtszeit mit deinen Freunden ein kleines Winterdorf – ein Foto und ein paar Worte pro Haus."
+    full_description: |
+      Snow Village ist ein kleines Winterdorf, das du gemeinsam mit Freunden baust.
+
+      Erstelle ein Dorf und teile den Link. Jeder Freund öffnet ihn, baut ein Haus auf einem freien Grundstück, wählt Hausart und Türrichtung und hinterlässt eine kurze Nachricht und ein Foto. Tippe im Dorf auf ein Haus, um den Fotorahmen dieses Freundes zu öffnen.
+
+      ■ Das Dorf
+      • Der Domplatz in der Mitte, rundherum die Gassen
+      • 9 Hausarten – Blockhaus, Bäckerei, Windmühle, Lebkuchenhaus und mehr – in 4 Richtungen
+      • In jeder Gasse entsteht etwas Besonderes: eine Eisbahn, das Haus des Weihnachtsmanns, eine Rudolf-Statue und mehr
+      • Wohnen mehr als 18 Freunde im Dorf, leuchtet ein Polarlicht am Himmel
+
+      ■ Kostenlos für 6 Häuser
+      Ein Dorf bietet kostenlos Platz für 6 Häuser. Für mehr Freunde wählst du eine Gasse und öffnest per In-App-Kauf jeweils 3 weitere Grundstücke (bis zu 60). Das größere Dorf wird im Web genauso angezeigt.
+
+      ■ Fotos bleiben privat
+      • Keine Registrierung: kein Name, keine E-Mail-Adresse, keine Telefonnummer
+      • Fotos liegen in privatem Speicher und werden nur über einen kurzlebigen Link angezeigt, wenn ein Haus angetippt wird
+      • Teilen-Karten enthalten nie Fotos oder Spitznamen
+      • Standortdaten (EXIF) werden beim Hochladen entfernt
+      • Du kannst dein Haus jederzeit räumen; wer das Dorf erstellt hat, kann das ganze Dorf löschen
+      • Unangemessene Häuser kannst du melden
+
+      Jeder mit dem Link kann das Dorf sehen – teile ihn also nur mit Menschen, denen du vertraust.
+  pt:
+    google_play_locale: pt-BR
+    app_store_locale: pt-BR
+    title: "Snow Village: Vila com amigos"
+    name: "Snow Village: Vila com amigos"
+    subtitle: "Uma vila de inverno com amigos"
+    short_description: "Convide amigos por link e cada um constrói uma casa. Toque numa para ver a foto."
+    keywords: "natal,inverno,vila,amigos,convite,foto,lembranças,festas,neve,grupo,presente,isométrico"
+    promotional_text: "Construa uma pequena vila de inverno com seus amigos nestas festas: uma foto e um recado por casa."
+    full_description: |
+      Snow Village é uma pequena vila de inverno que você constrói com seus amigos.
+
+      Crie uma vila e compartilhe o link. Cada amigo abre o link, constrói uma casa em um terreno vazio, escolhe o estilo e a direção da porta e deixa um recado e uma foto. Toque em uma casa da vila para abrir o porta-retrato desse amigo.
+
+      ■ A vila
+      • Uma praça com catedral no centro e ruas ao redor
+      • 9 tipos de casa — cabana de madeira, padaria, moinho, casa de gengibre e mais — com a porta em 4 direções
+      • Cada rua ganha uma atração, como a pista de gelo, a casa do Papai Noel ou a estátua do Rudolph
+      • Com mais de 18 amigos, uma aurora aparece no céu da vila
+
+      ■ Grátis para 6 casas
+      Uma vila comporta 6 casas de graça. Para mais amigos, escolha uma rua e abra mais 3 terrenos por vez (até 60) com uma compra no app. A vila maior aparece do mesmo jeito na web.
+
+      ■ Discreto com as fotos
+      • Sem cadastro: sem nome, e-mail ou telefone
+      • As fotos ficam em armazenamento privado e só aparecem por um link temporário quando alguém toca na casa
+      • Os cartões de compartilhamento nunca incluem fotos nem apelidos
+      • Os dados de localização (EXIF) são removidos no envio
+      • Desocupe sua casa quando quiser; quem criou a vila pode excluir a vila inteira
+      • Casas com conteúdo impróprio podem ser denunciadas
+
+      Qualquer pessoa com o link pode ver a vila, então compartilhe só com quem você confia.
+  ru:
+    google_play_locale: ru-RU
+    app_store_locale: ru
+    title: "Snow Village: С друзьями"
+    name: "Snow Village: С друзьями"
+    subtitle: "Зимняя деревня с друзьями"
+    short_description: "Позови друзей по ссылке — каждый построит дом. Нажми на дом и увидишь фото."
+    keywords: "рождество,новый год,зима,деревня,друзья,приглашение,фото,воспоминания,праздники,снег,подарок"
+    promotional_text: "Построй с друзьями маленькую зимнюю деревню в эти праздники: в каждом доме — одно фото и пара слов."
+    full_description: |
+      Snow Village — маленькая зимняя деревня, которую строишь вместе с друзьями.
+
+      Создай деревню и поделись ссылкой. Каждый друг открывает её, строит дом на свободном участке, выбирает его вид и направление двери, оставляет короткое сообщение и одно фото. Нажми на дом в деревне, чтобы открыть фоторамку этого друга.
+
+      ■ Деревня
+      • В центре — площадь с собором, вокруг — переулки
+      • 9 видов домов — бревенчатый домик, пекарня, мельница, пряничный домик и другие, дверь в любую из 4 сторон
+      • С переулками появляются каток, дом Санты, статуя Рудольфа и другие достопримечательности
+      • Когда домов 18 или больше, в небе появляется северное сияние
+
+      ■ 6 домов бесплатно
+      В деревне можно бесплатно построить 6 домов. Если друзей больше, выбери переулок и открой ещё 3 участка за раз (до 60) покупкой в приложении. Расширенная деревня выглядит так же и в веб-версии.
+
+      ■ Бережно к фото
+      • Без регистрации: не нужны ни имя, ни e-mail, ни номер телефона
+      • Фото хранятся в закрытом хранилище и показываются только по временной ссылке, когда нажимают на дом
+      • В открытки для друзей не попадают ни фото, ни никнеймы
+      • Данные о местоположении (EXIF) удаляются при загрузке
+      • Свой дом можно освободить в любой момент, а создатель деревни может удалить её целиком
+      • На неподходящий дом можно пожаловаться
+
+      Деревню может увидеть любой, у кого есть ссылка, поэтому делись ею только с теми, кому доверяешь.
+  id:
+    google_play_locale: id
+    app_store_locale: id
+    title: "Snow Village: Bareng Teman"
+    name: "Snow Village: Bareng Teman"
+    subtitle: "Desa salju bersama teman"
+    short_description: "Undang teman lewat tautan, tiap orang bangun rumah. Ketuk untuk lihat fotonya."
+    keywords: "natal,musim dingin,desa,teman,undangan,foto,kenangan,liburan,salju,grup,hadiah,isometrik"
+    promotional_text: "Liburan ini, bangun desa musim dingin kecil bersama teman-temanmu: satu foto dan satu pesan di setiap rumah."
+    full_description: |
+      Snow Village adalah desa musim dingin kecil yang kamu bangun bersama teman-teman.
+
+      Buat desa dan bagikan tautannya. Setiap teman membuka tautan itu, membangun rumah di kavling kosong, memilih jenis rumah dan arah pintunya, lalu meninggalkan pesan singkat dan satu foto. Ketuk rumah di desa untuk membuka bingkai foto teman tersebut.
+
+      ■ Desanya
+      • Alun-alun katedral di tengah, dikelilingi lorong-lorong
+      • 9 jenis rumah — pondok kayu, toko roti, kincir angin, rumah jahe, dan lainnya — dengan 4 arah
+      • Lorong-lorongnya menghadirkan arena es, rumah Sinterklas, patung Rudolph, dan tempat menarik lainnya
+      • Saat ada 18 rumah atau lebih, aurora muncul di langit
+
+      ■ Gratis untuk 6 rumah
+      Satu desa bisa berisi 6 rumah secara gratis. Untuk lebih banyak teman, pilih lorong dan buka 3 kavling lagi setiap kali (hingga 60) lewat pembelian dalam aplikasi. Desa yang lebih besar juga tampil sama di web.
+
+      ■ Foto tetap privat
+      • Tanpa pendaftaran: tidak perlu nama, email, atau nomor telepon
+      • Foto disimpan di penyimpanan privat dan hanya ditampilkan lewat tautan sementara saat rumah diketuk
+      • Kartu berbagi tidak pernah memuat foto atau nama panggilan
+      • Data lokasi (EXIF) dihapus saat diunggah
+      • Kosongkan rumahmu kapan saja; pembuat desa bisa menghapus seluruh desa
+      • Laporkan rumah yang tidak pantas
+
+      Siapa pun yang punya tautan bisa melihat desa ini, jadi bagikan hanya kepada orang yang kamu percaya.

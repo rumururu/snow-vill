@@ -3,7 +3,8 @@
  * The browser only calls anon RPC functions and the snowvill-photo Edge Function;
  * tables and the photo bucket are not reachable directly (see supabase/migrations).
  */
-import { capacityOf, FREE_CAPACITY, halvesForCapacity, isDirection, isHouseStyle, MAX_CAPACITY, type Direction, type House, type HouseStyle, type Village } from "./village";
+import { tr } from "./i18n";
+import { capacityOf, cleanDecor, FREE_CAPACITY, halvesForCapacity, isDirection, isHouseStyle, isPathStyle, MAX_CAPACITY, type DecorSpots, type Direction, type House, type HouseStyle, type PathStyle, type Village } from "./village";
 
 /** Opened district halves from the server (falls back to halves in order for older responses). */
 function districtsOf(v: RemoteVillage): { capacity: number; openHalves: number } {
@@ -44,26 +45,26 @@ export class RemoteError extends Error {
   }
 }
 
-/** Korean user message for a remote failure. */
+/** User message for a remote failure (active language). */
 export function remoteErrorMessage(err: unknown): string {
   const code = err instanceof RemoteError ? err.code : "SERVER";
   switch (code) {
     case "RATE_LIMITED":
-      return "요청이 너무 많아요. 잠시 후 다시 시도해 주세요.";
+      return tr("remote.rateLimited");
     case "NETWORK":
-      return "연결이 끊겼어요. 네트워크를 확인하고 다시 시도해 주세요.";
+      return tr("remote.network");
     case "INVALID_INPUT":
-      return "입력한 내용을 확인해 주세요.";
+      return tr("remote.invalidInput");
     case "FORBIDDEN":
-      return "이 작업을 할 권한이 없어요.";
+      return tr("remote.forbidden");
     case "NOT_FOUND":
-      return "대상을 찾을 수 없어요.";
+      return tr("remote.notFound");
     case "TOO_LARGE":
-      return "사진 용량이 너무 커요.";
+      return tr("remote.tooLarge");
     case "UNSUPPORTED":
-      return "지원하지 않는 사진 형식이에요.";
+      return tr("remote.unsupported");
     default:
-      return "일시적인 문제가 생겼어요. 잠시 후 다시 시도해 주세요.";
+      return tr("remote.server");
   }
 }
 
@@ -163,6 +164,24 @@ export function createRemoteApi(config: RemoteConfig, fetchImpl: Fetch = (...a) 
       return r.ok ? { ok: true, house: toHouse(r.house), claimSecret: r.claim_secret } : r;
     },
 
+    /** Owner only: path style for the whole village and the moved decorations (replaces the old map). */
+    async setVillageLook(
+      installId: string,
+      villageId: string,
+      ownerSecret: string,
+      pathStyle: PathStyle,
+      decor: DecorSpots,
+    ): Promise<{ ok: true } | { ok: false; reason: "NOT_FOUND" | "FORBIDDEN" }> {
+      const r = await rpc<{ ok: true } | { ok: false; reason: "NOT_FOUND" | "FORBIDDEN" }>("snowvill_set_village_look", {
+        p_install_id: installId,
+        p_village_id: villageId,
+        p_owner_secret: ownerSecret,
+        p_path_style: pathStyle,
+        p_decor: decor,
+      });
+      return r.ok ? { ok: true } : { ok: false, reason: r.reason };
+    },
+
     async report(installId: string, houseId: string, reason: string) {
       await rpc("snowvill_report", { p_install_id: installId, p_house_id: houseId, p_reason: reason });
     },
@@ -209,6 +228,8 @@ interface RemoteVillage {
   created_at: string;
   capacity?: number;
   open_halves?: number;
+  path_style?: string;
+  decor?: unknown;
   houses: RemoteHouse[];
 }
 
@@ -227,7 +248,15 @@ function toHouse(h: RemoteHouse): House {
 }
 
 function toVillage(v: RemoteVillage): Village {
-  return { id: v.id, name: v.name, createdAt: v.created_at, ...districtsOf(v), houses: (v.houses ?? []).map(toHouse) };
+  return {
+    id: v.id,
+    name: v.name,
+    createdAt: v.created_at,
+    ...districtsOf(v),
+    pathStyle: isPathStyle(v.path_style) ? v.path_style : "dirt",
+    decor: cleanDecor(v.decor),
+    houses: (v.houses ?? []).map(toHouse),
+  };
 }
 
 /** data:image/jpeg;base64,… → Blob */

@@ -16,11 +16,11 @@ function villageWithPhotos(): Village {
 }
 
 describe("photo-free share card", () => {
-  it("share data carries only slot styles and completion", () => {
+  it("share data carries only slot styles, completion and the village look", () => {
     const data = toShareCardData(villageWithPhotos());
     expect(JSON.stringify(data)).not.toContain("data:image");
     expect(JSON.stringify(data)).not.toContain("비밀");
-    expect(Object.keys(data).sort()).toEqual(["complete", "houses", "openHalves"]);
+    expect(Object.keys(data).sort()).toEqual(["complete", "decor", "houses", "openHalves", "pathStyle"]);
     expect(data.houses).toHaveLength(7);
     for (const h of data.houses) expect(Object.keys(h).sort()).toEqual(["direction", "slot", "style"]);
   });

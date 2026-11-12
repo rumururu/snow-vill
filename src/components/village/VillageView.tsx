@@ -6,15 +6,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ClaimHouseSheet } from "@/components/house/ClaimHouseSheet";
 import { PhotoFrameSheet } from "@/components/house/PhotoFrameSheet";
 import { VillageMap } from "@/components/scene/VillageMap";
-import { DISTRICTS, LOTS } from "@/lib/map";
+import { districtName, LOTS } from "@/lib/map";
 import { InviteSheet } from "@/components/share/InviteSheet";
 import { ShareSheet } from "@/components/share/ShareSheet";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { SimulatedBadge } from "@/components/ui/SimulatedBadge";
 import { villagePath } from "@/lib/share";
 import { nextMilestone } from "@/lib/milestones";
-import { canUpgrade, freeSlots, houseAt, isFull, lockedSlots, remainingHouses, SAMPLE_VILLAGE_ID, type House } from "@/lib/village";
+import { canUpgrade, freeSlots, houseAt, isFull, lockedSlots, PATH_STYLES, remainingHouses, SAMPLE_VILLAGE_ID, type DecorSpots, type House, type PathStyle } from "@/lib/village";
 import { UpgradeSheet } from "./UpgradeSheet";
+import { useT } from "@/lib/i18n/I18nProvider";
 import { useVillageState, useVillageStore } from "@/store/VillageStoreProvider";
 
 function prefersReducedMotion() {
@@ -23,6 +24,7 @@ function prefersReducedMotion() {
 
 export function VillageView({ villageId, isNew = false }: { villageId: string; isNew?: boolean }) {
   const router = useRouter();
+  const t = useT();
   const store = useVillageStore();
   const state = useVillageState();
   const village = state.villages[villageId];
@@ -41,19 +43,21 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
 
   // After creation (?new=1), prompt the owner to claim the first house (slot 0).
   const [claimSlot, setClaimSlot] = useState<number | null>(isNew ? 0 : null);
-  const [claimIntro, setClaimIntro] = useState<string | undefined>(
-    isNew ? "마을이 생겼어요! 첫 번째 집을 지어 불을 켜 볼까요?" : undefined,
-  );
+  const [claimIntro, setClaimIntro] = useState(isNew);
   const [frameHouseId, setFrameHouseId] = useState<string | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [igniteSlot, setIgniteSlot] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  // Village look being edited (owner): draft path style + moved decorations; null = not editing.
+  const [look, setLook] = useState<{ pathStyle: PathStyle; decor: DecorSpots } | null>(null);
+  const [savingLook, setSavingLook] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const myHouseId = state.myHouses[villageId] ?? null;
   const myHouse = village?.houses.find((h) => h.id === myHouseId) ?? null;
   const isOwner = state.ownedVillages.includes(villageId);
+  const canEditLook = store.canEditLook(villageId);
   const frameHouse = village?.houses.find((h) => h.id === frameHouseId) ?? null;
 
   function notify(message: string) {
@@ -99,10 +103,10 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
         <p className="text-5xl" aria-hidden>
           📡
         </p>
-        <h1 className="text-xl font-bold text-night">마을을 불러오지 못했어요</h1>
-        <p className="text-sm text-night/70">연결 상태를 확인하고 다시 시도해 주세요.</p>
+        <h1 className="text-xl font-bold text-night">{t("common.loadFailed")}</h1>
+        <p className="text-sm text-night/70">{t("view.checkConnection")}</p>
         <button type="button" onClick={refresh} className="min-h-12 w-full rounded-2xl bg-night font-bold text-ivory">
-          다시 시도
+          {t("common.retry")}
         </button>
       </main>
     );
@@ -114,17 +118,17 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
         <p className="text-5xl" aria-hidden>
           🌨️
         </p>
-        <h1 className="text-xl font-bold text-night">마을을 찾을 수 없어요</h1>
+        <h1 className="text-xl font-bold text-night">{t("common.villageNotFound")}</h1>
         <p className="text-sm leading-relaxed text-night/70">
-          링크가 잘못되었거나 마을이 삭제되었을 수 있어요.
-          {simulated && " 시뮬레이션 모드에서는 마을이 만든 브라우저 탭에만 임시로 저장돼서 다른 기기에서는 열리지 않아요."}
+          {t("view.notFoundBody")}
+          {simulated && ` ${t("view.notFoundSimulated")}`}
         </p>
         <div className="flex w-full flex-col gap-2">
           <Link href="/create" className="flex min-h-12 items-center justify-center rounded-2xl bg-night font-bold text-ivory">
-            새 마을 만들기
+            {t("common.createVillage")}
           </Link>
           <Link href={villagePath(SAMPLE_VILLAGE_ID)} className="flex min-h-12 items-center justify-center rounded-2xl bg-white font-semibold text-night">
-            샘플 마을 둘러보기
+            {t("common.browseSample")}
           </Link>
         </div>
       </main>
@@ -147,10 +151,10 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
       return;
     }
     if (myHouse) {
-      notify("이미 이 마을에 내 집이 있어요. 친구를 초대해 빈 집을 채워 주세요!");
+      notify(t("view.alreadyHaveHouse"));
       return;
     }
-    setClaimIntro(undefined);
+    setClaimIntro(false);
     setClaimSlot(slot);
   }
 
@@ -159,12 +163,28 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
     setIgniteSlot(house.slot);
     notify(
       photoError
-        ? `집은 완성됐지만 사진을 올리지 못했어요. ${photoError} 내 집을 눌러 다시 올려 주세요.`
-        : `${house.nickname}님의 집에 불이 켜졌어요!`,
+        ? t("view.claimedPhotoFailed", { error: photoError })
+        : t("view.claimed", { name: house.nickname }),
     );
     setTimeout(() => setIgniteSlot(null), 1200);
     const after = store.getState().villages[villageId];
     if (after && isFull(after)) setTimeout(() => setShareOpen(true), prefersReducedMotion() ? 0 : 900);
+  }
+
+  function startEditLook() {
+    setLook({ pathStyle: village!.pathStyle ?? "dirt", decor: { ...(village!.decor ?? {}) } });
+  }
+  async function saveLook() {
+    if (!look) return;
+    setSavingLook(true);
+    const r = await store.setVillageLook(villageId, look.pathStyle, look.decor);
+    setSavingLook(false);
+    if (!r.ok) {
+      notify(r.message);
+      return;
+    }
+    setLook(null);
+    notify(t("view.lookSaved"));
   }
 
   function simulateFriend() {
@@ -172,10 +192,10 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
     if (result.ok) {
       setIgniteSlot(result.house.slot);
       setTimeout(() => setIgniteSlot(null), 1200);
-      notify(`(시뮬레이션) ${result.house.nickname}님이 입주했어요.`);
+      notify(t("view.simFriendJoined", { name: result.house.nickname }));
       const after = store.getState().villages[villageId];
       if (after && isFull(after)) setTimeout(() => setShareOpen(true), prefersReducedMotion() ? 0 : 900);
-    } else notify("빈 집이 없어요.");
+    } else notify(t("view.noEmptyHouse"));
   }
 
   return (
@@ -184,7 +204,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
         <header className="flex items-center gap-1 px-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
           <Link
             href="/"
-            aria-label="처음 화면으로"
+            aria-label={t("common.home")}
             className="grid h-11 w-11 place-items-center rounded-full text-xl text-night hover:bg-night/5"
           >
             ←
@@ -193,23 +213,31 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
           <OverflowMenu
             onShareCard={() => setShareOpen(true)}
             onSimulateFriend={full || !simulated ? undefined : simulateFriend}
-            onResetSample={village.isSample ? () => (store.resetSample(), notify("샘플 마을을 처음 상태로 되돌렸어요.")) : undefined}
+            onResetSample={village.isSample ? () => (store.resetSample(), notify(t("view.sampleReset"))) : undefined}
             onDeleteVillage={isOwner && !village.isSample ? () => setDeleteOpen(true) : undefined}
             onUpgrade={canUpgrade(village) ? () => setUpgradeOpen(true) : undefined}
+            onEditLook={canEditLook && !look ? startEditLook : undefined}
           />
         </header>
 
         <div className="flex items-center justify-between gap-2 px-4 pt-1">
           <p className="flex items-center gap-2 text-sm font-semibold text-night" aria-live="polite">
             <span className="rounded-full bg-white px-3 py-1 shadow-sm">
-              <span className="sr-only">입주한 집 </span>
+              <span className="sr-only">{t("view.housesSr")} </span>
               {village.houses.length}/{village.capacity}
             </span>
             <span className="font-normal text-night/70">
-              {full ? "마을이 완성됐어요" : village.houses.length === 0 ? "빈 집에 불을 켜주세요" : `${remainingHouses(village)}채 더 입주할 수 있어요`}
+              {full ? t("view.complete") : village.houses.length === 0 ? t("view.lightFirst") : t("view.remaining", { count: remainingHouses(village) })}
             </span>
           </p>
-          {simulated && <SimulatedBadge />}
+          <div className="flex items-center gap-1.5">
+            {canEditLook && !look && (
+              <button type="button" onClick={startEditLook} className="min-h-9 rounded-full bg-white px-3 text-xs font-semibold text-night shadow-sm">
+                {t("view.decorate")}
+              </button>
+            )}
+            {simulated && <SimulatedBadge />}
+          </div>
         </div>
 
         <main className="flex flex-1 flex-col gap-1 px-1">
@@ -219,20 +247,25 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
             igniteSlot={igniteSlot}
             onSelectSlot={openSlot}
             onSelectDistrict={(d) => setUpgradeOpen(true, d)}
+            edit={
+              look
+                ? { pathStyle: look.pathStyle, decor: look.decor, onMove: (id, at) => setLook((l) => (l ? { ...l, decor: { ...l.decor, [id]: at } } : l)) }
+                : undefined
+            }
             fill
             className="min-h-[360px] flex-1 rounded-3xl"
           />
           {milestone && (
             <p className="mx-4 mb-1 rounded-xl bg-glow/25 px-3 py-1.5 text-center text-xs font-semibold text-night" data-testid="milestone">
-              친구 {milestone.remaining}명이 더 입주하면 「{milestone.label}」이(가) 생겨요 🎁
+              {t("view.milestone", { count: milestone.remaining, label: t(milestone.label) })}
             </p>
           )}
           <p className="px-4 text-center text-xs text-night/60">
-            {full ? "집을 눌러 친구들의 사진 액자를 열어 보세요." : "불 켜진 집을 누르면 사진 액자가, 빈 집을 누르면 내 집 만들기가 열려요."}
+            {full ? t("view.hintFull") : t("view.hint")}
           </p>
           {refreshFailed && (
             <p role="status" className="mx-4 mt-2 rounded-xl bg-[#F8E6DD] px-3 py-2 text-xs text-night">
-              연결이 불안정해요. 마지막으로 불러온 마을을 보여 드리고 있어요.
+              {t("view.unstable")}
             </p>
           )}
           {state.persistWarning && simulated && (
@@ -242,14 +275,25 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
           )}
         </main>
 
+        {look ? (
+          <LookEditor
+            pathStyle={look.pathStyle}
+            moved={Object.keys(look.decor).length}
+            saving={savingLook}
+            onPathStyle={(ps) => setLook({ ...look, pathStyle: ps })}
+            onResetDecor={() => setLook({ ...look, decor: {} })}
+            onCancel={() => setLook(null)}
+            onSave={saveLook}
+          />
+        ) : (
         <nav
-          aria-label="마을 동작"
+          aria-label={t("view.actions")}
           className="sticky bottom-0 grid grid-cols-2 gap-2 bg-gradient-to-t from-sky via-sky to-sky/0 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
         >
           {full ? (
             <>
               <button type="button" onClick={() => setShareOpen(true)} className="min-h-12 rounded-2xl bg-night font-bold text-ivory">
-                공유 카드 만들기
+                {t("view.makeShareCard")}
               </button>
               {upgradable ? (
                 <button
@@ -257,11 +301,11 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
                   onClick={() => setUpgradeOpen(true)}
                   className="min-h-12 rounded-2xl bg-glow font-bold text-night shadow-sm"
                 >
-                  마을 넓히기
+                  {t("common.expand")}
                 </button>
               ) : (
                 <Link href="/create" className="flex min-h-12 items-center justify-center rounded-2xl bg-white font-semibold text-night">
-                  새 마을 만들기
+                  {t("common.createVillage")}
                 </Link>
               )}
             </>
@@ -273,7 +317,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
                   onClick={() => setFrameHouseId(myHouse.id)}
                   className="min-h-12 rounded-2xl bg-white font-semibold text-night shadow-sm"
                 >
-                  내 집 보기
+                  {t("view.myHouse")}
                 </button>
               ) : (
                 <button
@@ -281,7 +325,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
                   onClick={() => openSlot(free[0])}
                   className="min-h-12 rounded-2xl bg-night font-bold text-ivory shadow-sm"
                 >
-                  내 집 만들기
+                  {t("common.claim")}
                 </button>
               )}
               <button
@@ -289,11 +333,12 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
                 onClick={() => setInviteOpen(true)}
                 className={`min-h-12 rounded-2xl font-bold shadow-sm ${myHouse ? "bg-night text-ivory" : "bg-white text-night"}`}
               >
-                친구 초대
+                {t("view.invite")}
               </button>
             </>
           )}
         </nav>
+        )}
       </div>
 
       <div
@@ -309,7 +354,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
       <ClaimHouseSheet
         village={village}
         slot={claimSlot}
-        intro={claimIntro}
+        intro={claimIntro ? t("view.newIntro") : undefined}
         onClose={() => setClaimSlot(null)}
         onClaimed={onClaimed}
         onChangeSlot={setClaimSlot}
@@ -324,7 +369,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
           const result = await store.removeHouse(villageId, h.id);
           if (!result.ok) return result.message;
           setFrameHouseId(null);
-          notify(`${h.nickname}님의 집을 비웠어요.`);
+          notify(t("view.houseRemoved", { name: h.nickname }));
           return null;
         }}
       />
@@ -339,7 +384,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
         onSimulatedUpgrade={(d) => {
           const r = store.upgradeVillage(villageId, d);
           setUpgradeOpen(false);
-          notify(r.ok ? `(시뮬레이션) ${DISTRICTS[d].name.ko}에 집터 3곳이 열렸어요!` : r.message);
+          notify(r.ok ? t("view.simUpgraded", { district: districtName(d, t.locale) }) : r.message);
         }}
       />
       <BottomSheet
@@ -348,7 +393,7 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
           setDeleteOpen(false);
           setDeleteError(null);
         }}
-        title="마을을 삭제할까요?"
+        title={t("view.deleteTitle")}
         footer={
           <button
             type="button"
@@ -366,12 +411,12 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
             }}
             className="min-h-12 w-full rounded-2xl bg-[#B5523B] font-bold text-white disabled:opacity-60"
           >
-            {deleting ? "삭제하는 중…" : "마을과 모든 집 삭제하기"}
+            {deleting ? t("view.deleting") : t("view.deleteConfirm")}
           </button>
         }
       >
         <p className="text-sm leading-relaxed text-night">
-          {village.name}의 집 {village.houses.length}채와 사진, 메시지가 모두 지워지고 되돌릴 수 없어요.
+          {t("view.deleteBody", { name: village.name, count: village.houses.length })}
         </p>
         {deleteError && (
           <p role="alert" className="mt-2 rounded-xl bg-[#F8E6DD] px-3 py-2 text-sm text-night">
@@ -389,13 +434,16 @@ function OverflowMenu({
   onResetSample,
   onDeleteVillage,
   onUpgrade,
+  onEditLook,
 }: {
   onShareCard: () => void;
+  onEditLook?: () => void;
   onUpgrade?: () => void;
   onSimulateFriend?: () => void;
   onResetSample?: () => void;
   onDeleteVillage?: () => void;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -430,7 +478,7 @@ function OverflowMenu({
       <button
         ref={buttonRef}
         type="button"
-        aria-label="더보기 메뉴"
+        aria-label={t("menu.label")}
         aria-expanded={open}
         aria-controls={menuId}
         onClick={() => setOpen((o) => !o)}
@@ -441,29 +489,34 @@ function OverflowMenu({
       {open && (
         <div id={menuId} className="absolute right-0 z-30 mt-1 w-60 rounded-2xl bg-ivory p-1.5 shadow-xl ring-1 ring-night/10">
           <button type="button" className={item} onClick={run(onShareCard)}>
-            공유 카드 보기
+            {t("menu.shareCard")}
           </button>
+          {onEditLook && (
+            <button type="button" className={item} onClick={run(onEditLook)}>
+              {t("menu.editLook")}
+            </button>
+          )}
           {onUpgrade && (
             <button type="button" className={item} onClick={run(onUpgrade)}>
-              마을 넓히기
+              {t("common.expand")}
             </button>
           )}
           {onSimulateFriend && (
             <button type="button" className={item} onClick={run(onSimulateFriend)}>
-              친구 입주 시뮬레이션
+              {t("menu.simFriend")}
             </button>
           )}
           {onResetSample && (
             <button type="button" className={item} onClick={run(onResetSample)}>
-              샘플 마을 초기화
+              {t("menu.resetSample")}
             </button>
           )}
           <Link href="/create" className={item}>
-            새 마을 만들기
+            {t("common.createVillage")}
           </Link>
           {onDeleteVillage && (
             <button type="button" className={`${item} text-[#B5523B]`} onClick={run(onDeleteVillage)}>
-              마을 삭제…
+              {t("menu.delete")}
             </button>
           )}
         </div>
@@ -472,17 +525,76 @@ function OverflowMenu({
   );
 }
 
+/** Owner's look editor (replaces the bottom actions while editing): path style, reset, cancel / save. */
+function LookEditor({
+  pathStyle,
+  moved,
+  saving,
+  onPathStyle,
+  onResetDecor,
+  onCancel,
+  onSave,
+}: {
+  pathStyle: PathStyle;
+  moved: number;
+  saving: boolean;
+  onPathStyle: (ps: PathStyle) => void;
+  onResetDecor: () => void;
+  onCancel: () => void;
+  onSave: () => void;
+}) {
+  const t = useT();
+  return (
+    <section
+      aria-label={t("look.title")}
+      data-testid="look-editor"
+      className="sticky bottom-0 flex flex-col gap-2 bg-gradient-to-t from-sky via-sky to-sky/0 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+    >
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-bold text-night">{t("look.pathStyle")}</h2>
+        <button type="button" onClick={onResetDecor} disabled={moved === 0} className="min-h-9 rounded-full px-2 text-xs font-semibold text-night/70 underline disabled:opacity-40">
+          {t("look.resetDecor")}
+        </button>
+      </div>
+      <div role="radiogroup" aria-label={t("look.pathStyle")} className="grid grid-cols-4 gap-1.5">
+        {PATH_STYLES.map((ps) => (
+          <button
+            key={ps}
+            type="button"
+            role="radio"
+            aria-checked={pathStyle === ps}
+            onClick={() => onPathStyle(ps)}
+            className={`min-h-11 rounded-xl text-sm font-semibold shadow-sm ${pathStyle === ps ? "bg-night text-ivory" : "bg-white text-night"}`}
+          >
+            {t(`path.${ps}`)}
+          </button>
+        ))}
+      </div>
+      <p className="text-center text-xs text-night/70">{t("look.hint")}</p>
+      <div className="grid grid-cols-2 gap-2">
+        <button type="button" onClick={onCancel} disabled={saving} className="min-h-12 rounded-2xl bg-white font-semibold text-night shadow-sm">
+          {t("common.cancel")}
+        </button>
+        <button type="button" onClick={onSave} disabled={saving} className="min-h-12 rounded-2xl bg-night font-bold text-ivory shadow-sm disabled:opacity-60">
+          {saving ? t("common.saving") : t("common.save")}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function VillageSkeleton() {
+  const t = useT();
   return (
     <main
       aria-busy="true"
-      aria-label="마을을 불러오는 중"
+      aria-label={t("view.loading")}
       className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col gap-3 px-4 pt-4"
     >
       <div className="mx-auto h-6 w-40 animate-pulse rounded-full bg-white/80 motion-reduce:animate-none" />
       <div className="h-6 w-24 animate-pulse rounded-full bg-white/80 motion-reduce:animate-none" />
       <div className="aspect-square w-full animate-pulse rounded-3xl bg-white/70 motion-reduce:animate-none" />
-      <span className="sr-only">마을을 불러오는 중이에요…</span>
+      <span className="sr-only">{t("view.loadingSr")}</span>
     </main>
   );
 }

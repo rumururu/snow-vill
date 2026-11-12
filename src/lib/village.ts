@@ -5,6 +5,7 @@
  * re-implement every rule here server-side (atomic slot claim, validation);
  * these client checks are UX only, never an authorization boundary.
  */
+import { tr, trList } from "./i18n";
 
 /**
  * Village size (owner decision 2026-11-10, docs/11-village-expansion-plan.md): free villages hold 6
@@ -78,24 +79,11 @@ export const HOUSE_STYLES = [
 ] as const;
 export type HouseStyle = (typeof HOUSE_STYLES)[number];
 
-export const HOUSE_STYLE_LABEL: Record<HouseStyle, string> = {
-  wood: "통나무집",
-  brick: "벽돌집",
-  bakery: "빵집",
-  tower: "탑 집",
-  gingerbread: "진저브레드 집",
-  timber: "반목조 집",
-  aframe: "산장",
-  windmill: "풍차 집",
-  greenhouse: "온실 집",
-  sage: "세이지 집",
-  indigo: "인디고 집",
-};
+/** House type names come from village-geometry.json (houses.<style>.label.<lang>): see houseStyleLabel() in ./map. */
 
 /** Door direction: 0 front-left, 1 front-right, 2 back-right, 3 back-left (village-geometry.json). */
 export type Direction = 0 | 1 | 2 | 3;
 export const DIRECTIONS: readonly Direction[] = [0, 1, 2, 3];
-export const DIRECTION_LABEL: Record<Direction, string> = { 0: "왼쪽 앞", 1: "오른쪽 앞", 2: "오른쪽 뒤", 3: "왼쪽 뒤" };
 export function isDirection(v: unknown): v is Direction {
   return v === 0 || v === 1 || v === 2 || v === 3;
 }
@@ -129,6 +117,32 @@ export interface Village {
   openHalves: number;
   /** True for the bundled demo village (simulated sample data). */
   isSample?: boolean;
+  /** One path style for the whole village (owner's choice; default dirt). */
+  pathStyle?: PathStyle;
+  /** Decorations the owner moved: decoration id → ground spot (tiles). */
+  decor?: DecorSpots;
+}
+
+/** Path styles the owner can pick (docs/11-village-expansion-plan.md, "Village look"). */
+export const PATH_STYLES = ["dirt", "stones", "brick", "snow"] as const;
+export type PathStyle = (typeof PATH_STYLES)[number];
+export function isPathStyle(v: unknown): v is PathStyle {
+  return typeof v === "string" && (PATH_STYLES as readonly string[]).includes(v);
+}
+export type DecorSpots = Record<string, [number, number]>;
+/** Ids of decorations the owner may move (plaza lamps/bench, district decoration). Same rule on the server. */
+export const MOVABLE_DECOR_ID = /^(plaza-(lamp-a|lamp-b|bench)|d[0-9]-decor[0-9]{1,2})$/;
+
+/** Server/stored decor → only well-formed entries (unknown ids and bad numbers dropped). */
+export function cleanDecor(raw: unknown): DecorSpots {
+  const out: DecorSpots = {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (!MOVABLE_DECOR_ID.test(k) || !Array.isArray(v) || v.length !== 2) continue;
+    const [i, j] = v;
+    if (typeof i === "number" && typeof j === "number" && Math.abs(i) <= 40 && Math.abs(j) <= 40) out[k] = [i, j];
+  }
+  return out;
 }
 
 export interface HouseInput {
@@ -169,9 +183,9 @@ export function isHouseStyle(value: unknown): value is HouseStyle {
 
 export function validateVillageName(raw: string): { ok: true; value: string } | { ok: false; error: string } {
   const value = sanitizeText(raw);
-  if (!value) return { ok: false, error: "마을 이름을 입력해 주세요." };
+  if (!value) return { ok: false, error: tr("err.villageNameRequired") };
   if (charLength(value) > VILLAGE_NAME_MAX)
-    return { ok: false, error: `마을 이름은 ${VILLAGE_NAME_MAX}자 이내로 적어 주세요.` };
+    return { ok: false, error: tr("err.villageNameTooLong", { max: VILLAGE_NAME_MAX }) };
   return { ok: true, value };
 }
 
@@ -182,14 +196,14 @@ export function validateHouseInput(
   const nickname = sanitizeText(input.nickname ?? "");
   const message = sanitizeText(input.message ?? "", { multiline: true });
 
-  if (!nickname) errors.nickname = "닉네임을 입력해 주세요.";
-  else if (charLength(nickname) > NICKNAME_MAX) errors.nickname = `닉네임은 ${NICKNAME_MAX}자 이내로 적어 주세요.`;
+  if (!nickname) errors.nickname = tr("err.nicknameRequired");
+  else if (charLength(nickname) > NICKNAME_MAX) errors.nickname = tr("err.nicknameTooLong", { max: NICKNAME_MAX });
 
-  if (!isHouseStyle(input.style)) errors.style = "집 모양을 골라 주세요.";
+  if (!isHouseStyle(input.style)) errors.style = tr("err.styleRequired");
   const direction = input.direction ?? 0;
-  if (!isDirection(direction)) errors.direction = "문 방향을 골라 주세요.";
+  if (!isDirection(direction)) errors.direction = tr("err.directionRequired");
 
-  if (charLength(message) > MESSAGE_MAX) errors.message = `메시지는 ${MESSAGE_MAX}자 이내로 적어 주세요.`;
+  if (charLength(message) > MESSAGE_MAX) errors.message = tr("err.messageTooLong", { max: MESSAGE_MAX });
 
   if (Object.keys(errors).length > 0) return { ok: false, errors };
   return {
@@ -279,25 +293,27 @@ export function removeHouse(village: Village, houseId: string): Village {
 
 export const SAMPLE_VILLAGE_ID = "demo";
 
-/** Simulated sample: a 15-house village with 7 houses, no photos. */
+/** Simulated sample: a 15-house village with 7 houses, no photos (names/messages in the active language). */
 export function createSampleVillage(now: Date = new Date("2026-12-01T09:00:00+09:00")): Village {
   const at = (minutes: number) => new Date(now.getTime() + minutes * 60_000).toISOString();
+  const names = trList("sample.names");
+  const name = (i: number) => names[i] ?? `#${i + 1}`;
   return {
     id: SAMPLE_VILLAGE_ID,
-    name: "눈송이 마을 (샘플)",
+    name: tr("sample.name"),
     createdAt: at(0),
     capacity: 15,
     // Districts 0 and 1 fully open, district 2 (Santa) half open.
     openHalves: 0b11111,
     isSample: true,
     houses: [
-      { id: "sample-1", slot: 0, nickname: "하늘", style: "brick", direction: 0, photo: null, hasPhoto: false, message: "올해도 고마웠어! 메리 크리스마스 🎄", createdAt: at(1) },
-      { id: "sample-2", slot: 1, nickname: "도윤", style: "bakery", direction: 1, photo: null, hasPhoto: false, message: "따뜻한 겨울 보내자", createdAt: at(30) },
-      { id: "sample-3", slot: 2, nickname: "서연", style: "gingerbread", direction: 2, photo: null, hasPhoto: false, message: "", createdAt: at(95) },
-      { id: "sample-4", slot: 3, nickname: "민준", style: "tower", direction: 3, photo: null, hasPhoto: false, message: "", createdAt: at(120) },
-      { id: "sample-5", slot: 4, nickname: "지우", style: "windmill", direction: 0, photo: null, hasPhoto: false, message: "", createdAt: at(150) },
-      { id: "sample-6", slot: 5, nickname: "하준", style: "greenhouse", direction: 1, photo: null, hasPhoto: false, message: "", createdAt: at(170) },
-      { id: "sample-7", slot: 7, nickname: "유나", style: "aframe", direction: 2, photo: null, hasPhoto: false, message: "", createdAt: at(200) },
+      { id: "sample-1", slot: 0, nickname: name(0), style: "brick", direction: 0, photo: null, hasPhoto: false, message: tr("sample.message1"), createdAt: at(1) },
+      { id: "sample-2", slot: 1, nickname: name(1), style: "bakery", direction: 1, photo: null, hasPhoto: false, message: tr("sample.message2"), createdAt: at(30) },
+      { id: "sample-3", slot: 2, nickname: name(2), style: "gingerbread", direction: 2, photo: null, hasPhoto: false, message: "", createdAt: at(95) },
+      { id: "sample-4", slot: 3, nickname: name(3), style: "tower", direction: 3, photo: null, hasPhoto: false, message: "", createdAt: at(120) },
+      { id: "sample-5", slot: 4, nickname: name(4), style: "windmill", direction: 0, photo: null, hasPhoto: false, message: "", createdAt: at(150) },
+      { id: "sample-6", slot: 5, nickname: name(5), style: "greenhouse", direction: 1, photo: null, hasPhoto: false, message: "", createdAt: at(170) },
+      { id: "sample-7", slot: 7, nickname: name(6), style: "aframe", direction: 2, photo: null, hasPhoto: false, message: "", createdAt: at(200) },
     ],
   };
 }

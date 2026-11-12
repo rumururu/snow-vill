@@ -38,10 +38,10 @@ class _Draft {
   }
 }
 
-/// House type label from the shared geometry (ko/en).
+/// House type label from the shared geometry (10 languages, English fallback).
 String styleName(BuildContext context, geo.VillageGeometry? g, HouseStyle s) {
-  final ko = Localizations.localeOf(context).languageCode == 'ko';
-  return g?.houseLabel(s, ko: ko) ?? s.name;
+  final lang = Localizations.localeOf(context).languageCode;
+  return g?.houseLabel(s, lang) ?? s.name;
 }
 
 class VillageScreen extends ConsumerStatefulWidget {
@@ -57,6 +57,29 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
   final _draft = _Draft();
   int? _ignite;
   bool _firstPromptShown = false;
+
+  /// Village look being edited (owner): draft path style + moved decorations; null = not editing.
+  ({PathStyle pathStyle, Map<String, Offset> decor})? _look;
+  bool _savingLook = false;
+
+  void _startLook(Village v) =>
+      setState(() => _look = (pathStyle: v.pathStyle, decor: {...v.decor}));
+
+  Future<void> _saveLook() async {
+    final look = _look;
+    if (look == null) return;
+    setState(() => _savingLook = true);
+    final r = await _notifier.setLook(look.pathStyle, look.decor);
+    if (!mounted) return;
+    setState(() => _savingLook = false);
+    final l = AppLocalizations.of(context);
+    if (!r.ok) {
+      showToast(context, trKey(l, r.error!));
+      return;
+    }
+    setState(() => _look = null);
+    showToast(context, l.lookSaved);
+  }
 
   VillageNotifier get _notifier =>
       ref.read(villageProvider(widget.villageId).notifier);
@@ -212,11 +235,11 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
           _UpgradeSheet(village: v, geometry: g, district: district),
     );
     if (opened != null && mounted) {
-      final ko = Localizations.localeOf(context).languageCode == 'ko';
+      final lang = Localizations.localeOf(context).languageCode;
       final d = g.districts[opened];
       showToast(
         context,
-        AppLocalizations.of(context).districtOpened(ko ? d.nameKo : d.nameEn),
+        AppLocalizations.of(context).districtOpened(d.name(lang)),
       );
     }
   }
@@ -308,7 +331,7 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
       final myHouse = village.houses
           .where((h) => h.id == myHouseId)
           .firstOrNull;
-      final ko = Localizations.localeOf(context).languageCode == 'ko';
+      final lang = Localizations.localeOf(context).languageCode;
       body = Padding(
         padding: const EdgeInsets.fromLTRB(8, 4, 8, 12),
         child: Column(
@@ -336,14 +359,26 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    village.isFull
-                        ? l.villageComplete
-                        : l.freeHouses(village.remaining),
-                    style: TextStyle(
-                      color: SvColors.night.withValues(alpha: 0.7),
+                  Expanded(
+                    child: Text(
+                      village.isFull
+                          ? l.villageComplete
+                          : l.freeHouses(village.remaining),
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: SvColors.night.withValues(alpha: 0.7),
+                      ),
                     ),
                   ),
+                  if (identity.owners.containsKey(village.id) && _look == null)
+                    ActionChip(
+                      key: const ValueKey('edit-look'),
+                      label: Text(l.editLook),
+                      onPressed: () => _startLook(village),
+                      backgroundColor: Colors.white,
+                      side: BorderSide.none,
+                      shape: const StadiumBorder(),
+                    ),
                 ],
               ),
             ),
@@ -384,70 +419,104 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
                 slotLabel: (slot, h) => h != null
                     ? l.frameTitle(h.nickname)
                     : '${slot + 1} · ${l.makeMyHouse}',
-                districtLabel: (d) => l.lockedDistrict(
-                  ko
-                      ? geometry.districts[d].nameKo
-                      : geometry.districts[d].nameEn,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              village.isFull ? l.tapHintFull : l.tapHint,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: SvColors.night.withValues(alpha: 0.6),
-              ),
-            ),
-            if (async.hasError)
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: ErrorBox(l.errNetwork),
-              ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                children: [
-                  if (!village.isFull)
-                    Expanded(
-                      child: myHouse != null
-                          ? OutlinedButton(
-                              onPressed: () => _openFrame(village, myHouse),
-                              child: Text(l.myHouse),
-                            )
-                          : FilledButton(
-                              key: const ValueKey('make-house'),
-                              onPressed: () =>
-                                  _openClaim(village, village.freeSlots.first),
-                              child: Text(l.makeMyHouse),
-                            ),
-                    ),
-                  if (village.isFull && village.canUpgrade)
-                    Expanded(
-                      child: FilledButton(
-                        key: const ValueKey('grow-big'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: SvColors.glow,
-                          foregroundColor: SvColors.night,
-                        ),
-                        onPressed: () => _openUpgrade(village),
-                        child: Text(l.growBig),
+                districtLabel: (d) =>
+                    l.lockedDistrict(geometry.districts[d].name(lang)),
+                edit: switch (_look) {
+                  final look? => LookEdit(
+                    pathStyle: look.pathStyle,
+                    decor: look.decor,
+                    onMove: (id, at) => setState(
+                      () => _look = (
+                        pathStyle: look.pathStyle,
+                        decor: {...look.decor, id: at},
                       ),
                     ),
-                  if (!village.isFull || village.canUpgrade)
-                    const SizedBox(width: 8),
-                  Expanded(
-                    child: FilledButton(
-                      key: const ValueKey('invite'),
-                      onPressed: () => _openInvite(village),
-                      child: Text(l.invite),
-                    ),
                   ),
-                ],
+                  null => null,
+                },
               ),
             ),
+            if (_look case final look?) ...[
+              const SizedBox(height: 8),
+              _LookPanel(
+                pathStyle: look.pathStyle,
+                moved: look.decor.length,
+                saving: _savingLook,
+                onPathStyle: (ps) =>
+                    setState(() => _look = (pathStyle: ps, decor: look.decor)),
+                onResetDecor: () => setState(
+                  () => _look = (pathStyle: look.pathStyle, decor: const {}),
+                ),
+                onCancel: () => setState(() => _look = null),
+                onSave: _saveLook,
+              ),
+            ] else ...[
+              const SizedBox(height: 8),
+              Text(
+                village.isFull ? l.tapHintFull : l.tapHint,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: SvColors.night.withValues(alpha: 0.6),
+                ),
+              ),
+              if (async.hasError)
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: ErrorBox(l.errNetwork),
+                ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  children: [
+                    if (!village.isFull)
+                      Expanded(
+                        child: myHouse != null
+                            ? OutlinedButton(
+                                onPressed: () => _openFrame(village, myHouse),
+                                child: Text(
+                                  l.myHouse,
+                                  textAlign: TextAlign.center,
+                                ),
+                              )
+                            : FilledButton(
+                                key: const ValueKey('make-house'),
+                                onPressed: () => _openClaim(
+                                  village,
+                                  village.freeSlots.first,
+                                ),
+                                child: Text(
+                                  l.makeMyHouse,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                      ),
+                    if (village.isFull && village.canUpgrade)
+                      Expanded(
+                        child: FilledButton(
+                          key: const ValueKey('grow-big'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: SvColors.glow,
+                            foregroundColor: SvColors.night,
+                          ),
+                          onPressed: () => _openUpgrade(village),
+                          child: Text(l.growBig, textAlign: TextAlign.center),
+                        ),
+                      ),
+                    if (!village.isFull || village.canUpgrade)
+                      const SizedBox(width: 8),
+                    Expanded(
+                      child: FilledButton(
+                        key: const ValueKey('invite'),
+                        onPressed: () => _openInvite(village),
+                        child: Text(l.invite, textAlign: TextAlign.center),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       );
@@ -469,12 +538,21 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
               (village.canUpgrade || identity.owners.containsKey(village.id)))
             PopupMenuButton<String>(
               key: const ValueKey('village-menu'),
-              onSelected: (v) =>
-                  v == 'grow' ? _openUpgrade(village) : _confirmDelete(village),
+              onSelected: (v) => switch (v) {
+                'grow' => _openUpgrade(village),
+                'look' => _startLook(village),
+                _ => _confirmDelete(village),
+              },
               itemBuilder: (_) => [
+                if (identity.owners.containsKey(village.id) && _look == null)
+                  PopupMenuItem(value: 'look', child: Text(l.editLookMenu)),
                 // Always reachable (not only at 6/6) so anyone — including app reviewers — can buy it.
                 if (village.canUpgrade)
-                  PopupMenuItem(value: 'grow', child: Text(l.growBig)),
+                  PopupMenuItem(
+                    key: const ValueKey('menu-grow'),
+                    value: 'grow',
+                    child: Text(l.growBig),
+                  ),
                 if (identity.owners.containsKey(village.id))
                   PopupMenuItem(value: 'delete', child: Text(l.deleteVillage)),
               ],
@@ -482,6 +560,123 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
         ],
       ),
       body: SafeArea(child: body),
+    );
+  }
+}
+
+/// Owner's look editor (replaces the bottom actions while editing): path style, reset, cancel / save.
+/// Mirrors `LookEditor` in VillageView.tsx.
+class _LookPanel extends StatelessWidget {
+  const _LookPanel({
+    required this.pathStyle,
+    required this.moved,
+    required this.saving,
+    required this.onPathStyle,
+    required this.onResetDecor,
+    required this.onCancel,
+    required this.onSave,
+  });
+  final PathStyle pathStyle;
+  final int moved;
+  final bool saving;
+  final ValueChanged<PathStyle> onPathStyle;
+  final VoidCallback onResetDecor;
+  final VoidCallback onCancel;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    String label(PathStyle p) => switch (p) {
+      PathStyle.dirt => l.pathDirt,
+      PathStyle.stones => l.pathStones,
+      PathStyle.brick => l.pathBrick,
+      PathStyle.snow => l.pathSnow,
+    };
+    return Padding(
+      key: const ValueKey('look-panel'),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Text(
+                l.pathStyleTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: SvColors.night,
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                key: const ValueKey('reset-decor'),
+                onPressed: moved == 0 ? null : onResetDecor,
+                child: Text(l.resetDecor),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              for (final p in PathStyle.values) ...[
+                if (p != PathStyle.values.first) const SizedBox(width: 6),
+                Expanded(
+                  child: Semantics(
+                    selected: pathStyle == p,
+                    child: ChoiceChip(
+                      key: ValueKey('path-${p.name}'),
+                      label: SizedBox(
+                        width: double.infinity,
+                        child: Text(label(p), textAlign: TextAlign.center),
+                      ),
+                      selected: pathStyle == p,
+                      showCheckmark: false,
+                      onSelected: (_) => onPathStyle(p),
+                      selectedColor: SvColors.night,
+                      backgroundColor: Colors.white,
+                      labelStyle: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: pathStyle == p ? SvColors.ivory : SvColors.night,
+                      ),
+                      side: BorderSide.none,
+                      materialTapTargetSize: MaterialTapTargetSize.padded,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l.lookHint,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              color: SvColors.night.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  key: const ValueKey('look-cancel'),
+                  onPressed: saving ? null : onCancel,
+                  child: Text(l.cancel),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  key: const ValueKey('look-save'),
+                  onPressed: saving ? null : onSave,
+                  child: Text(saving ? l.savingLook : l.saveLook),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1240,6 +1435,9 @@ class _UpgradeSheet extends ConsumerStatefulWidget {
 
 class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
   Package? _package;
+
+  /// Store prices of every tier (local currency) for the price ladder; empty until loaded.
+  Map<int, String> _prices = const {};
   Map<int, int> _credits = const {};
   bool _loading = true;
   bool _busy = false;
@@ -1283,6 +1481,13 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
       _package = results[1] as Package?;
       _loading = false;
     });
+    if (!purchases.available) return;
+    final prices = <int, String>{};
+    for (final tier in const [1, 2, 3, 4]) {
+      final p = await purchases.tierPackage(_installId, tier);
+      if (p != null) prices[tier] = p.storeProduct.priceString;
+    }
+    if (mounted && prices.length == 4) setState(() => _prices = prices);
   }
 
   Future<void> _apply(Future<ActionOutcome> Function() action) async {
@@ -1337,7 +1542,7 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final purchases = ref.watch(purchaseServiceProvider);
-    final ko = Localizations.localeOf(context).languageCode == 'ko';
+    final lang = Localizations.localeOf(context).languageCode;
     final g = widget.geometry;
     final v = widget.village;
     Widget action;
@@ -1420,7 +1625,7 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
                   Semantics(
                     button: true,
                     selected: _selected == d,
-                    label: ko ? g.districts[d].nameKo : g.districts[d].nameEn,
+                    label: g.districts[d].name(lang),
                     child: Material(
                       key: ValueKey('district-pick-$d'),
                       color: Colors.white,
@@ -1448,9 +1653,7 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                ko
-                                    ? g.districts[d].nameKo
-                                    : g.districts[d].nameEn,
+                                g.districts[d].name(lang),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   color: SvColors.night,
@@ -1475,20 +1678,22 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
             ),
           ],
           const SizedBox(height: 10),
-          Text(
-            l.priceLadder(
-              _won(tierPriceKrw[1]!),
-              _won(tierPriceKrw[2]!),
-              _won(tierPriceKrw[3]!),
-              _won(tierPriceKrw[4]!),
-              maxCapacity,
+          // Store prices in the buyer's currency; the ₩ fallback only makes sense in Korean.
+          if (_prices.length == 4 || lang == 'ko')
+            Text(
+              l.priceLadder(
+                _prices[1] ?? _won(tierPriceKrw[1]!),
+                _prices[2] ?? _won(tierPriceKrw[2]!),
+                _prices[3] ?? _won(tierPriceKrw[3]!),
+                _prices[4] ?? _won(tierPriceKrw[4]!),
+                maxCapacity,
+              ),
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.45,
+                color: SvColors.night.withValues(alpha: 0.7),
+              ),
             ),
-            style: TextStyle(
-              fontSize: 12,
-              height: 1.45,
-              color: SvColors.night.withValues(alpha: 0.7),
-            ),
-          ),
           const SizedBox(height: 4),
           Text(
             l.upgradePointGift,

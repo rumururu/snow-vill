@@ -6,9 +6,11 @@ import { BottomSheet } from "@/components/ui/BottomSheet";
 import { inviteUrl, shareOrCopy, toShareCardData } from "@/lib/share";
 import type { Village } from "@/lib/village";
 import { rasterizeShareCard, ShareCard } from "./ShareCard";
+import { useT } from "@/lib/i18n/I18nProvider";
 
 /** S06 — complete/share: photo-free card preview with save & share actions. */
 export function ShareSheet({ village, open, onClose }: { village: Village; open: boolean; onClose: () => void }) {
+  const t = useT();
   const cardRef = useRef<SVGSVGElement>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -26,9 +28,9 @@ export function ShareSheet({ village, open, onClose }: { village: Village; open:
       a.download = "snow-village-card.png";
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setStatus("카드 이미지를 저장했어요.");
+      setStatus(t("share.saved"));
     } catch {
-      setStatus("이미지를 만들지 못했어요. 다시 시도해 주세요.");
+      setStatus(t("share.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -37,11 +39,11 @@ export function ShareSheet({ village, open, onClose }: { village: Village; open:
   async function share() {
     const outcome = await shareOrCopy({
       title: "Snow Village",
-      text: "우리 겨울 마을에 놀러 와!",
+      text: t("share.text"),
       url: inviteUrl(window.location.origin, village.id, "share"),
     });
     setStatus(
-      outcome === "copied" ? "링크를 복사했어요." : outcome === "failed" ? "공유하지 못했어요. 링크를 직접 복사해 주세요." : null,
+      outcome === "copied" ? t("share.linkCopied") : outcome === "failed" ? t("common.shareFailed") : null,
     );
   }
 
@@ -49,7 +51,7 @@ export function ShareSheet({ village, open, onClose }: { village: Village; open:
     <BottomSheet
       open={open}
       onClose={onClose}
-      title={data.complete ? "우리 마을이 완성됐어요!" : "마을 공유 카드"}
+      title={data.complete ? t("common.villageComplete") : t("share.title")}
       footer={
         <div className="grid grid-cols-2 gap-2">
           <button
@@ -58,10 +60,10 @@ export function ShareSheet({ village, open, onClose }: { village: Village; open:
             disabled={saving}
             className="min-h-12 rounded-2xl border border-night/20 bg-white font-semibold text-night disabled:opacity-60"
           >
-            {saving ? "만드는 중…" : "이미지 저장"}
+            {saving ? t("share.making") : t("share.saveImage")}
           </button>
           <button type="button" onClick={share} className="min-h-12 rounded-2xl bg-night font-bold text-ivory">
-            링크 공유하기
+            {t("share.shareLink")}
           </button>
         </div>
       }
@@ -69,7 +71,7 @@ export function ShareSheet({ village, open, onClose }: { village: Village; open:
       <div className="mx-auto w-full max-w-[300px] overflow-hidden rounded-2xl shadow-md">
         <ShareCard ref={cardRef} data={data} className="block h-auto w-full" />
       </div>
-      <p className="mt-3 text-center text-sm text-night/70">공유 카드에는 친구들의 사진·이름·메시지가 들어가지 않아요.</p>
+      <p className="mt-3 text-center text-sm text-night/70">{t("share.privacyNote")}</p>
       {status && (
         <p role="status" className="mt-2 text-center text-sm font-medium text-night">
           {status}
@@ -80,7 +82,7 @@ export function ShareSheet({ village, open, onClose }: { village: Village; open:
           href="/create"
           className="mt-4 flex min-h-11 items-center justify-center rounded-xl bg-glow/30 px-3 text-sm font-semibold text-night"
         >
-          다른 친구들과 새 마을 만들기
+          {t("share.newVillage")}
         </Link>
       )}
     </BottomSheet>

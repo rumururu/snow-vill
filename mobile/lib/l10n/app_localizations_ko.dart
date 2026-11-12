@@ -425,4 +425,40 @@ class AppLocalizationsKo extends AppLocalizations {
   String maxVillage(int max) {
     return '이미 가장 큰 마을($max채)이에요';
   }
+
+  @override
+  String get editLook => '🎨 꾸미기';
+
+  @override
+  String get editLookMenu => '마을 꾸미기 (길·장식)';
+
+  @override
+  String get pathStyleTitle => '길 모양';
+
+  @override
+  String get pathDirt => '흙길';
+
+  @override
+  String get pathStones => '디딤돌';
+
+  @override
+  String get pathBrick => '벽돌길';
+
+  @override
+  String get pathSnow => '눈길';
+
+  @override
+  String get lookHint => '장식 아래 동그라미를 끌어서 옮겨요. 집·길·랜드마크 위나 마을 밖에는 놓을 수 없어요.';
+
+  @override
+  String get resetDecor => '장식 처음 자리로';
+
+  @override
+  String get saveLook => '저장';
+
+  @override
+  String get savingLook => '저장하는 중…';
+
+  @override
+  String get lookSaved => '마을 꾸미기를 저장했어요.';
 }

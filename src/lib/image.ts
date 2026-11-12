@@ -7,6 +7,7 @@
  *
  * M1 must repeat signature/size/pixel validation and re-encoding server-side.
  */
+import { tr } from "./i18n";
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 export const OUTPUT_SIZE = 512;
@@ -50,11 +51,11 @@ async function readHead(file: Blob, n: number): Promise<Uint8Array> {
   return new Uint8Array(buf);
 }
 
-/** Validate size and signature. Throws PhotoError with a Korean user message. */
+/** Validate size and signature. Throws PhotoError with a user message (active language). */
 export async function validatePhotoFile(file: Blob): Promise<ImageKind> {
-  if (file.size > MAX_UPLOAD_BYTES) throw new PhotoError("TOO_LARGE", "사진은 10MB 이하만 올릴 수 있어요.");
+  if (file.size > MAX_UPLOAD_BYTES) throw new PhotoError("TOO_LARGE", tr("photo.tooLarge"));
   const kind = detectImageType(await readHead(file, 16));
-  if (!kind) throw new PhotoError("UNSUPPORTED", "JPG, PNG, WEBP 사진만 올릴 수 있어요.");
+  if (!kind) throw new PhotoError("UNSUPPORTED", tr("photo.unsupported"));
   return kind;
 }
 
@@ -65,11 +66,11 @@ export async function preparePhoto(file: Blob): Promise<string> {
   try {
     bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
   } catch {
-    throw new PhotoError("DECODE_FAILED", "사진을 읽지 못했어요. 다른 사진으로 시도해 주세요.");
+    throw new PhotoError("DECODE_FAILED", tr("photo.decodeFailed"));
   }
   try {
     if (bitmap.width * bitmap.height > MAX_SOURCE_PIXELS)
-      throw new PhotoError("TOO_MANY_PIXELS", "사진 해상도가 너무 커요.");
+      throw new PhotoError("TOO_MANY_PIXELS", tr("photo.tooManyPixels"));
     const side = Math.min(bitmap.width, bitmap.height);
     const sx = (bitmap.width - side) / 2;
     const sy = (bitmap.height - side) / 2;
@@ -77,7 +78,7 @@ export async function preparePhoto(file: Blob): Promise<string> {
     canvas.width = OUTPUT_SIZE;
     canvas.height = OUTPUT_SIZE;
     const ctx = canvas.getContext("2d");
-    if (!ctx) throw new PhotoError("DECODE_FAILED", "사진을 처리하지 못했어요.");
+    if (!ctx) throw new PhotoError("DECODE_FAILED", tr("photo.processFailed"));
     ctx.drawImage(bitmap, sx, sy, side, side, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
     return canvas.toDataURL("image/jpeg", 0.82);
   } finally {

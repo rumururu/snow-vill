@@ -1,0 +1,27 @@
+{
+  "brand": "Snow Village",
+  "tagline": "A winter village with friends",
+  "lang": "en",
+  "slots": [
+    [
+      "This year's last gift:\nour village",
+      "Invite friends with one link, each lights up a house"
+    ],
+    [
+      "Every house holds\na memory of the year",
+      "Tap a lit house to see a friend's photo and note"
+    ],
+    [
+      "Each friend picks\na house just like them",
+      "9 house types, even the door direction"
+    ],
+    [
+      "The more of us,\nthe bigger the village",
+      "Open new lanes as friends join, up to 60 houses"
+    ],
+    [
+      "No sign-up,\njust send a link",
+      "Create a village and share the link. That's it"
+    ]
+  ]
+}

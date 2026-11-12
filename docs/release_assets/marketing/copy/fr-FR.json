@@ -1,0 +1,27 @@
+{
+  "brand": "Snow Village",
+  "tagline": "Un village d'hiver entre amis",
+  "lang": "fr",
+  "slots": [
+    [
+      "Dernier cadeau de l'année :\nnotre village",
+      "Invite avec un lien : chaque ami allume une maison"
+    ],
+    [
+      "Chaque maison garde\nun souvenir de l'année",
+      "Touche une maison éclairée pour voir la photo et le mot d'un ami"
+    ],
+    [
+      "Chaque ami choisit\nsa maison",
+      "9 types de maisons, jusqu'au sens de la porte"
+    ],
+    [
+      "Plus on est nombreux,\nplus le village grandit",
+      "Ouvre de nouvelles rues avec tes amis, jusqu'à 60 maisons"
+    ],
+    [
+      "Sans inscription,\nenvoie juste un lien",
+      "Crée un village et partage le lien, c'est tout"
+    ]
+  ]
+}

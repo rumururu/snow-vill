@@ -4,13 +4,12 @@ import Link from "next/link";
 import { useRef, useState, type FormEvent } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { PhotoError, preparePhoto } from "@/lib/image";
-import { LOTS } from "@/lib/map";
+import { houseStyleLabel, LOTS } from "@/lib/map";
+import { useT } from "@/lib/i18n/I18nProvider";
 import {
   charLength,
-  DIRECTION_LABEL,
   DIRECTIONS,
   freeSlots,
-  HOUSE_STYLE_LABEL,
   HOUSE_STYLES,
   MESSAGE_MAX,
   NICKNAME_MAX,
@@ -45,6 +44,7 @@ const PICKER_STYLES = HOUSE_STYLES.filter((s) => s !== "sage" && s !== "indigo")
 /** S04 — claim an empty house. The draft survives close/reopen and failures. */
 export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlot, intro, latencyMs = 450 }: ClaimHouseSheetProps) {
   const store = useVillageStore();
+  const t = useT();
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -83,12 +83,12 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
       if (simulateFail) {
         setSimUploadFail(false);
         await new Promise((r) => setTimeout(r, 300));
-        throw new PhotoError("DECODE_FAILED", "사진 업로드에 실패했어요. (시뮬레이션) 작성한 내용은 그대로 있어요.");
+        throw new PhotoError("DECODE_FAILED", t("claim.photoSimFail"));
       }
       const dataUrl = await preparePhoto(file);
       update("photo", dataUrl);
     } catch (err) {
-      setPhotoError(err instanceof PhotoError ? err.message : "사진을 처리하지 못했어요. 다시 시도해 주세요.");
+      setPhotoError(err instanceof PhotoError ? err.message : t("claim.photoFailed"));
     } finally {
       setPhotoBusy(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -122,26 +122,26 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
     }
     switch (result.reason) {
       case "SLOT_TAKEN":
-        setSubmitError("앗, 방금 다른 친구가 이 집터에 먼저 입주했어요. 작성한 내용은 그대로 두었으니 다른 빈 집을 골라 주세요.");
+        setSubmitError(t("claim.slotTaken"));
         setSimCollision(false);
         break;
       case "VILLAGE_FULL":
-        setSubmitError("열린 집터가 모두 찼어요. 마을을 넓히거나 새 마을을 만들어 볼까요?");
+        setSubmitError(t("claim.villageFull"));
         break;
       case "ALREADY_JOINED":
-        setSubmitError("이 브라우저에서는 이미 이 마을에 집을 만들었어요.");
+        setSubmitError(t("claim.alreadyJoined"));
         break;
       case "INVALID_INPUT":
         setErrors(result.errors);
         break;
       case "REMOTE_ERROR":
-        setSubmitError(`${result.message} 작성한 내용은 그대로 있어요.`);
+        setSubmitError(t("claim.remoteError", { error: result.message }));
         break;
       case "NOT_FOUND":
-        setSubmitError("마을을 찾을 수 없어요. 링크를 다시 확인해 주세요.");
+        setSubmitError(t("claim.notFound"));
         break;
       default:
-        setSubmitError("집을 만들지 못했어요. 잠시 후 다시 시도해 주세요.");
+        setSubmitError(t("claim.failed"));
     }
   }
 
@@ -151,7 +151,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
     <BottomSheet
       open={open}
       onClose={onClose}
-      title={lot ? `${lot.slot + 1}번 집터에 내 집 만들기` : "내 집 만들기"}
+      title={lot ? t("claim.title", { n: lot.slot + 1 }) : t("common.claim")}
       initialFocusRef={nicknameRef}
       footer={
         <>
@@ -168,7 +168,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
                     onChangeSlot(freeAfterCollision[0]);
                   }}
                 >
-                  {freeAfterCollision[0] + 1}번 빈 집터로 옮기기
+                  {t("claim.moveTo", { n: freeAfterCollision[0] + 1 })}
                 </button>
               )}
             </div>
@@ -179,7 +179,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
             disabled={submitting || photoBusy}
             className="min-h-12 w-full rounded-2xl bg-night text-base font-bold text-ivory shadow-sm transition-opacity disabled:opacity-60 motion-reduce:transition-none"
           >
-            {submitting ? "집 짓는 중…" : "내 집 완성하기"}
+            {submitting ? t("claim.submitting") : t("claim.submit")}
           </button>
         </>
       }
@@ -189,14 +189,14 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
         <div className="flex items-center gap-3">
           <HousePreview style={draft.style} direction={draft.direction} className="h-28 w-32 shrink-0" />
           <div className="text-sm text-night/80">
-            <p className="font-semibold text-night">{lot ? `${lot.slot + 1}번` : ""} 집터</p>
-            <p>빈 집에 불을 켜주세요. 친구들이 집을 누르면 내 사진 액자가 열려요.</p>
+            <p className="font-semibold text-night">{lot ? t("claim.lot", { n: lot.slot + 1 }) : ""}</p>
+            <p>{t("claim.lead")}</p>
           </div>
         </div>
 
         <div>
           <label htmlFor="nickname" className="mb-1 block text-sm font-semibold text-night">
-            닉네임 <span className="text-[#B5523B]">*</span>
+            {t("claim.nickname")} <span className="text-[#B5523B]">*</span>
           </label>
           <input
             ref={nicknameRef}
@@ -208,7 +208,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
             aria-invalid={Boolean(errors.nickname)}
             aria-describedby={errors.nickname ? "nickname-error" : "nickname-hint"}
             className="min-h-12 w-full rounded-xl border border-night/20 bg-white px-3 text-base text-night outline-none focus:border-night focus:ring-2 focus:ring-night/30 aria-[invalid=true]:border-[#B5523B]"
-            placeholder="친구들이 알아볼 이름"
+            placeholder={t("claim.nicknamePlaceholder")}
           />
           {errors.nickname ? (
             <p id="nickname-error" role="alert" className="mt-1 text-sm text-[#B5523B]">
@@ -216,13 +216,13 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
             </p>
           ) : (
             <p id="nickname-hint" className="mt-1 text-xs text-night/60">
-              {NICKNAME_MAX}자 이내
+              {t("claim.nicknameHint", { max: NICKNAME_MAX })}
             </p>
           )}
         </div>
 
         <fieldset>
-          <legend className="mb-2 text-sm font-semibold text-night">집 모양</legend>
+          <legend className="mb-2 text-sm font-semibold text-night">{t("claim.style")}</legend>
           <div className="grid grid-cols-3 gap-2 min-[400px]:grid-cols-4">
             {PICKER_STYLES.map((style) => (
               <label
@@ -231,7 +231,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
               >
                 <input type="radio" name="style" value={style} checked={draft.style === style} onChange={() => update("style", style)} className="sr-only" />
                 <HousePreview style={style} className="h-14 w-14" />
-                {HOUSE_STYLE_LABEL[style]}
+                {houseStyleLabel(style, t.locale)}
               </label>
             ))}
           </div>
@@ -239,7 +239,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
         </fieldset>
 
         <fieldset>
-          <legend className="mb-2 text-sm font-semibold text-night">문 방향</legend>
+          <legend className="mb-2 text-sm font-semibold text-night">{t("claim.direction")}</legend>
           <div className="grid grid-cols-4 gap-2">
             {DIRECTIONS.map((d) => (
               <label
@@ -248,8 +248,8 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
               >
                 <input type="radio" name="direction" value={d} checked={draft.direction === d} onChange={() => update("direction", d)} className="sr-only" />
                 <HousePreview style={draft.style} direction={d} className="h-12 w-12" />
-                {DIRECTION_LABEL[d]}
-                {lot?.facing === d && <span className="text-[10px] text-sage">광장 쪽</span>}
+                {t(`dir.${d}`)}
+                {lot?.facing === d && <span className="text-[10px] text-sage">{t("claim.towardPlaza")}</span>}
               </label>
             ))}
           </div>
@@ -257,20 +257,20 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
 
         <div>
           <p className="mb-2 text-sm font-semibold text-night">
-            사진 <span className="font-normal text-night/60">(선택)</span>
+            {t("claim.photo")} <span className="font-normal text-night/60">{t("common.optional")}</span>
           </p>
           <div className="flex items-center gap-3">
             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-sky">
               {draft.photo ? (
                 // eslint-disable-next-line @next/next/no-img-element -- local preview data URL
-                <img src={draft.photo} alt="선택한 사진 미리보기" className="h-full w-full object-cover" />
+                <img src={draft.photo} alt={t("claim.photoPreview")} className="h-full w-full object-cover" />
               ) : (
-                <FallbackAvatar style={draft.style} className="h-full w-full" label="사진이 없을 때 보일 기본 그림" />
+                <FallbackAvatar style={draft.style} className="h-full w-full" label={t("claim.photoFallback")} />
               )}
             </div>
             <div className="flex flex-1 flex-col gap-2">
               <label className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-night/20 bg-white px-3 text-sm font-medium text-night has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-night/30">
-                {photoBusy ? "사진 처리 중…" : draft.photo ? "다른 사진 고르기" : "사진 고르기"}
+                {photoBusy ? t("claim.photoBusy") : draft.photo ? t("claim.photoOther") : t("claim.photoPick")}
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -287,13 +287,13 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
                   onClick={() => update("photo", null)}
                   className="min-h-11 rounded-xl px-3 text-sm text-night/70 underline-offset-4 hover:underline"
                 >
-                  사진 빼기
+                  {t("claim.photoRemove")}
                 </button>
               )}
             </div>
           </div>
           <p id="photo-hint" className="mt-2 text-xs text-night/60">
-            사진 없이도 참여할 수 있어요. JPG·PNG·WEBP, 10MB 이하. 정사각형으로 잘리고 위치 정보(EXIF)는 지워져요.
+            {t("claim.photoHint")}
           </p>
           {photoError && (
             <div role="alert" className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-[#F8E6DD] px-3 py-2 text-sm text-night">
@@ -304,7 +304,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
                   className="min-h-11 shrink-0 rounded-lg px-2 font-semibold text-[#B5523B]"
                   onClick={() => void handleFile(lastFile, false)}
                 >
-                  다시 시도
+                  {t("common.retry")}
                 </button>
               )}
             </div>
@@ -313,7 +313,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
 
         <div>
           <label htmlFor="message" className="mb-1 block text-sm font-semibold text-night">
-            한마디 <span className="font-normal text-night/60">(선택)</span>
+            {t("claim.message")} <span className="font-normal text-night/60">{t("common.optional")}</span>
           </label>
           <textarea
             id="message"
@@ -324,7 +324,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
             aria-invalid={Boolean(errors.message) || messageLen > MESSAGE_MAX}
             aria-describedby="message-count"
             className="w-full resize-none rounded-xl border border-night/20 bg-white px-3 py-2 text-base text-night outline-none focus:border-night focus:ring-2 focus:ring-night/30 aria-[invalid=true]:border-[#B5523B]"
-            placeholder="마을 친구들에게 남길 한마디"
+            placeholder={t("claim.messagePlaceholder")}
           />
           <p
             id="message-count"
@@ -337,25 +337,25 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
         </div>
 
         <p className="text-xs leading-relaxed text-night/60">
-          입력한 닉네임·한마디·사진은 이 마을 링크를 가진 사람에게 보여요. 내 집은 언제든 비울 수 있어요.{" "}
+          {t("claim.visibility")}{" "}
           <Link href="/privacy/" target="_blank" className="underline underline-offset-2">
-            개인정보처리방침
+            {t("common.privacy")}
           </Link>
         </p>
 
         {simulated && (
         <details className="rounded-xl border border-dashed border-night/25 px-3 py-2 text-sm text-night/80">
-          <summary className="min-h-11 cursor-pointer content-center font-medium">테스트용 시뮬레이션 (프로토타입)</summary>
+          <summary className="min-h-11 cursor-pointer content-center font-medium">{t("claim.simTitle")}</summary>
           <div className="space-y-2 pb-2 pt-1">
             <label className="flex min-h-11 items-center gap-2">
               <input type="checkbox" checked={simCollision} onChange={(e) => setSimCollision(e.target.checked)} className="h-5 w-5" />
-              제출 직전에 다른 친구가 이 집터를 차지하기
+              {t("claim.simCollision")}
             </label>
             <label className="flex min-h-11 items-center gap-2">
               <input type="checkbox" checked={simUploadFail} onChange={(e) => setSimUploadFail(e.target.checked)} className="h-5 w-5" />
-              다음 사진 업로드를 실패시키기
+              {t("claim.simUploadFail")}
             </label>
-            {nextFree.length === 0 && <p className="text-xs">이 집터가 마지막 빈 집이에요.</p>}
+            {nextFree.length === 0 && <p className="text-xs">{t("claim.simLast")}</p>}
           </div>
         </details>
         )}

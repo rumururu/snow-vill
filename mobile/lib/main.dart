@@ -45,12 +45,16 @@ final _router = GoRouter(
 );
 
 class SnowVillageApp extends StatelessWidget {
-  const SnowVillageApp({super.key});
+  const SnowVillageApp({super.key, this.locale});
+
+  /// Forces a language (store screenshots); null follows the device.
+  final Locale? locale;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
+      locale: locale,
       onGenerateTitle: (c) => AppLocalizations.of(c).appTitle,
       theme: buildTheme(),
       routerConfig: _router,

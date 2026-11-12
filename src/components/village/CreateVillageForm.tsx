@@ -8,6 +8,7 @@ import { SimulatedBadge } from "@/components/ui/SimulatedBadge";
 import { charLength, FREE_CAPACITY, FREE_OPEN_HALVES, MAX_CAPACITY, VILLAGE_NAME_MAX, type Village } from "@/lib/village";
 import { villagePath } from "@/lib/share";
 import { useVillageStore } from "@/store/VillageStoreProvider";
+import { useT } from "@/lib/i18n/I18nProvider";
 
 const PREVIEW_DATE = "2026-12-01T00:00:00.000Z";
 
@@ -15,10 +16,11 @@ const PREVIEW_DATE = "2026-12-01T00:00:00.000Z";
 export function CreateVillageForm() {
   const router = useRouter();
   const store = useVillageStore();
+  const t = useT();
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const preview: Village = { id: "preview", name: name.trim() || "우리 마을", createdAt: PREVIEW_DATE, houses: [], capacity: FREE_CAPACITY, openHalves: FREE_OPEN_HALVES };
+  const preview: Village = { id: "preview", name: name.trim() || t("create.defaultName"), createdAt: PREVIEW_DATE, houses: [], capacity: FREE_CAPACITY, openHalves: FREE_OPEN_HALVES };
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -38,7 +40,7 @@ export function CreateVillageForm() {
       <header className="flex items-center gap-1">
         <Link
           href="/"
-          aria-label="뒤로 가기"
+          aria-label={t("common.back")}
           className="grid h-11 w-11 place-items-center rounded-full text-xl text-night hover:bg-night/5"
         >
           ←
@@ -49,7 +51,7 @@ export function CreateVillageForm() {
 
       <form onSubmit={submit} noValidate className="flex flex-1 flex-col">
         <label htmlFor="village-name" className="mt-4 block px-1 text-2xl font-extrabold text-night">
-          우리 마을의 이름은?
+          {t("create.title")}
         </label>
         <input
           id="village-name"
@@ -63,7 +65,7 @@ export function CreateVillageForm() {
           }}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? "village-name-error" : "village-name-hint"}
-          placeholder="예: 눈송이 마을"
+          placeholder={t("create.placeholder")}
           className="mt-3 min-h-14 w-full rounded-2xl border border-night/20 bg-white px-4 text-lg text-night outline-none focus:border-night focus:ring-2 focus:ring-night/30 aria-[invalid=true]:border-[#B5523B]"
         />
         {error ? (
@@ -72,7 +74,7 @@ export function CreateVillageForm() {
           </p>
         ) : (
           <p id="village-name-hint" className="mt-1 px-1 text-xs text-night/60">
-            {charLength(name.trim())}/{VILLAGE_NAME_MAX}자
+            {t("create.count", { count: charLength(name.trim()), max: VILLAGE_NAME_MAX })}
           </p>
         )}
 
@@ -80,7 +82,7 @@ export function CreateVillageForm() {
           <VillageMap village={preview} />
         </div>
         <p className="mt-2 text-center text-sm text-night/70">
-          친구 {FREE_CAPACITY}명까지 무료로 한 집씩 입주할 수 있어요. 마을은 앱에서 3채씩 {MAX_CAPACITY}채까지 넓힐 수 있어요.
+          {t("create.note", { free: FREE_CAPACITY, max: MAX_CAPACITY })}
         </p>
 
         <button
@@ -88,7 +90,7 @@ export function CreateVillageForm() {
           disabled={busy}
           className="mt-auto min-h-14 w-full rounded-2xl bg-night text-lg font-bold text-ivory shadow-md disabled:opacity-60"
         >
-          {busy ? "마을 만드는 중…" : "마을 생성하기"}
+          {busy ? t("create.submitting") : t("create.submit")}
         </button>
       </form>
     </main>

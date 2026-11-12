@@ -145,8 +145,8 @@ describe("VillageView (sample village)", () => {
     const store = createVillageStore({ storage: null });
     renderWithStore(<VillageView villageId="demo" />, store);
     const ids = () => Array.from(document.querySelectorAll("[data-facility]")).map((n) => n.getAttribute("data-facility")!).filter((x) => !x.startsWith("prop_")).sort();
-    // Sample: districts 0 (snowman family), 1 (rink) and half of 2 (Santa) are open.
-    expect(ids()).toEqual(["cathedral", "decor_snowfamily", "landmark_rink", "landmark_santa", "tree"]);
+    // Sample: districts 0 (the Christmas tree), 1 (rink) and half of 2 (Santa) are open; the plaza has the cathedral and its tree.
+    expect(ids()).toEqual(["cathedral", "landmark_rink", "landmark_santa", "tree", "tree_complete"]);
     expect(document.querySelector("[data-aurora]")).toBeNull();
   });
 

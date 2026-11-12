@@ -98,17 +98,27 @@ def asc(cfg):
         "primaryCategory": {"data": {"type": "appCategories", "id": cat["app_store"]}},
         "secondaryCategory": {"data": {"type": "appCategories", "id": cat["app_store_secondary"]}}}}})
     print("asc categories", s, "" if s < 300 else j)
-    notes = cfg["localizations"]["ko"]["review_notes"].strip()
+    review_detail(ver, cfg["localizations"]["ko"]["review_notes"].strip())
+
+
+def review_detail(ver, notes):
+    """Review notes, plus the reviewer contact when REVIEW_FIRST_NAME / REVIEW_LAST_NAME / REVIEW_PHONE /
+    REVIEW_EMAIL are set (the company's standard contact; passed at run time, never stored in the repo)."""
+    from asc import call
+    attrs = {"notes": notes, "demoAccountRequired": False}
+    env = {k: os.environ.get(f"REVIEW_{k.upper()}") for k in ("first_name", "last_name", "phone", "email")}
+    if all(env.values()):
+        attrs.update(contactFirstName=env["first_name"], contactLastName=env["last_name"],
+                     contactPhone=env["phone"], contactEmail=env["email"])
     s, rd = call("GET", f"/v1/appStoreVersions/{ver}/appStoreReviewDetail")
     if s < 300 and rd.get("data"):
         rid = rd["data"]["id"]
         s, j = call("PATCH", f"/v1/appStoreReviewDetails/{rid}", {"data": {"type": "appStoreReviewDetails", "id": rid,
-                                                                          "attributes": {"notes": notes, "demoAccountRequired": False}}})
+                                                                          "attributes": attrs}})
     else:
-        s, j = call("POST", "/v1/appStoreReviewDetails", {"data": {"type": "appStoreReviewDetails",
-                     "attributes": {"notes": notes, "demoAccountRequired": False},
+        s, j = call("POST", "/v1/appStoreReviewDetails", {"data": {"type": "appStoreReviewDetails", "attributes": attrs,
                      "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": ver}}}}})
-    print("asc review notes", s, "" if s < 300 else str(j)[:300])
+    print("asc review detail", "with contact" if "contactEmail" in attrs else "notes only", s, "" if s < 300 else str(j)[:300])
 
 
 if __name__ == "__main__":

@@ -108,10 +108,13 @@ Test data to remove after the refund check: villages "QA IAP test" (capacity 6),
 | Refund round trip with RTDN on: the first refund (`GPA.3371-0939-…`) was issued **before** RTDN was connected, so its notification was lost (`refunded_at` still null). Buy once more, refund, confirm `refunded_at`; then delete test data | Claude | needs a free phone with the tester account (M205N / G525N; the Note9 has no Google account) |
 | ASC review screenshot for the IAP | Claude | before submitting for review |
 | ~~Play app content forms, data safety, store settings, production countries~~ done 2026-11-12 (see §8) | Claude | — |
-| Play: create the production release (promote the internal build) and send for review; ASC reviewer contact + submit | owner approval | |
+| ~~Play: production release 1.0.0 (build 8) sent for review~~ 2026-11-12 | Claude | review usually ≤ 7 days |
+| ~~ASC reviewer contact~~ set 2026-11-12 (company standard contact, passed as `REVIEW_*` env to `tools/store/listing.py`, not stored in the repo) | Claude | |
+| ASC: submit for review | owner approval | |
+| Moderation routine: reports land in `snowvill_reports` with no alert or dashboard; the published child safety standards promise review and removal, so someone must check them (or add an alert) | owner | before launch traffic |
 | Lower the RevenueCat v2 key to read-only | Claude | after setup |
 
-## 8. Play app content (2026-11-12, saved; not yet sent for review)
+## 8. Play app content and first production release (2026-11-12, sent for review)
 
 | Declaration | Answer |
 |---|---|
@@ -125,3 +128,5 @@ Test data to remove after the refund check: villages "QA IAP test" (capacity 6),
 | Trader status | Yes (company account), no terms URL |
 | Store settings | App, category Social; contact mkideabox.feedback@gmail.com, website https://snow.mkideabox.com/ |
 | Production countries | All 177 + rest of world (178 rows targeted) |
+| Child safety standards (required for the Social category; found by the pre-review check) | https://snow.mkideabox.com/child-safety/ (10 languages, `src/app/child-safety`); contact = developer account email; in-app reporting and legal-compliance attestations checked |
+| Production release | 1.0.0 (version code 8), full rollout, release notes in 10 languages; created as a draft through the API (draft app), sent for review in the console 2026-11-12 |

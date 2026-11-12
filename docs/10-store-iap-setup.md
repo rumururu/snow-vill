@@ -106,5 +106,22 @@ Test data to remove after the refund check: villages "QA IAP test" (capacity 6),
 | To do | Who | Note |
 |---|---|---|
 | Refund round trip with RTDN on: the first refund (`GPA.3371-0939-…`) was issued **before** RTDN was connected, so its notification was lost (`refunded_at` still null). Buy once more, refund, confirm `refunded_at`; then delete test data | Claude | needs a free phone with the tester account (M205N / G525N; the Note9 has no Google account) |
-| ASC review screenshot for the IAP, store listings, Play app content forms, data safety | Claude | before submitting for review |
+| ASC review screenshot for the IAP | Claude | before submitting for review |
+| ~~Play app content forms, data safety, store settings, production countries~~ done 2026-11-12 (see §8) | Claude | — |
+| Play: create the production release (promote the internal build) and send for review; ASC reviewer contact + submit | owner approval | |
 | Lower the RevenueCat v2 key to read-only | Claude | after setup |
+
+## 8. Play app content (2026-11-12, saved; not yet sent for review)
+
+| Declaration | Answer |
+|---|---|
+| Privacy policy | https://snow.mkideabox.com/privacy/ |
+| Login details (app access) | No restricted parts (no accounts; expansion is a plain in-app purchase) — same as Claire's Ranch |
+| Ads / Advertising ID | No / No (release manifest has no `AD_ID`: INTERNET, ACCESS_NETWORK_STATE, BILLING only) |
+| Content rating (IARC, contact mkideabox.feedback@gmail.com) | Social/communication → communication with people you know; no location sharing; digital purchases yes, no loot boxes; no blocking, reporting yes; no chat; interaction limited to invited friends. Result: IARC 12+, ESRB Everyone, PEGI parental guidance, USK 0, ClassInd 14, KR 12+ |
+| Target audience | 16–17, 18+ (policy: not for under-14s) |
+| Data safety | Collected, none shared, encrypted in transit, no accounts, deletion via https://snow.mkideabox.com/privacy/. Name (nickname, optional, app functionality); purchase history (required, app functionality); photos (optional, app functionality); app interactions (request log, required, fraud/security); other UGC (village name / message, optional, app functionality); device or other IDs (random install ID, required, app functionality + fraud/security) |
+| Government / financial / health | None |
+| Trader status | Yes (company account), no terms URL |
+| Store settings | App, category Social; contact mkideabox.feedback@gmail.com, website https://snow.mkideabox.com/ |
+| Production countries | All 177 + rest of world (178 rows targeted) |

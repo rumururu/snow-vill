@@ -25,7 +25,10 @@ platform :ios do
   lane :beta do
     require_prod_env!
     key = api_key
-    get_provisioning_profile(api_key: key, app_identifier: APP_ID, provisioning_name: PROFILE, ignore_profiles_with_different_name: true)
+    # SNOW_FORCE_PROFILE=1 regenerates the App Store profile, needed after an App ID capability change
+    # (2026-11-14: Sign in with Apple). Release builds sign manually with this profile (project.pbxproj).
+    get_provisioning_profile(api_key: key, app_identifier: APP_ID, provisioning_name: PROFILE, ignore_profiles_with_different_name: true,
+                             force: ENV["SNOW_FORCE_PROFILE"] == "1")
     build_number = (latest_testflight_build_number(api_key: key, app_identifier: APP_ID, initial_build_number: 0) + 1).to_s
     Dir.chdir(MOBILE) do
       # fastlane's bundled Ruby env breaks CocoaPods ("installed but broken"); same fix as nametree.

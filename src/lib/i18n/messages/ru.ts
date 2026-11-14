@@ -238,12 +238,6 @@ export const ru: Messages = {
   "upgrade.inApp": "Открой {district} в приложении Snow Village — цена в твоей валюте указана в магазине.",
   "upgrade.pick": "Какой переулок открыть?",
   "upgrade.halfOpen": "Открыт наполовину",
-  "facility.landmark_rink": "Каток",
-  "facility.landmark_santa": "Дом Санты",
-  "facility.landmark_rudolph": "Статуя Рудольфа",
-  "facility.decor_sled": "Сани с подарками",
-  "facility.prop_pines": "Еловая роща",
-  "facility.prop_lamp": "Аллея фонарей",
   "milestone.aurora": "Северное сияние",
 
   // Small UI pieces

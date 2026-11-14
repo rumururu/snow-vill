@@ -19,7 +19,6 @@ export const VILLAGE_CAPACITY = MAX_CAPACITY;
 
 /** Districts ("동네") of 6 lots; lots of district d are slots d*6 … d*6+5, opened in halves of 3. */
 export const DISTRICT_COUNT = 10;
-export const DISTRICT_SIZE = 6;
 /** Free village: district 0, both halves. */
 export const FREE_OPEN_HALVES = 0b11;
 
@@ -61,13 +60,6 @@ export function stepTier(capacity: number): 0 | 1 | 2 | 3 | 4 {
   if (capacity === 12) return 3;
   return 4;
 }
-/** Store product per tier (same ids in App Store, Google Play, RevenueCat and the server). */
-export const TIER_PRODUCT: Record<1 | 2 | 3 | 4, string> = {
-  1: "snowvillage_big_village",
-  2: "snowvillage_expand_2",
-  3: "snowvillage_expand_3",
-  4: "snowvillage_expand_4",
-};
 /** Korean list price per tier (the stores show the localized price). */
 export const TIER_PRICE_KRW: Record<1 | 2 | 3 | 4, number> = { 1: 2900, 2: 6900, 3: 12900, 4: 25900 };
 export const VILLAGE_NAME_MAX = 20;
@@ -216,10 +208,6 @@ export function createVillage(name: string, id: string, now: Date): Village {
   const result = validateVillageName(name);
   if (!result.ok) throw new Error(result.error);
   return { id, name: result.value, createdAt: now.toISOString(), houses: [], capacity: FREE_CAPACITY, openHalves: FREE_OPEN_HALVES };
-}
-
-export function isSlotValid(slot: number, capacity: number = VILLAGE_CAPACITY): boolean {
-  return Number.isInteger(slot) && slot >= 0 && slot < Math.min(capacity, MAX_CAPACITY);
 }
 
 export function houseAt(village: Village, slot: number): House | undefined {

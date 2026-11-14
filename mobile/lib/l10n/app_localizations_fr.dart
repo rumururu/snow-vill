@@ -113,15 +113,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get houseStyle => 'Type de maison';
 
   @override
-  String get styleWood => 'Bois';
-
-  @override
-  String get styleSage => 'Sauge';
-
-  @override
-  String get styleIndigo => 'Indigo';
-
-  @override
   String get photo => 'Photo';
 
   @override
@@ -311,21 +302,10 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get decorSled => 'Traîneau de cadeaux';
-
-  @override
-  String get decorSnowFamily => 'Famille de bonshommes de neige';
-
-  @override
   String get decorAurora => 'Ciel d\'aurore boréale';
 
   @override
   String get growBig => 'Agrandir le village';
-
-  @override
-  String upgradePointLots(int count) {
-    return '$count terrains verrouillés s\'ouvrent.';
-  }
 
   @override
   String get useCredit => 'Utiliser un de tes pass';

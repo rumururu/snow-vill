@@ -212,12 +212,6 @@ export const ko = {
   "upgrade.inApp": "Snow Village 앱에서 {price}에 {district}를 열 수 있어요",
   "upgrade.pick": "어느 동네를 열까요?",
   "upgrade.halfOpen": "반쯤 열림",
-  "facility.landmark_rink": "아이스링크",
-  "facility.landmark_santa": "산타의 집",
-  "facility.landmark_rudolph": "루돌프 동상",
-  "facility.decor_sled": "선물 썰매",
-  "facility.prop_pines": "전나무 숲",
-  "facility.prop_lamp": "가로등 길",
   "milestone.aurora": "오로라 하늘",
 
   // Small UI pieces

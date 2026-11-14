@@ -208,12 +208,6 @@ export const id: Messages = {
   "upgrade.inApp": "Buka {district} di aplikasi Snow Village — toko aplikasi menampilkan harga dalam mata uangmu.",
   "upgrade.pick": "Lorong mana yang dibuka?",
   "upgrade.halfOpen": "Setengah terbuka",
-  "facility.landmark_rink": "Arena es",
-  "facility.landmark_santa": "Rumah Sinterklas",
-  "facility.landmark_rudolph": "Patung Rudolph",
-  "facility.decor_sled": "Kereta salju hadiah",
-  "facility.prop_pines": "Hutan cemara",
-  "facility.prop_lamp": "Jalan berlampu",
   "milestone.aurora": "Langit aurora",
 
   // Small UI pieces

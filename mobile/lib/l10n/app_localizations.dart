@@ -300,24 +300,6 @@ abstract class AppLocalizations {
   /// **'집 모양'**
   String get houseStyle;
 
-  /// No description provided for @styleWood.
-  ///
-  /// In ko, this message translates to:
-  /// **'나무'**
-  String get styleWood;
-
-  /// No description provided for @styleSage.
-  ///
-  /// In ko, this message translates to:
-  /// **'세이지'**
-  String get styleSage;
-
-  /// No description provided for @styleIndigo.
-  ///
-  /// In ko, this message translates to:
-  /// **'인디고'**
-  String get styleIndigo;
-
   /// No description provided for @photo.
   ///
   /// In ko, this message translates to:
@@ -648,18 +630,6 @@ abstract class AppLocalizations {
   /// **'친구 {remaining}명이 더 입주하면 「{reward}」이(가) 생겨요 🎁'**
   String milestoneHint(int remaining, String reward);
 
-  /// No description provided for @decorSled.
-  ///
-  /// In ko, this message translates to:
-  /// **'선물 썰매'**
-  String get decorSled;
-
-  /// No description provided for @decorSnowFamily.
-  ///
-  /// In ko, this message translates to:
-  /// **'눈사람 가족'**
-  String get decorSnowFamily;
-
   /// No description provided for @decorAurora.
   ///
   /// In ko, this message translates to:
@@ -671,12 +641,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'마을 넓히기'**
   String get growBig;
-
-  /// No description provided for @upgradePointLots.
-  ///
-  /// In ko, this message translates to:
-  /// **'잠긴 빈 집 {count}채가 열려요.'**
-  String upgradePointLots(int count);
 
   /// No description provided for @useCredit.
   ///

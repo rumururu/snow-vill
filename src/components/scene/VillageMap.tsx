@@ -347,8 +347,3 @@ export function VillageMap({ village, myHouseId, igniteSlot = null, onSelectSlot
     </div>
   );
 }
-
-/** Lot index → default door direction (faces the plaza). */
-export function defaultDirection(slot: number) {
-  return LOTS[slot]?.facing ?? 0;
-}

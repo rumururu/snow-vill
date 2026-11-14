@@ -110,15 +110,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get houseStyle => '家の形';
 
   @override
-  String get styleWood => '木';
-
-  @override
-  String get styleSage => 'セージ';
-
-  @override
-  String get styleIndigo => 'インディゴ';
-
-  @override
   String get photo => '写真';
 
   @override
@@ -302,21 +293,10 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get decorSled => 'プレゼントのそり';
-
-  @override
-  String get decorSnowFamily => '雪だるま家族';
-
-  @override
   String get decorAurora => 'オーロラの空';
 
   @override
   String get growBig => '村を広げる';
-
-  @override
-  String upgradePointLots(int count) {
-    return 'ロック中の区画が$countつ開きます。';
-  }
 
   @override
   String get useCredit => '持っている利用券で広げる';

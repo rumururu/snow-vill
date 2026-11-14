@@ -62,9 +62,6 @@
   "nickname": "닉네임",
   "nicknameHint": "친구들이 알아볼 이름",
   "houseStyle": "집 모양",
-  "styleWood": "나무",
-  "styleSage": "세이지",
-  "styleIndigo": "인디고",
   "photo": "사진",
   "optional": "(선택)",
   "choosePhoto": "사진 고르기",
@@ -179,18 +176,8 @@
       }
     }
   },
-  "decorSled": "선물 썰매",
-  "decorSnowFamily": "눈사람 가족",
   "decorAurora": "오로라 하늘",
   "growBig": "마을 넓히기",
-  "upgradePointLots": "잠긴 빈 집 {count}채가 열려요.",
-  "@upgradePointLots": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "useCredit": "보유한 이용권으로 넓히기",
   "upgradeWaiting": "결제를 확인하는 중이에요…",
   "restorePurchases": "구매 복원",

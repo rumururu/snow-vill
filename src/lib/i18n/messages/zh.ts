@@ -208,12 +208,6 @@ export const zh: Messages = {
   "upgrade.inApp": "可在 Snow Village 应用中开放{district}，商店会以你所在地区的货币显示价格。",
   "upgrade.pick": "要开放哪条巷子？",
   "upgrade.halfOpen": "已开放一半",
-  "facility.landmark_rink": "溜冰场",
-  "facility.landmark_santa": "圣诞老人之家",
-  "facility.landmark_rudolph": "鲁道夫雕像",
-  "facility.decor_sled": "礼物雪橇",
-  "facility.prop_pines": "冷杉林",
-  "facility.prop_lamp": "路灯小道",
   "milestone.aurora": "极光夜空",
 
   // Small UI pieces

@@ -224,12 +224,6 @@ export const es: Messages = {
   "upgrade.inApp": "Abre {district} en la app Snow Village; la tienda muestra el precio en tu moneda.",
   "upgrade.pick": "¿Qué calle abrimos?",
   "upgrade.halfOpen": "Abierta a medias",
-  "facility.landmark_rink": "Pista de hielo",
-  "facility.landmark_santa": "Casa de Papá Noel",
-  "facility.landmark_rudolph": "Estatua de Rodolfo",
-  "facility.decor_sled": "Trineo de regalos",
-  "facility.prop_pines": "Bosque de abetos",
-  "facility.prop_lamp": "Camino de faroles",
   "milestone.aurora": "Cielo con aurora",
 
   // Small UI pieces

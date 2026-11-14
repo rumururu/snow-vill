@@ -718,25 +718,6 @@ List<Offset> convexHull(List<Offset> points) {
   ];
 }
 
-/// A path's band ([width] tiles) as one projected polygon.
-List<Offset> pathPolygon(List<(double, double, double)> line, double width) {
-  final left = <Offset>[];
-  final right = <Offset>[];
-  final w = width / 2;
-  for (var k = 0; k < line.length; k++) {
-    final (i, j, z) = line[k];
-    final a = line[math.max(0, k - 1)];
-    final b = line[math.min(line.length - 1, k + 1)];
-    var l = math.sqrt(math.pow(b.$1 - a.$1, 2) + math.pow(b.$2 - a.$2, 2));
-    if (l == 0) l = 1;
-    final ni = -(b.$2 - a.$2) / l * w;
-    final nj = (b.$1 - a.$1) / l * w;
-    left.add(project(i + ni, j + nj, z));
-    right.add(project(i - ni, j - nj, z));
-  }
-  return [...left, ...right.reversed];
-}
-
 bool pointInPolygon(Offset p, List<Offset> poly) {
   var inside = false;
   for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {

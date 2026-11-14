@@ -1,31 +1,8 @@
 /**
- * Asset manifest. Production sprites are original art generated for this project
- * (assets/source/PROVENANCE.md); delivery files and measured geometry come from
- * scripts/build_village.py → public/assets/v2 + src/lib/village-geometry.json (see src/lib/map.ts).
+ * Colour tokens. Production sprites and their geometry live in src/lib/map.ts
+ * (scripts/build_village.py → public/assets/v2 + src/lib/village-geometry.json; provenance in assets/source/PROVENANCE.md).
  */
-import { HOUSE_SPRITES, SPRITES } from "./map";
 import type { HouseStyle } from "./village";
-
-export type AssetStatus = "placeholder-svg" | "production";
-
-export interface AssetEntry {
-  key: string;
-  status: AssetStatus;
-  src: string | null;
-}
-
-const prod = (key: string, src: string): AssetEntry => ({ key, status: "production", src });
-const placeholder = (key: string): AssetEntry => ({ key, status: "placeholder-svg", src: null });
-
-export const ASSET_MANIFEST = {
-  houses: Object.fromEntries(
-    Object.entries(HOUSE_SPRITES).map(([style, h]) => [style, prod(`house/${h.a}`, SPRITES[h.a].src)]),
-  ) as Record<HouseStyle, AssetEntry>,
-  cathedral: prod("facility/landmark_cathedral", SPRITES.landmark_cathedral.src),
-  /** Still inline SVG (components/house/Avatar.tsx, PhotoFrameSheet CSS frame). */
-  avatars: placeholder("ui/avatar_default"),
-  frame: placeholder("ui/frame_wood"),
-} as const;
 
 /** Palette tokens (docs/03-ui-ux.md). */
 export const PALETTE = {

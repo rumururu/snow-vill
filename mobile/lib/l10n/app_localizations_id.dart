@@ -111,15 +111,6 @@ class AppLocalizationsId extends AppLocalizations {
   String get houseStyle => 'Jenis rumah';
 
   @override
-  String get styleWood => 'Kayu';
-
-  @override
-  String get styleSage => 'Sage';
-
-  @override
-  String get styleIndigo => 'Nila';
-
-  @override
   String get photo => 'Foto';
 
   @override
@@ -308,21 +299,10 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get decorSled => 'Kereta salju hadiah';
-
-  @override
-  String get decorSnowFamily => 'Keluarga manusia salju';
-
-  @override
   String get decorAurora => 'Langit aurora';
 
   @override
   String get growBig => 'Perluas desa';
-
-  @override
-  String upgradePointLots(int count) {
-    return '$count kavling terkunci akan terbuka.';
-  }
 
   @override
   String get useCredit => 'Pakai tiket yang kamu punya';

@@ -111,15 +111,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get houseStyle => 'Тип дома';
 
   @override
-  String get styleWood => 'Дерево';
-
-  @override
-  String get styleSage => 'Шалфей';
-
-  @override
-  String get styleIndigo => 'Индиго';
-
-  @override
   String get photo => 'Фото';
 
   @override
@@ -307,21 +298,10 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get decorSled => 'Сани с подарками';
-
-  @override
-  String get decorSnowFamily => 'Семья снеговиков';
-
-  @override
   String get decorAurora => 'Северное сияние';
 
   @override
   String get growBig => 'Расширить деревню';
-
-  @override
-  String upgradePointLots(int count) {
-    return 'Откроются закрытые участки: $count.';
-  }
 
   @override
   String get useCredit => 'Использовать свой пропуск';

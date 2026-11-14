@@ -113,15 +113,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get houseStyle => 'Hausart';
 
   @override
-  String get styleWood => 'Holz';
-
-  @override
-  String get styleSage => 'Salbei';
-
-  @override
-  String get styleIndigo => 'Indigo';
-
-  @override
   String get photo => 'Foto';
 
   @override
@@ -312,21 +303,10 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get decorSled => 'Geschenkschlitten';
-
-  @override
-  String get decorSnowFamily => 'Schneemannfamilie';
-
-  @override
   String get decorAurora => 'Polarlichthimmel';
 
   @override
   String get growBig => 'Dorf vergrößern';
-
-  @override
-  String upgradePointLots(int count) {
-    return '$count gesperrte Grundstücke werden frei.';
-  }
 
   @override
   String get useCredit => 'Vorhandenen Pass nutzen';

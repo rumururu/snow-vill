@@ -16,14 +16,12 @@ import { localized, type Locale } from "./i18n/locales";
 export const TILE = 100;
 /** On-screen house size in tiles (lots are ≥ 2.3 tiles apart, so houses keep a gap). */
 export const HOUSE_TILES = 1.7;
-export const GROUND_ASPECT: number = geo.groundAspect;
 /** Screen px per elevation unit (at TILE = 100). */
 export const ELEVATION_PX: number = geo.elevationPx;
 export const PATH_WIDTH: number = geo.pathWidth;
 export const DISTRICT_RADIUS: number = geo.districtRadius;
 export const PLAZA_BASE_RADIUS: number = geo.plazaBaseRadius;
 const HULL_MARGIN: number = geo.hullMargin;
-export const PARTS = geo.parts as { fence: string; post: string; gate: string };
 export const SNOW_TEXTURE: string = geo.snowTexture;
 export const AURORA_MIN_HOUSES: number = geo.auroraMinHouses;
 
@@ -644,23 +642,6 @@ export function villageFence(shape: G[]): G[][] {
     posts.push(Math.hypot(p[0] - front[0], p[1] - front[1]) < VILLAGE_GATE ? null : p);
   }
   return fenceRuns(posts);
-}
-
-/** A path's band (width PATH_WIDTH) as one polygon. */
-export function pathPolygon(line: Array<[number, number, number]>, width = PATH_WIDTH): Point[] {
-  const left: Point[] = [];
-  const right: Point[] = [];
-  const w = width / 2;
-  line.forEach(([i, j, z], k) => {
-    const a = line[Math.max(0, k - 1)];
-    const b = line[Math.min(line.length - 1, k + 1)];
-    const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
-    const ni = (-(b[1] - a[1]) / L) * w;
-    const nj = ((b[0] - a[0]) / L) * w;
-    left.push(project(i + ni, j + nj, z));
-    right.push(project(i - ni, j - nj, z));
-  });
-  return [...left, ...right.reverse()];
 }
 
 /** Trees still standing: outside the village shape, with a little room at the sides and more in front of

@@ -24,9 +24,6 @@ const Map<int, String> tierProduct = {
   4: 'snowvillage_expand_4',
 };
 
-/// Korean list price per tier (the store shows the localized price).
-const Map<int, int> tierPriceKrw = {1: 2900, 2: 6900, 3: 12900, 4: 25900};
-
 /// Price tier of the next step for a village of this size (0 = already at the maximum).
 int stepTier(int capacity) {
   if (capacity >= maxCapacity) return 0;

@@ -110,15 +110,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get houseStyle => '집 모양';
 
   @override
-  String get styleWood => '나무';
-
-  @override
-  String get styleSage => '세이지';
-
-  @override
-  String get styleIndigo => '인디고';
-
-  @override
   String get photo => '사진';
 
   @override
@@ -302,21 +293,10 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get decorSled => '선물 썰매';
-
-  @override
-  String get decorSnowFamily => '눈사람 가족';
-
-  @override
   String get decorAurora => '오로라 하늘';
 
   @override
   String get growBig => '마을 넓히기';
-
-  @override
-  String upgradePointLots(int count) {
-    return '잠긴 빈 집 $count채가 열려요.';
-  }
 
   @override
   String get useCredit => '보유한 이용권으로 넓히기';

@@ -110,15 +110,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get houseStyle => '房屋类型';
 
   @override
-  String get styleWood => '原木';
-
-  @override
-  String get styleSage => '鼠尾草';
-
-  @override
-  String get styleIndigo => '靛蓝';
-
-  @override
   String get photo => '照片';
 
   @override
@@ -300,21 +291,10 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get decorSled => '礼物雪橇';
-
-  @override
-  String get decorSnowFamily => '雪人一家';
-
-  @override
   String get decorAurora => '极光夜空';
 
   @override
   String get growBig => '扩建小镇';
-
-  @override
-  String upgradePointLots(int count) {
-    return '将开放 $count 块锁定的地块。';
-  }
 
   @override
   String get useCredit => '使用已有的扩建券';

@@ -208,12 +208,6 @@ export const ja: Messages = {
   "upgrade.inApp": "Snow Villageアプリで{district}を開けます。価格はお住まいの地域の通貨でストアに表示されます。",
   "upgrade.pick": "どの通りを開きますか？",
   "upgrade.halfOpen": "半分開放",
-  "facility.landmark_rink": "スケートリンク",
-  "facility.landmark_santa": "サンタの家",
-  "facility.landmark_rudolph": "ルドルフ像",
-  "facility.decor_sled": "プレゼントのそり",
-  "facility.prop_pines": "モミの林",
-  "facility.prop_lamp": "街灯の道",
   "milestone.aurora": "オーロラの空",
 
   // Small UI pieces

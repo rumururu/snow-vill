@@ -291,9 +291,6 @@ class VillageNotifier extends AsyncNotifier<Village?> {
     return const ActionOutcome.fail('errPurchasePending');
   }
 
-  /// May this device change the village's look? Only the owner (owner secret held).
-  bool get canEditLook => _identity.owners.containsKey(villageId);
-
   /// Owner only: one path style for the whole village and the moved decorations.
   Future<ActionOutcome> setLook(
     PathStyle pathStyle,

@@ -220,7 +220,6 @@ export const de: Messages = {
   "upgrade.inApp": "Öffne die {district} in der Snow Village App – der Store zeigt den Preis in deiner Währung.",
   "upgrade.pick": "Welche Gasse öffnen?",
   "upgrade.halfOpen": "Halb offen",
-  "facility.decor_snowfamily": "Schneemannfamilie",
   "facility.landmark_rink": "Eisbahn",
   "facility.landmark_santa": "Haus des Weihnachtsmanns",
   "facility.landmark_rudolph": "Rudolf-Statue",

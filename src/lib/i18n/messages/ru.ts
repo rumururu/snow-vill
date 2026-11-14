@@ -238,7 +238,6 @@ export const ru: Messages = {
   "upgrade.inApp": "Открой {district} в приложении Snow Village — цена в твоей валюте указана в магазине.",
   "upgrade.pick": "Какой переулок открыть?",
   "upgrade.halfOpen": "Открыт наполовину",
-  "facility.decor_snowfamily": "Семья снеговиков",
   "facility.landmark_rink": "Каток",
   "facility.landmark_santa": "Дом Санты",
   "facility.landmark_rudolph": "Статуя Рудольфа",

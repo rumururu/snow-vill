@@ -224,7 +224,6 @@ export const fr: Messages = {
   "upgrade.inApp": "Ouvre {district} dans l’appli Snow Village : la boutique affiche le prix dans ta devise.",
   "upgrade.pick": "Quelle rue ouvrir ?",
   "upgrade.halfOpen": "À moitié ouverte",
-  "facility.decor_snowfamily": "Famille de bonshommes de neige",
   "facility.landmark_rink": "Patinoire",
   "facility.landmark_santa": "Maison du Père Noël",
   "facility.landmark_rudolph": "Statue de Rudolph",

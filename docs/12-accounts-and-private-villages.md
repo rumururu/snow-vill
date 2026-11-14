@@ -37,6 +37,15 @@ is a guest village in the app, in another browser, after a reinstall or after cl
 - **Account deletion** in the app and on the web (Apple 5.1.1(v), Play account-deletion URL): deletes the account and
   everything it owns (villages → houses → photos) in one function, same path as today's village deletion.
 
+## Sign-in setup (done 2026-11-14)
+| Piece | Value |
+|---|---|
+| Google Cloud | project `snow-village-mkideabox` (#326320694955, account mkideabox@gmail.com). Consent screen "Snow Village", External, **in production**, home page + privacy link, authorized domain `mkideabox.com`, no logo (no brand verification), basic scopes only |
+| Google clients | web `326320694955-6ltlbk16iv6knc29agfmjevp6bopa8oi` (JS origins snow.mkideabox.com, workers.dev, localhost; secret in keychain `snow-village-google-web-secret`/`google-oauth`), iOS `326320694955-0ovsn0vsf9mqlf65v3nk8ta5ijt7epng`, Android × 3 (Play app signing `DC:C5…F0:94`, upload `EE:70…51:8D`, debug `6E:82…2E:12`) |
+| Apple | App ID `com.mkideabox.snowvillage`: Sign in with Apple on (team 3SAMRT9KZD). Services ID `com.mkideabox.snowvillage.web` (domains snow.mkideabox.com, hbpazldzkmkcawfppiiq.supabase.co; return URLs `https://snow.mkideabox.com/`, `https://hbpazldzkmkcawfppiiq.supabase.co/auth/v1/callback`). Key `7W98CY35QQ` (.p8 only in keychain `snow-village-apple-signin-key`/`apple-signin`, base64) |
+| Supabase Auth | `supabase/auth_config.py` (re-runnable): Google + Apple on, email/phone/anonymous off, site URL + redirect allow list (web origins, `com.mkideabox.snowvillage://login-callback`). **Apple client secret expires 2027-05-12 — rerun the script before then** |
+| Flows | Web: Google Identity Services and Sign in with Apple JS return an id token → `signInWithIdToken`. iOS: native Google/Apple → `signInWithIdToken`. Android: native Google → `signInWithIdToken`; Apple via Supabase OAuth redirect (Services ID) back to `com.mkideabox.snowvillage://login-callback` |
+
 ## Cutover from the shared project
 1. Apply the schema to the new project; port `supabase/deploy.sh` (REF/token) and the live tests.
 2. Copy rows (villages, houses, reports, moderation log, tier credits/purchases) and photo objects; check counts and
@@ -57,9 +66,9 @@ is a guest village in the app, in another browser, after a reinstall or after cl
 | Step | Content | Needs the owner |
 |---|---|---|
 | 1 | Schema + deploy script + live tests on the new project | — |
-| 2 | Google OAuth clients (web, Android, iOS) in GCP; Apple Services ID + key; Supabase Auth providers and redirect URLs | consoles are signed in; owner approves consent-screen publishing |
+| 2 | ~~Google OAuth clients, Apple Services ID + key, Supabase Auth providers~~ done 2026-11-14 (above) | — |
 | 3 | Web sign-in, account linking, "내 마을" list, account deletion | — |
 | 4 | App sign-in (native Google/Apple), linking, account deletion | — |
 | 5 | Private villages: visibility toggle, join request / approve, access checks, share card | — |
 | 6 | Data copy + cutover (web deploy, app 1.1 build) | approve cutover time |
-| 7 | Policy pages, store forms, app 1.1 review | approve submission |
+| 7 | Policy pages, store forms, app review (the 1.0 App Store submission was withdrawn 2026-11-14 on the owner's request, to ship with sign-in) | approve submission |

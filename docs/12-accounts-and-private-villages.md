@@ -46,6 +46,35 @@ is a guest village in the app, in another browser, after a reinstall or after cl
 | Supabase Auth | `supabase/auth_config.py` (re-runnable): Google + Apple on, email/phone/anonymous off, site URL + redirect allow list (web origins, `com.mkideabox.snowvillage://login-callback`). **Apple client secret expires 2027-05-12 — rerun the script before then** |
 | Flows | Web: Google Identity Services and Sign in with Apple JS return an id token → `signInWithIdToken`. iOS: native Google/Apple → `signInWithIdToken`. Android: native Google → `signInWithIdToken`; Apple via Supabase OAuth redirect (Services ID) back to `com.mkideabox.snowvillage://login-callback` |
 
+## Client contract (server done 2026-11-14: migration `20261114100000_snowvill_accounts.sql`, `functions/snowvill-photo`)
+Base URL `https://hbpazldzkmkcawfppiiq.supabase.co`; `apikey` header is always the public anon key.
+Signed in → `Authorization: Bearer <access_token>`; guest → `Authorization: Bearer <anon key>` (as today).
+
+**Auth (GoTrue REST, `/auth/v1`)**
+- `POST /token?grant_type=id_token` `{provider: "google"|"apple", id_token, nonce?}` → session
+  `{access_token, refresh_token, expires_in, expires_at, user: {id, email, app_metadata.provider, user_metadata}}`.
+- `POST /token?grant_type=refresh_token` `{refresh_token}` → new session (refresh before `expires_at`).
+- `POST /logout` with the access token.
+- Android Apple only: OAuth PKCE redirect via `/authorize?provider=apple&redirect_to=com.mkideabox.snowvillage://login-callback`.
+
+**RPCs (`/rest/v1/rpc/<fn>`)**
+| Function | Args | Returns / notes |
+|---|---|---|
+| `snowvill_get_village` | `p_village_id`, `p_secrets` (text[], optional: the guest's owner + claim secrets for this village) | adds `visibility`, `locked`, `me {role: owner\|resident\|member\|pending\|null, house_id}`. `locked: true` → only `{id, name, visibility, locked, me}` |
+| `snowvill_link_device` | `p_owner` `{villageId: ownerSecret}`, `p_houses` `{houseId: claimSecret}` | `{villages, houses}` moved to the account (signed in only; call right after sign-in, then drop nothing locally) |
+| `snowvill_my_villages` | — | `[{id, name, capacity, visibility, created_at, role, houses, pending}]` (signed in only) |
+| `snowvill_set_visibility` | `p_village_id`, `p_visibility` `public\|private` | `{ok, reason?: FORBIDDEN}` — signed-in owner only |
+| `snowvill_request_join` | `p_village_id`, `p_nickname` (1–10) | `{ok, role}`; private villages, signed in |
+| `snowvill_members_of` | `p_village_id` | owner: `[{user_id, nickname, status: pending\|approved, created_at}]`, others `null` |
+| `snowvill_decide_member` | `p_village_id`, `p_user_id`, `p_approve` | approve or remove (reject / remove member) |
+| `snowvill_set_village_look` | as before; `p_owner_secret` may be `null` for a signed-in owner | |
+| `snowvill_claim_house` | as before | private village and not owner/approved → HTTP 403; a second house for the same account → HTTP 409 |
+
+**Edge Function `snowvill-photo`**: with a user token the `secret` fields are optional (upload, remove, delete_village).
+`view` takes optional `secrets: string[]` (guests of a private village). New `delete_account`
+`{install_id, apple_code?, apple_client?: "web"|"app"}` — a fresh Sign in with Apple authorization code lets the
+server revoke the Apple grant; then the account, its villages, its houses and their photos are deleted.
+
 ## Cutover from the shared project
 1. Apply the schema to the new project; port `supabase/deploy.sh` (REF/token) and the live tests.
 2. Copy rows (villages, houses, reports, moderation log, tier credits/purchases) and photo objects; check counts and

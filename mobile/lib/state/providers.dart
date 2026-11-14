@@ -65,8 +65,8 @@ class SessionNotifier extends Notifier<Session?> {
         // Best effort: the secrets still work on this device; the next sign-in retries.
       }
     }
-    ref.invalidate(myVillagesProvider);
-    ref.invalidate(villageProvider);
+    // No invalidation here: the list and villages watch the session and await [linked] before fetching
+    // (invalidating providers that depend on this notifier is a circular dependency in Riverpod).
   }
 }
 
@@ -79,6 +79,8 @@ final myVillagesProvider = FutureProvider<List<AccountVillage>?>((ref) async {
   final userId = ref.watch(sessionProvider.select((s) => s?.user.id));
   final api = ref.watch(remoteApiProvider);
   if (userId == null || api == null) return null;
+  // Right after sign-in, wait until this device's guest villages are linked, or they would be missing.
+  await ref.read(sessionProvider.notifier).linked;
   return api.myVillages();
 });
 
@@ -228,6 +230,7 @@ class VillageNotifier extends AsyncNotifier<Village?> {
       (_) => refresh(silent: true),
     );
     ref.onDispose(() => _poll?.cancel());
+    await ref.read(sessionProvider.notifier).linked;
     final v = await _fetch();
     if (v != null) ref.read(identityProvider.notifier).remember(v);
     return v;

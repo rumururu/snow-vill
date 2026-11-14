@@ -412,4 +412,59 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get lookSaved => 'Dekorasi desa disimpan.';
+
+  @override
+  String get signIn => 'Masuk';
+
+  @override
+  String get continueWithGoogle => 'Lanjutkan dengan Google';
+
+  @override
+  String get continueWithApple => 'Lanjutkan dengan Apple';
+
+  @override
+  String get signOut => 'Keluar';
+
+  @override
+  String get deleteAccount => 'Hapus akun';
+
+  @override
+  String get deleteAccountTitle => 'Hapus akunmu?';
+
+  @override
+  String get deleteAccountBody =>
+      'Semua desa, rumah, dan fotomu akan dihapus dan tidak bisa dikembalikan.';
+
+  @override
+  String get deleteAccountButton => 'Hapus';
+
+  @override
+  String get accountDeleted => 'Akunmu sudah dihapus.';
+
+  @override
+  String get errSignIn => 'Gagal masuk. Coba lagi.';
+
+  @override
+  String get privateVillage => 'Desa privat';
+
+  @override
+  String get members => 'Anggota';
+
+  @override
+  String get requestJoin => 'Minta bergabung';
+
+  @override
+  String get joinPending => 'Menunggu persetujuan';
+
+  @override
+  String get approve => 'Setujui';
+
+  @override
+  String get decline => 'Tolak';
+
+  @override
+  String get removeMember => 'Keluarkan';
+
+  @override
+  String get noMembers => 'Belum ada';
 }

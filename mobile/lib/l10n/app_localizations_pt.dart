@@ -413,4 +413,59 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get lookSaved => 'Decoração da vila salva.';
+
+  @override
+  String get signIn => 'Entrar';
+
+  @override
+  String get continueWithGoogle => 'Continuar com Google';
+
+  @override
+  String get continueWithApple => 'Continuar com Apple';
+
+  @override
+  String get signOut => 'Sair';
+
+  @override
+  String get deleteAccount => 'Excluir conta';
+
+  @override
+  String get deleteAccountTitle => 'Excluir sua conta?';
+
+  @override
+  String get deleteAccountBody =>
+      'Suas vilas, casas e fotos serão todas excluídas. Não dá para desfazer.';
+
+  @override
+  String get deleteAccountButton => 'Excluir';
+
+  @override
+  String get accountDeleted => 'Sua conta foi excluída.';
+
+  @override
+  String get errSignIn => 'Não foi possível entrar. Tente novamente.';
+
+  @override
+  String get privateVillage => 'Vila privada';
+
+  @override
+  String get members => 'Membros';
+
+  @override
+  String get requestJoin => 'Pedir para entrar';
+
+  @override
+  String get joinPending => 'Aguardando aprovação';
+
+  @override
+  String get approve => 'Aprovar';
+
+  @override
+  String get decline => 'Recusar';
+
+  @override
+  String get removeMember => 'Remover';
+
+  @override
+  String get noMembers => 'Ninguém ainda';
 }

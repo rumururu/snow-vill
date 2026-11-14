@@ -19,6 +19,7 @@ import '../scene/geometry.dart' as geo;
 import '../scene/village_scene.dart';
 import '../state/providers.dart';
 import '../ui/common.dart';
+import 'account_sheet.dart';
 
 /// Claim draft kept on the screen so it survives closing the sheet and failed submits.
 class _Draft {
@@ -98,8 +99,8 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
       _openUpgrade(v, district: slot ~/ 6);
       return;
     }
-    final mine = ref.read(identityProvider).houses[v.id];
-    if (mine != null && v.houses.any((h) => h.id == mine.houseId)) {
+    final mine = myHouseIdIn(ref.read(identityProvider), v);
+    if (mine != null && v.houses.any((h) => h.id == mine)) {
       showToast(context, l.alreadyHaveHouse);
       return;
     }
@@ -151,8 +152,8 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
       builder: (_) => _FrameSheet(
         villageId: v.id,
         house: house,
-        isMine: identity.houses[v.id]?.houseId == house.id,
-        isOwner: identity.owners.containsKey(v.id),
+        isMine: myHouseIdIn(identity, v) == house.id,
+        isOwner: isOwnerOf(identity, v),
         styleLabel: _styleLabel,
       ),
     );
@@ -257,6 +258,87 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
     return null;
   }
 
+  bool _joining = false;
+
+  /// Locked private village: sign in if needed, then ask the owner with a nickname.
+  Future<void> _requestJoin() async {
+    final l = AppLocalizations.of(context);
+    setState(() => _joining = true);
+    try {
+      if (!await showSignInSheet(context, ref) || !mounted) return;
+      await _notifier.refresh(silent: true);
+      final v = ref.read(villageProvider(widget.villageId)).value;
+      if (!mounted || v == null || !v.locked || v.myRole == 'pending') return;
+      final nickname = await _askNickname();
+      if (nickname == null || !mounted) return;
+      final r = await _notifier.requestJoin(nickname);
+      if (mounted && !r.ok) showToast(context, trKey(l, r.error!));
+    } finally {
+      if (mounted) setState(() => _joining = false);
+    }
+  }
+
+  Future<String?> _askNickname() {
+    final l = AppLocalizations.of(context);
+    final controller = TextEditingController();
+    String? error;
+    return showDialog<String>(
+      context: context,
+      builder: (c) => StatefulBuilder(
+        builder: (c, setState) => AlertDialog(
+          title: Text(l.requestJoin),
+          content: TextField(
+            key: const ValueKey('join-nickname'),
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: l.nickname,
+              hintText: l.nicknameHint,
+              errorText: error,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              key: const ValueKey('join-submit'),
+              style: FilledButton.styleFrom(minimumSize: const Size(88, 44)),
+              onPressed: () {
+                final e = nicknameError(controller.text);
+                if (e != null) {
+                  setState(() => error = trKey(l, e));
+                } else {
+                  Navigator.pop(c, controller.text);
+                }
+              },
+              child: Text(l.requestJoin),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Owner: public ⇄ private. Private villages need a signed-in owner (members are accounts).
+  Future<void> _togglePrivate(Village v) async {
+    final l = AppLocalizations.of(context);
+    if (!await showSignInSheet(context, ref) || !mounted) return;
+    final r = await _notifier.setPrivate(!v.isPrivate);
+    if (mounted && !r.ok) showToast(context, trKey(l, r.error!));
+  }
+
+  Future<void> _openMembers(Village v) async {
+    ref.invalidate(membersProvider(v.id));
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => _MembersSheet(villageId: v.id),
+    );
+  }
+
   Future<void> _confirmDelete(Village v) async {
     final l = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
@@ -293,7 +375,18 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
     final async = ref.watch(villageProvider(widget.villageId));
     final geometry = ref.watch(villageGeometryProvider).value;
     final identity = ref.watch(identityProvider);
+    final session = ref.watch(sessionProvider);
     final village = async.value;
+    final owner = village != null && isOwnerOf(identity, village);
+    // Join requests waiting (signed-in owner of a private village).
+    final pending = owner && village.isPrivate && session != null
+        ? (ref
+                  .watch(membersProvider(village.id))
+                  .value
+                  ?.where((m) => !m.approved)
+                  .length ??
+              0)
+        : 0;
 
     if (village != null &&
         geometry != null &&
@@ -301,7 +394,7 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
         !_firstPromptShown) {
       _firstPromptShown = true;
       if (village.houseAt(0) == null &&
-          !identity.houses.containsKey(village.id)) {
+          myHouseIdIn(identity, village) == null) {
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => mounted ? _openClaim(village, 0, intro: true) : null,
         );
@@ -326,8 +419,28 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
         title: l.notFoundTitle,
         body: l.notFoundBody,
       );
+    } else if (village.locked) {
+      body = _Message(
+        key: const ValueKey('locked-village'),
+        icon: '🔒',
+        title: l.privateVillage,
+        action: village.myRole == 'pending'
+            ? Text(
+                l.joinPending,
+                key: const ValueKey('join-pending'),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: SvColors.night,
+                ),
+              )
+            : FilledButton(
+                key: const ValueKey('request-join'),
+                onPressed: _joining ? null : () => _requestJoin(),
+                child: Text(l.requestJoin),
+              ),
+      );
     } else {
-      final myHouseId = identity.houses[village.id]?.houseId;
+      final myHouseId = myHouseIdIn(identity, village);
       final myHouse = village.houses
           .where((h) => h.id == myHouseId)
           .firstOrNull;
@@ -370,7 +483,7 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
                       ),
                     ),
                   ),
-                  if (identity.owners.containsKey(village.id) && _look == null)
+                  if (isOwnerOf(identity, village) && _look == null)
                     ActionChip(
                       key: const ValueKey('edit-look'),
                       label: Text(l.editLook),
@@ -526,18 +639,49 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
         ),
         centerTitle: true,
         actions: [
-          if (village != null &&
-              (village.canUpgrade || identity.owners.containsKey(village.id)))
+          if (village != null && !village.locked)
             PopupMenuButton<String>(
               key: const ValueKey('village-menu'),
+              icon: Badge(
+                isLabelVisible: pending > 0,
+                label: Text('$pending'),
+                backgroundColor: SvColors.danger,
+                child: const Icon(Icons.more_vert),
+              ),
               onSelected: (v) => switch (v) {
                 'grow' => _openUpgrade(village),
                 'look' => _startLook(village),
+                'private' => _togglePrivate(village),
+                'members' => _openMembers(village),
                 _ => _confirmDelete(village),
               },
               itemBuilder: (_) => [
-                if (identity.owners.containsKey(village.id) && _look == null)
+                if (owner && _look == null)
                   PopupMenuItem(value: 'look', child: Text(l.editLookMenu)),
+                if (owner && signInAvailable(ref))
+                  CheckedPopupMenuItem(
+                    key: const ValueKey('menu-private'),
+                    value: 'private',
+                    checked: village.isPrivate,
+                    child: Text(l.privateVillage),
+                  ),
+                if (owner && village.isPrivate && session != null)
+                  PopupMenuItem(
+                    key: const ValueKey('menu-members'),
+                    value: 'members',
+                    child: Row(
+                      children: [
+                        Text(l.members),
+                        if (pending > 0) ...[
+                          const SizedBox(width: 8),
+                          Badge(
+                            label: Text('$pending'),
+                            backgroundColor: SvColors.danger,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 // Always reachable (not only at 6/6) so anyone — including app reviewers — can buy it.
                 if (village.canUpgrade)
                   PopupMenuItem(
@@ -545,7 +689,7 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
                     value: 'grow',
                     child: Text(l.growBig),
                   ),
-                if (identity.owners.containsKey(village.id))
+                if (owner)
                   PopupMenuItem(value: 'delete', child: Text(l.deleteVillage)),
               ],
             ),
@@ -675,6 +819,7 @@ class _LookPanel extends StatelessWidget {
 
 class _Message extends StatelessWidget {
   const _Message({
+    super.key,
     required this.icon,
     required this.title,
     this.body,
@@ -1028,7 +1173,8 @@ class _ClaimSheetState extends ConsumerState<_ClaimSheet> {
                 Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(text: '${l.visibilityNote} '),
+                      if (ref.watch(villageProvider(widget.villageId)).value?.isPrivate != true)
+                        TextSpan(text: '${l.visibilityNote} '),
                       WidgetSpan(
                         child: GestureDetector(
                           onTap: () => launchUrl(
@@ -1709,6 +1855,131 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
                     },
               child: Text(l.restorePurchases),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Owner of a private village: join requests (approve / decline) and members (remove).
+class _MembersSheet extends ConsumerStatefulWidget {
+  const _MembersSheet({required this.villageId});
+  final String villageId;
+
+  @override
+  ConsumerState<_MembersSheet> createState() => _MembersSheetState();
+}
+
+class _MembersSheetState extends ConsumerState<_MembersSheet> {
+  String? _busyUser;
+
+  Future<void> _decide(String userId, {required bool approve}) async {
+    setState(() => _busyUser = userId);
+    final r = await ref
+        .read(villageProvider(widget.villageId).notifier)
+        .decideMember(userId, approve: approve);
+    if (!mounted) return;
+    setState(() => _busyUser = null);
+    if (!r.ok) {
+      showToast(context, trKey(AppLocalizations.of(context), r.error!));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final async = ref.watch(membersProvider(widget.villageId));
+    final list = async.value ?? const [];
+    final pending = list.where((m) => !m.approved).toList();
+    final approved = list.where((m) => m.approved).toList();
+    const heading = TextStyle(
+      fontSize: 17,
+      fontWeight: FontWeight.w800,
+      color: SvColors.night,
+    );
+    const small = Size(64, 40);
+
+    Widget row(String userId, String nickname, List<Widget> actions) => Padding(
+      key: ValueKey('member-$userId'),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              nickname,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: SvColors.night,
+              ),
+            ),
+          ),
+          if (_busyUser == userId)
+            const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            ...actions,
+        ],
+      ),
+    );
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (async.isLoading && !async.hasValue)
+            const Padding(
+              padding: EdgeInsets.all(24),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (async.hasError && !async.hasValue)
+            ErrorBox(l.errNetwork)
+          else ...[
+            if (pending.isNotEmpty) ...[
+              Text(l.requestJoin, style: heading),
+              const SizedBox(height: 6),
+              for (final m in pending)
+                row(m.userId, m.nickname, [
+                  TextButton(
+                    key: ValueKey('decline-${m.userId}'),
+                    style: TextButton.styleFrom(minimumSize: small),
+                    onPressed: () => _decide(m.userId, approve: false),
+                    child: Text(l.decline),
+                  ),
+                  const SizedBox(width: 6),
+                  FilledButton(
+                    key: ValueKey('approve-${m.userId}'),
+                    style: FilledButton.styleFrom(minimumSize: small),
+                    onPressed: () => _decide(m.userId, approve: true),
+                    child: Text(l.approve),
+                  ),
+                ]),
+              const SizedBox(height: 16),
+            ],
+            Text(l.members, style: heading),
+            const SizedBox(height: 6),
+            if (approved.isEmpty)
+              Text(
+                l.noMembers,
+                style: TextStyle(color: SvColors.night.withValues(alpha: 0.7)),
+              ),
+            for (final m in approved)
+              row(m.userId, m.nickname, [
+                TextButton(
+                  key: ValueKey('remove-${m.userId}'),
+                  style: TextButton.styleFrom(
+                    minimumSize: small,
+                    foregroundColor: SvColors.danger,
+                  ),
+                  onPressed: () => _decide(m.userId, approve: false),
+                  child: Text(l.removeMember),
+                ),
+              ]),
+          ],
         ],
       ),
     );

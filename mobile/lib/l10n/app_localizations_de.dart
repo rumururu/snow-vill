@@ -418,4 +418,59 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get lookSaved => 'Dorfgestaltung gespeichert.';
+
+  @override
+  String get signIn => 'Anmelden';
+
+  @override
+  String get continueWithGoogle => 'Weiter mit Google';
+
+  @override
+  String get continueWithApple => 'Weiter mit Apple';
+
+  @override
+  String get signOut => 'Abmelden';
+
+  @override
+  String get deleteAccount => 'Konto löschen';
+
+  @override
+  String get deleteAccountTitle => 'Konto löschen?';
+
+  @override
+  String get deleteAccountBody =>
+      'Deine Dörfer, Häuser und Fotos werden alle gelöscht. Das kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get deleteAccountButton => 'Löschen';
+
+  @override
+  String get accountDeleted => 'Dein Konto wurde gelöscht.';
+
+  @override
+  String get errSignIn => 'Anmeldung fehlgeschlagen. Bitte versuche es erneut.';
+
+  @override
+  String get privateVillage => 'Privates Dorf';
+
+  @override
+  String get members => 'Mitglieder';
+
+  @override
+  String get requestJoin => 'Beitritt anfragen';
+
+  @override
+  String get joinPending => 'Wartet auf Bestätigung';
+
+  @override
+  String get approve => 'Annehmen';
+
+  @override
+  String get decline => 'Ablehnen';
+
+  @override
+  String get removeMember => 'Entfernen';
+
+  @override
+  String get noMembers => 'Noch niemand';
 }

@@ -5,7 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:marionette_flutter/marionette_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'data/auth_service.dart';
+import 'data/remote_api.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/create_screen.dart';
 import 'screens/home_screen.dart';
@@ -22,12 +25,42 @@ Future<void> main() async {
     WidgetsFlutterBinding.ensureInitialized();
   }
   final prefs = await SharedPreferences.getInstance();
+  final auth = await _initAuth();
   runApp(
     ProviderScope(
-      overrides: [prefsProvider.overrideWithValue(prefs)],
+      overrides: [
+        prefsProvider.overrideWithValue(prefs),
+        if (auth != null) authServiceProvider.overrideWithValue(auth),
+      ],
       child: const SnowVillageApp(),
     ),
   );
+}
+
+/// Supabase Auth only (sessions, PKCE deep link); data calls stay on [RemoteApi].
+Future<AuthService?> _initAuth() async {
+  final config = RemoteConfig.fromEnvironment();
+  if (config == null) return null;
+  try {
+    await Supabase.initialize(
+      url: config.url,
+      publishableKey: config.anonKey,
+      authOptions: const FlutterAuthClientOptions(
+        authFlowType: AuthFlowType.pkce,
+      ),
+    );
+  } catch (_) {
+    return null;
+  }
+  final auth = Supabase.instance.client.auth;
+  // Debug builds only: start signed in with a test account's refresh token (no real Google/Apple).
+  const debugRefresh = String.fromEnvironment('SV_DEBUG_REFRESH_TOKEN');
+  if (kDebugMode && debugRefresh.isNotEmpty && auth.currentSession == null) {
+    try {
+      await auth.setSession(debugRefresh);
+    } catch (_) {}
+  }
+  return AuthService(auth);
 }
 
 final _router = GoRouter(

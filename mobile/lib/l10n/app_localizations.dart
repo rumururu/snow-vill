@@ -839,6 +839,114 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'마을 꾸미기를 저장했어요.'**
   String get lookSaved;
+
+  /// No description provided for @signIn.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인'**
+  String get signIn;
+
+  /// No description provided for @continueWithGoogle.
+  ///
+  /// In ko, this message translates to:
+  /// **'Google로 계속하기'**
+  String get continueWithGoogle;
+
+  /// No description provided for @continueWithApple.
+  ///
+  /// In ko, this message translates to:
+  /// **'Apple로 계속하기'**
+  String get continueWithApple;
+
+  /// No description provided for @signOut.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그아웃'**
+  String get signOut;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In ko, this message translates to:
+  /// **'계정 삭제'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'계정을 삭제할까요?'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'마을, 집, 사진이 모두 삭제되며 되돌릴 수 없어요.'**
+  String get deleteAccountBody;
+
+  /// No description provided for @deleteAccountButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'삭제'**
+  String get deleteAccountButton;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In ko, this message translates to:
+  /// **'계정을 삭제했어요.'**
+  String get accountDeleted;
+
+  /// No description provided for @errSignIn.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인하지 못했어요. 다시 시도해 주세요.'**
+  String get errSignIn;
+
+  /// No description provided for @privateVillage.
+  ///
+  /// In ko, this message translates to:
+  /// **'비공개 마을'**
+  String get privateVillage;
+
+  /// No description provided for @members.
+  ///
+  /// In ko, this message translates to:
+  /// **'멤버'**
+  String get members;
+
+  /// No description provided for @requestJoin.
+  ///
+  /// In ko, this message translates to:
+  /// **'입주 신청'**
+  String get requestJoin;
+
+  /// No description provided for @joinPending.
+  ///
+  /// In ko, this message translates to:
+  /// **'승인을 기다리고 있어요'**
+  String get joinPending;
+
+  /// No description provided for @approve.
+  ///
+  /// In ko, this message translates to:
+  /// **'승인'**
+  String get approve;
+
+  /// No description provided for @decline.
+  ///
+  /// In ko, this message translates to:
+  /// **'거절'**
+  String get decline;
+
+  /// No description provided for @removeMember.
+  ///
+  /// In ko, this message translates to:
+  /// **'내보내기'**
+  String get removeMember;
+
+  /// No description provided for @noMembers.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 없어요'**
+  String get noMembers;
 }
 
 class _AppLocalizationsDelegate

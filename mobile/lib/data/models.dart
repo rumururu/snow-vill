@@ -190,7 +190,23 @@ class Village {
     this.openHalves = freeOpenHalves,
     this.pathStyle = PathStyle.dirt,
     this.decor = const {},
+    this.isPrivate = false,
+    this.locked = false,
+    this.myRole,
+    this.myHouseId,
   });
+
+  /// Private: only the owner, residents and approved members see the houses.
+  final bool isPrivate;
+
+  /// Private and this caller may not see it: only [id], [name] and [myRole] are filled in.
+  final bool locked;
+
+  /// The signed-in caller's relation: owner | resident | member | pending | null (guest / none).
+  final String? myRole;
+
+  /// The signed-in caller's house in this village.
+  final String? myHouseId;
 
   /// One path style for the whole village (owner's choice).
   final PathStyle pathStyle;
@@ -212,10 +228,18 @@ class Village {
   factory Village.fromJson(Map<String, dynamic> j) {
     final open = (j['open_halves'] as num?)?.toInt();
     final cap = (j['capacity'] as num?)?.toInt() ?? freeCapacity;
+    final me = j['me'] is Map ? j['me'] as Map : const {};
     return Village(
       id: j['id'] as String,
       name: j['name'] as String,
-      createdAt: DateTime.parse(j['created_at'] as String),
+      // A locked (private) village comes without its date and houses.
+      createdAt:
+          DateTime.tryParse(j['created_at'] as String? ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0),
+      isPrivate: j['visibility'] == 'private',
+      locked: j['locked'] == true,
+      myRole: me['role'] as String?,
+      myHouseId: me['house_id'] as String?,
       openHalves: open != null && open > 0 ? open : halvesForCapacity(cap),
       pathStyle: pathStyleFrom(j['path_style']),
       decor: cleanDecor(j['decor']),
@@ -232,6 +256,7 @@ class Village {
     List<House>? houses,
     PathStyle? pathStyle,
     Map<String, Offset>? decor,
+    bool? isPrivate,
   }) => Village(
     id: id,
     name: name,
@@ -240,6 +265,10 @@ class Village {
     openHalves: openHalves ?? this.openHalves,
     pathStyle: pathStyle ?? this.pathStyle,
     decor: decor ?? this.decor,
+    isPrivate: isPrivate ?? this.isPrivate,
+    locked: locked,
+    myRole: myRole,
+    myHouseId: myHouseId,
   );
 
   House? houseAt(int slot) {

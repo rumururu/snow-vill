@@ -416,4 +416,59 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get lookSaved => 'Se guardó la decoración del pueblo.';
+
+  @override
+  String get signIn => 'Iniciar sesión';
+
+  @override
+  String get continueWithGoogle => 'Continuar con Google';
+
+  @override
+  String get continueWithApple => 'Continuar con Apple';
+
+  @override
+  String get signOut => 'Cerrar sesión';
+
+  @override
+  String get deleteAccount => 'Eliminar cuenta';
+
+  @override
+  String get deleteAccountTitle => '¿Eliminar tu cuenta?';
+
+  @override
+  String get deleteAccountBody =>
+      'Se eliminarán todas tus aldeas, casas y fotos. No se puede deshacer.';
+
+  @override
+  String get deleteAccountButton => 'Eliminar';
+
+  @override
+  String get accountDeleted => 'Tu cuenta se eliminó.';
+
+  @override
+  String get errSignIn => 'No se pudo iniciar sesión. Inténtalo de nuevo.';
+
+  @override
+  String get privateVillage => 'Aldea privada';
+
+  @override
+  String get members => 'Miembros';
+
+  @override
+  String get requestJoin => 'Pedir unirse';
+
+  @override
+  String get joinPending => 'Esperando aprobación';
+
+  @override
+  String get approve => 'Aprobar';
+
+  @override
+  String get decline => 'Rechazar';
+
+  @override
+  String get removeMember => 'Quitar';
+
+  @override
+  String get noMembers => 'Nadie todavía';
 }

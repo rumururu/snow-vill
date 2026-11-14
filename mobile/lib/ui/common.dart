@@ -77,6 +77,7 @@ String trKey(AppLocalizations l, String key) => switch (key) {
   'errAlreadyBig' => l.errAlreadyBig,
   'errPurchaseFailed' => l.errPurchaseFailed,
   'errPurchasePending' => l.errPurchasePending,
+  'errSignIn' => l.errSignIn,
   _ => l.errServer,
 };
 

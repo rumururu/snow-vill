@@ -33,7 +33,10 @@ class _ShowcaseApi extends RemoteApi {
   final String photoBase;
 
   @override
-  Future<Village?> getVillage(String villageId) async => village;
+  Future<Village?> getVillage(
+    String villageId, {
+    List<String> secrets = const [],
+  }) async => village;
 
   @override
   Future<Map<int, int>> wallet(String installId) async => const {};
@@ -42,8 +45,9 @@ class _ShowcaseApi extends RemoteApi {
   Future<String> photoUrl(
     String installId,
     String villageId,
-    String houseId,
-  ) async =>
+    String houseId, {
+    List<String> secrets = const [],
+  }) async =>
       '$photoBase/${photoSlots.indexOf(int.parse(houseId.substring(1)))}.jpg';
 }
 

@@ -405,4 +405,58 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get lookSaved => '村の飾りを保存しました。';
+
+  @override
+  String get signIn => 'ログイン';
+
+  @override
+  String get continueWithGoogle => 'Googleで続ける';
+
+  @override
+  String get continueWithApple => 'Appleで続ける';
+
+  @override
+  String get signOut => 'ログアウト';
+
+  @override
+  String get deleteAccount => 'アカウント削除';
+
+  @override
+  String get deleteAccountTitle => 'アカウントを削除しますか？';
+
+  @override
+  String get deleteAccountBody => '村・家・写真がすべて削除され、元に戻せません。';
+
+  @override
+  String get deleteAccountButton => '削除';
+
+  @override
+  String get accountDeleted => 'アカウントを削除しました。';
+
+  @override
+  String get errSignIn => 'ログインできませんでした。もう一度お試しください。';
+
+  @override
+  String get privateVillage => '非公開の村';
+
+  @override
+  String get members => 'メンバー';
+
+  @override
+  String get requestJoin => '入居を申請';
+
+  @override
+  String get joinPending => '承認を待っています';
+
+  @override
+  String get approve => '承認';
+
+  @override
+  String get decline => '断る';
+
+  @override
+  String get removeMember => '退去させる';
+
+  @override
+  String get noMembers => 'まだいません';
 }

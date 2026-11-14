@@ -416,4 +416,59 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get lookSaved => 'Décoration du village enregistrée.';
+
+  @override
+  String get signIn => 'Se connecter';
+
+  @override
+  String get continueWithGoogle => 'Continuer avec Google';
+
+  @override
+  String get continueWithApple => 'Continuer avec Apple';
+
+  @override
+  String get signOut => 'Se déconnecter';
+
+  @override
+  String get deleteAccount => 'Supprimer le compte';
+
+  @override
+  String get deleteAccountTitle => 'Supprimer votre compte ?';
+
+  @override
+  String get deleteAccountBody =>
+      'Vos villages, maisons et photos seront tous supprimés. C\'est définitif.';
+
+  @override
+  String get deleteAccountButton => 'Supprimer';
+
+  @override
+  String get accountDeleted => 'Votre compte a été supprimé.';
+
+  @override
+  String get errSignIn => 'Connexion impossible. Réessayez.';
+
+  @override
+  String get privateVillage => 'Village privé';
+
+  @override
+  String get members => 'Membres';
+
+  @override
+  String get requestJoin => 'Demander à rejoindre';
+
+  @override
+  String get joinPending => 'En attente d\'approbation';
+
+  @override
+  String get approve => 'Accepter';
+
+  @override
+  String get decline => 'Refuser';
+
+  @override
+  String get removeMember => 'Retirer';
+
+  @override
+  String get noMembers => 'Personne pour l\'instant';
 }

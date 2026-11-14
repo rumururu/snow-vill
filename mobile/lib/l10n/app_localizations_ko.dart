@@ -405,4 +405,58 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get lookSaved => '마을 꾸미기를 저장했어요.';
+
+  @override
+  String get signIn => '로그인';
+
+  @override
+  String get continueWithGoogle => 'Google로 계속하기';
+
+  @override
+  String get continueWithApple => 'Apple로 계속하기';
+
+  @override
+  String get signOut => '로그아웃';
+
+  @override
+  String get deleteAccount => '계정 삭제';
+
+  @override
+  String get deleteAccountTitle => '계정을 삭제할까요?';
+
+  @override
+  String get deleteAccountBody => '마을, 집, 사진이 모두 삭제되며 되돌릴 수 없어요.';
+
+  @override
+  String get deleteAccountButton => '삭제';
+
+  @override
+  String get accountDeleted => '계정을 삭제했어요.';
+
+  @override
+  String get errSignIn => '로그인하지 못했어요. 다시 시도해 주세요.';
+
+  @override
+  String get privateVillage => '비공개 마을';
+
+  @override
+  String get members => '멤버';
+
+  @override
+  String get requestJoin => '입주 신청';
+
+  @override
+  String get joinPending => '승인을 기다리고 있어요';
+
+  @override
+  String get approve => '승인';
+
+  @override
+  String get decline => '거절';
+
+  @override
+  String get removeMember => '내보내기';
+
+  @override
+  String get noMembers => '아직 없어요';
 }

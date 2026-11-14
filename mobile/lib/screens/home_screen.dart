@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/models.dart';
+import '../data/remote_api.dart' show AccountVillage;
 import '../l10n/app_localizations.dart';
 import '../scene/village_scene.dart';
 import '../state/providers.dart';
 import '../ui/common.dart';
+import 'account_sheet.dart';
 
 /// Decorative hero village: a small free village (6 lots, 4 houses lit, 2 lots waiting for friends).
 /// Illustrative only, no user data. Same as the web (`LandingHero`).
@@ -44,6 +46,19 @@ class HomeScreen extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final identity = ref.watch(identityProvider);
     final geometry = ref.watch(villageGeometryProvider);
+    final session = ref.watch(sessionProvider);
+    // Signed in: the account's villages merged with the ones opened on this device.
+    final account = {
+      for (final a in ref.watch(myVillagesProvider).value ?? <AccountVillage>[])
+        a.id: a,
+    };
+    final villages = [
+      for (final k in identity.villages)
+        (id: k.id, name: account[k.id]?.name ?? k.name, account: account[k.id]),
+      for (final a in account.values)
+        if (!identity.villages.any((k) => k.id == a.id))
+          (id: a.id, name: a.name, account: a),
+    ];
 
     return Scaffold(
       body: SafeArea(
@@ -62,6 +77,21 @@ class HomeScreen extends ConsumerWidget {
                     color: SvColors.night,
                   ),
                 ),
+                const Spacer(),
+                if (signInAvailable(ref))
+                  IconButton(
+                    key: const ValueKey('account'),
+                    tooltip: session == null
+                        ? l.signIn
+                        : (session.user.email ?? l.signOut),
+                    color: SvColors.night,
+                    icon: Icon(
+                      session == null
+                          ? Icons.account_circle_outlined
+                          : Icons.account_circle,
+                    ),
+                    onPressed: () => showAccountSheet(context),
+                  ),
               ],
             ),
             const SizedBox(height: 20),
@@ -112,7 +142,7 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 8),
-            if (identity.villages.isEmpty)
+            if (villages.isEmpty)
               Text(
                 l.noVillages,
                 style: TextStyle(
@@ -121,7 +151,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
               )
             else
-              for (final v in identity.villages)
+              for (final v in villages)
                 Card(
                   color: Colors.white,
                   elevation: 0,
@@ -133,17 +163,51 @@ class HomeScreen extends ConsumerWidget {
                     key: ValueKey('village-${v.id}'),
                     minVerticalPadding: 14,
                     leading: Icon(
-                      identity.owners.containsKey(v.id)
+                      identity.owners.containsKey(v.id) ||
+                              v.account?.role == 'owner'
                           ? Icons.home_work_outlined
                           : Icons.cottage_outlined,
                       color: SvColors.night,
                     ),
-                    title: Text(
-                      v.name,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    title: Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            v.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        if (v.account?.isPrivate == true) ...[
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.lock_outline,
+                            size: 16,
+                            semanticLabel: l.privateVillage,
+                            color: SvColors.night.withValues(alpha: 0.6),
+                          ),
+                        ],
+                      ],
                     ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.push('/v/${v.id}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if ((v.account?.pending ?? 0) > 0)
+                          Badge(
+                            key: ValueKey('pending-${v.id}'),
+                            label: Text('${v.account!.pending}'),
+                            backgroundColor: SvColors.danger,
+                          ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.chevron_right),
+                      ],
+                    ),
+                    onTap: () async {
+                      await context.push('/v/${v.id}');
+                      if (ref.read(sessionProvider) != null) {
+                        ref.invalidate(myVillagesProvider);
+                      }
+                    },
                   ),
                 ),
             const SizedBox(height: 20),

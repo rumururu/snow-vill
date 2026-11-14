@@ -68,7 +68,7 @@ Signed in → `Authorization: Bearer <access_token>`; guest → `Authorization: 
 | `snowvill_members_of` | `p_village_id` | owner: `[{user_id, nickname, status: pending\|approved, created_at}]`, others `null` |
 | `snowvill_decide_member` | `p_village_id`, `p_user_id`, `p_approve` | approve or remove (reject / remove member) |
 | `snowvill_set_village_look` | as before; `p_owner_secret` may be `null` for a signed-in owner | |
-| `snowvill_claim_house` | as before | private village and not owner/approved → HTTP 403; a second house for the same account → HTTP 409 |
+| `snowvill_claim_house` | as before | private village and not owner/approved → HTTP 403 (401 for a guest: PostgREST answers the anon role that way); a second house for the same account → HTTP 409 |
 
 **Edge Function `snowvill-photo`**: with a user token the `secret` fields are optional (upload, remove, delete_village).
 `view` takes optional `secrets: string[]` (guests of a private village). New `delete_account`

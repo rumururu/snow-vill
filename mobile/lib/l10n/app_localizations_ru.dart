@@ -410,4 +410,59 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get lookSaved => 'Оформление деревни сохранено.';
+
+  @override
+  String get signIn => 'Войти';
+
+  @override
+  String get continueWithGoogle => 'Продолжить с Google';
+
+  @override
+  String get continueWithApple => 'Продолжить с Apple';
+
+  @override
+  String get signOut => 'Выйти';
+
+  @override
+  String get deleteAccount => 'Удалить аккаунт';
+
+  @override
+  String get deleteAccountTitle => 'Удалить аккаунт?';
+
+  @override
+  String get deleteAccountBody =>
+      'Все ваши деревни, дома и фото будут удалены. Это нельзя отменить.';
+
+  @override
+  String get deleteAccountButton => 'Удалить';
+
+  @override
+  String get accountDeleted => 'Аккаунт удалён.';
+
+  @override
+  String get errSignIn => 'Не удалось войти. Попробуйте ещё раз.';
+
+  @override
+  String get privateVillage => 'Закрытая деревня';
+
+  @override
+  String get members => 'Участники';
+
+  @override
+  String get requestJoin => 'Попроситься в деревню';
+
+  @override
+  String get joinPending => 'Ждём одобрения';
+
+  @override
+  String get approve => 'Принять';
+
+  @override
+  String get decline => 'Отклонить';
+
+  @override
+  String get removeMember => 'Удалить из деревни';
+
+  @override
+  String get noMembers => 'Пока никого';
 }

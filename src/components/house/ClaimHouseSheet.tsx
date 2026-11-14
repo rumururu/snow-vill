@@ -332,7 +332,7 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
         </div>
 
         <p className="text-xs leading-relaxed text-night/60">
-          {t("claim.visibility")}{" "}
+          {village.visibility !== "private" && <>{t("claim.visibility")} </>}
           <Link href="/privacy/" target="_blank" className="underline underline-offset-2">
             {t("common.privacy")}
           </Link>

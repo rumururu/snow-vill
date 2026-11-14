@@ -402,4 +402,58 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get lookSaved => '小镇装饰已保存。';
+
+  @override
+  String get signIn => '登录';
+
+  @override
+  String get continueWithGoogle => '通过 Google 继续';
+
+  @override
+  String get continueWithApple => '通过 Apple 继续';
+
+  @override
+  String get signOut => '退出登录';
+
+  @override
+  String get deleteAccount => '删除账号';
+
+  @override
+  String get deleteAccountTitle => '要删除账号吗？';
+
+  @override
+  String get deleteAccountBody => '村庄、房子和照片都会被删除，且无法恢复。';
+
+  @override
+  String get deleteAccountButton => '删除';
+
+  @override
+  String get accountDeleted => '账号已删除。';
+
+  @override
+  String get errSignIn => '登录失败，请重试。';
+
+  @override
+  String get privateVillage => '私密村庄';
+
+  @override
+  String get members => '成员';
+
+  @override
+  String get requestJoin => '申请入住';
+
+  @override
+  String get joinPending => '正在等待批准';
+
+  @override
+  String get approve => '批准';
+
+  @override
+  String get decline => '拒绝';
+
+  @override
+  String get removeMember => '移出';
+
+  @override
+  String get noMembers => '还没有人';
 }

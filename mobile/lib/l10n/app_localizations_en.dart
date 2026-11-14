@@ -413,4 +413,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lookSaved => 'Saved the village look.';
+
+  @override
+  String get signIn => 'Sign in';
+
+  @override
+  String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get continueWithApple => 'Continue with Apple';
+
+  @override
+  String get signOut => 'Sign out';
+
+  @override
+  String get deleteAccount => 'Delete account';
+
+  @override
+  String get deleteAccountTitle => 'Delete your account?';
+
+  @override
+  String get deleteAccountBody =>
+      'Your villages, houses and photos will all be deleted. This can\'t be undone.';
+
+  @override
+  String get deleteAccountButton => 'Delete';
+
+  @override
+  String get accountDeleted => 'Your account was deleted.';
+
+  @override
+  String get errSignIn => 'Couldn\'t sign in. Please try again.';
+
+  @override
+  String get privateVillage => 'Private village';
+
+  @override
+  String get members => 'Members';
+
+  @override
+  String get requestJoin => 'Request to join';
+
+  @override
+  String get joinPending => 'Waiting for approval';
+
+  @override
+  String get approve => 'Approve';
+
+  @override
+  String get decline => 'Decline';
+
+  @override
+  String get removeMember => 'Remove';
+
+  @override
+  String get noMembers => 'No one yet';
 }

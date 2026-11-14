@@ -1,10 +1,11 @@
 /**
- * Supabase access for M1 (shared mkideabox-games project, prefix snowvill_).
- * The browser only calls anon RPC functions and the snowvill-photo Edge Function;
- * tables and the photo bucket are not reachable directly (see supabase/migrations).
+ * Supabase access (dedicated snow-village project, prefix snowvill_).
+ * The browser only calls RPC functions and the snowvill-photo Edge Function; tables and the photo
+ * bucket are not reachable directly (see supabase/migrations). Guests send the anon key; a signed-in
+ * user sends the access token (docs/12-accounts-and-private-villages.md, "Client contract").
  */
 import { tr } from "./i18n";
-import { capacityOf, cleanDecor, FREE_CAPACITY, halvesForCapacity, isDirection, isHouseStyle, isPathStyle, MAX_CAPACITY, type DecorSpots, type Direction, type House, type HouseStyle, type PathStyle, type Village } from "./village";
+import { capacityOf, cleanDecor, type MemberRole, type VillageVisibility, FREE_CAPACITY, halvesForCapacity, isDirection, isHouseStyle, isPathStyle, MAX_CAPACITY, type DecorSpots, type Direction, type House, type HouseStyle, type PathStyle, type Village } from "./village";
 
 /** Opened district halves from the server (falls back to halves in order for older responses). */
 function districtsOf(v: RemoteVillage): { capacity: number; openHalves: number } {
@@ -73,7 +74,7 @@ function statusToCode(status: number, bodyCode?: string): RemoteErrorCode {
     return bodyCode as RemoteErrorCode;
   if (status === 429) return "RATE_LIMITED";
   if (status === 400) return "INVALID_INPUT";
-  if (status === 403) return "FORBIDDEN";
+  if (status === 403 || status === 401) return "FORBIDDEN";
   if (status === 404) return bodyCode === "NO_PHOTO" ? "NOT_FOUND" : "NOT_FOUND";
   if (status === 413) return "TOO_LARGE";
   if (status === 415) return "UNSUPPORTED";
@@ -82,13 +83,40 @@ function statusToCode(status: number, bodyCode?: string): RemoteErrorCode {
 
 type Fetch = typeof fetch;
 
-export function createRemoteApi(config: RemoteConfig, fetchImpl: Fetch = (...a) => fetch(...a)) {
-  const headers = { apikey: config.anonKey, Authorization: `Bearer ${config.anonKey}` };
+/** Signed-in access token (refreshed when needed) or null for guests. */
+export type TokenSource = () => Promise<string | null>;
+
+export interface MyVillage {
+  id: string;
+  name: string;
+  capacity: number;
+  visibility: VillageVisibility;
+  createdAt: string;
+  role: MemberRole;
+  houses: number;
+  /** Pending join requests (owned villages only). */
+  pending: number;
+}
+
+export interface Member {
+  userId: string;
+  nickname: string;
+  status: "pending" | "approved";
+  createdAt: string;
+}
+
+type ClaimFailure = "SLOT_TAKEN" | "SLOT_LOCKED" | "VILLAGE_FULL" | "NOT_FOUND" | "ALREADY_JOINED" | "FORBIDDEN";
+
+export function createRemoteApi(config: RemoteConfig, fetchImpl: Fetch = (...a) => fetch(...a), token: TokenSource = async () => null) {
+  async function authHeaders(): Promise<Record<string, string>> {
+    const access = await token().catch(() => null);
+    return { apikey: config.anonKey, Authorization: `Bearer ${access ?? config.anonKey}` };
+  }
 
   async function request(url: string, init: RequestInit): Promise<Response> {
     let res: Response;
     try {
-      res = await fetchImpl(url, init);
+      res = await fetchImpl(url, { ...init, headers: { ...(await authHeaders()), ...(init.headers as Record<string, string>) } });
     } catch {
       throw new RemoteError("NETWORK");
     }
@@ -109,7 +137,7 @@ export function createRemoteApi(config: RemoteConfig, fetchImpl: Fetch = (...a) 
   async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
     const res = await request(`${config.url}/rest/v1/rpc/${fn}`, {
       method: "POST",
-      headers: { ...headers, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(args),
     });
     const text = await res.text();
@@ -120,7 +148,7 @@ export function createRemoteApi(config: RemoteConfig, fetchImpl: Fetch = (...a) 
     const isForm = typeof FormData !== "undefined" && body instanceof FormData;
     const res = await request(`${config.url}/functions/v1/snowvill-photo`, {
       method: "POST",
-      headers: isForm ? headers : { ...headers, "Content-Type": "application/json" },
+      headers: isForm ? {} : { "Content-Type": "application/json" },
       body: isForm ? body : JSON.stringify(body),
     });
     return (await res.json()) as T;
@@ -135,8 +163,12 @@ export function createRemoteApi(config: RemoteConfig, fetchImpl: Fetch = (...a) 
       return { id: r.id, ownerSecret: r.owner_secret };
     },
 
-    async getVillage(villageId: string): Promise<Village | null> {
-      const r = await rpc<RemoteVillage | null>("snowvill_get_village", { p_village_id: villageId });
+    /** `secrets`: the guest's owner / claim secrets for this village (private villages). */
+    async getVillage(villageId: string, secrets: string[] = []): Promise<Village | null> {
+      const r = await rpc<RemoteVillage | null>("snowvill_get_village", {
+        p_village_id: villageId,
+        ...(secrets.length ? { p_secrets: secrets } : {}),
+      });
       return r ? toVillage(r) : null;
     },
 
@@ -145,14 +177,10 @@ export function createRemoteApi(config: RemoteConfig, fetchImpl: Fetch = (...a) 
       villageId: string,
       slot: number,
       input: { nickname: string; style: HouseStyle; direction: Direction; message: string },
-    ): Promise<
-      | { ok: true; house: House; claimSecret: string }
-      | { ok: false; reason: "SLOT_TAKEN" | "SLOT_LOCKED" | "VILLAGE_FULL" | "NOT_FOUND" | "ALREADY_JOINED" }
-    > {
-      const r = await rpc<
-        | { ok: true; claim_secret: string; house: RemoteHouse }
-        | { ok: false; reason: "SLOT_TAKEN" | "SLOT_LOCKED" | "VILLAGE_FULL" | "NOT_FOUND" | "ALREADY_JOINED" }
-      >("snowvill_claim_house", {
+    ): Promise<{ ok: true; house: House; claimSecret: string } | { ok: false; reason: ClaimFailure }> {
+      let r: { ok: true; claim_secret: string; house: RemoteHouse } | { ok: false; reason: ClaimFailure };
+      try {
+        r = await rpc("snowvill_claim_house", {
         p_install_id: installId,
         p_village_id: villageId,
         p_slot: slot,
@@ -160,15 +188,21 @@ export function createRemoteApi(config: RemoteConfig, fetchImpl: Fetch = (...a) 
         p_style: input.style,
         p_message: input.message,
         p_direction: input.direction,
-      });
+        });
+      } catch (err) {
+        // Private village and not owner / approved member → 403 (401 for guests); second house for the account → 409.
+        if (err instanceof RemoteError && (err.status === 403 || err.status === 401)) return { ok: false, reason: "FORBIDDEN" };
+        if (err instanceof RemoteError && err.status === 409) return { ok: false, reason: "ALREADY_JOINED" };
+        throw err;
+      }
       return r.ok ? { ok: true, house: toHouse(r.house), claimSecret: r.claim_secret } : r;
     },
 
-    /** Owner only: path style for the whole village and the moved decorations (replaces the old map). */
+    /** Owner only: path style for the whole village and the moved decorations. `ownerSecret` null = signed-in owner. */
     async setVillageLook(
       installId: string,
       villageId: string,
-      ownerSecret: string,
+      ownerSecret: string | null,
       pathStyle: PathStyle,
       decor: DecorSpots,
     ): Promise<{ ok: true } | { ok: false; reason: "NOT_FOUND" | "FORBIDDEN" }> {
@@ -186,26 +220,88 @@ export function createRemoteApi(config: RemoteConfig, fetchImpl: Fetch = (...a) 
       await rpc("snowvill_report", { p_install_id: installId, p_house_id: houseId, p_reason: reason });
     },
 
-    async uploadPhoto(installId: string, houseId: string, secret: string, jpeg: Blob) {
+    /** `secret` null = signed-in resident (the account proves it). */
+    async uploadPhoto(installId: string, houseId: string, secret: string | null, jpeg: Blob) {
       const form = new FormData();
       form.set("install_id", installId);
       form.set("house_id", houseId);
-      form.set("secret", secret);
+      if (secret) form.set("secret", secret);
       form.set("file", jpeg, "photo.jpg");
       await photoFn(form);
     },
 
-    async photoUrl(installId: string, villageId: string, houseId: string): Promise<string> {
-      const r = await photoFn<{ url: string }>({ action: "view", install_id: installId, village_id: villageId, house_id: houseId });
+    async photoUrl(installId: string, villageId: string, houseId: string, secrets: string[] = []): Promise<string> {
+      const r = await photoFn<{ url: string }>({
+        action: "view",
+        install_id: installId,
+        village_id: villageId,
+        house_id: houseId,
+        ...(secrets.length ? { secrets } : {}),
+      });
       return r.url;
     },
 
-    async removeHouse(installId: string, houseId: string, secret: string) {
-      await photoFn({ action: "remove", install_id: installId, house_id: houseId, secret });
+    async removeHouse(installId: string, houseId: string, secret: string | null) {
+      await photoFn({ action: "remove", install_id: installId, house_id: houseId, ...(secret ? { secret } : {}) });
     },
 
-    async deleteVillage(installId: string, villageId: string, secret: string) {
-      await photoFn({ action: "delete_village", install_id: installId, village_id: villageId, secret });
+    async deleteVillage(installId: string, villageId: string, secret: string | null) {
+      await photoFn({ action: "delete_village", install_id: installId, village_id: villageId, ...(secret ? { secret } : {}) });
+    },
+
+    // ---- signed in ----
+
+    /** Moves this browser's guest villages ({villageId: ownerSecret}) and houses ({houseId: claimSecret}) to the account. */
+    async linkDevice(owners: Record<string, string>, houses: Record<string, string>): Promise<{ villages: number; houses: number }> {
+      const r = await rpc<{ villages?: number; houses?: number } | null>("snowvill_link_device", { p_owner: owners, p_houses: houses });
+      return { villages: r?.villages ?? 0, houses: r?.houses ?? 0 };
+    },
+
+    async myVillages(): Promise<MyVillage[]> {
+      const r = await rpc<RemoteMyVillage[] | null>("snowvill_my_villages", {});
+      return (r ?? []).map((v) => ({
+        id: v.id,
+        name: v.name,
+        capacity: normalizeCapacity(v.capacity),
+        visibility: v.visibility === "private" ? "private" : "public",
+        createdAt: v.created_at,
+        role: toRole(v.role),
+        houses: Number(v.houses) || 0,
+        pending: Number(v.pending) || 0,
+      }));
+    },
+
+    async setVisibility(villageId: string, visibility: VillageVisibility): Promise<{ ok: true } | { ok: false; reason: "FORBIDDEN" }> {
+      const r = await rpc<{ ok: boolean }>("snowvill_set_visibility", { p_village_id: villageId, p_visibility: visibility });
+      return r?.ok ? { ok: true } : { ok: false, reason: "FORBIDDEN" };
+    },
+
+    async requestJoin(villageId: string, nickname: string): Promise<{ ok: true; role: MemberRole } | { ok: false; reason: "NOT_FOUND" }> {
+      const r = await rpc<{ ok: boolean; role?: string }>("snowvill_request_join", { p_village_id: villageId, p_nickname: nickname });
+      return r?.ok ? { ok: true, role: toRole(r.role) } : { ok: false, reason: "NOT_FOUND" };
+    },
+
+    /** Owner: join requests and approved members; null for anyone else. */
+    async membersOf(villageId: string): Promise<Member[] | null> {
+      const r = await rpc<RemoteMember[] | null>("snowvill_members_of", { p_village_id: villageId });
+      if (!Array.isArray(r)) return null;
+      return r.map((m) => ({
+        userId: m.user_id,
+        nickname: m.nickname,
+        status: m.status === "approved" ? "approved" : "pending",
+        createdAt: m.created_at,
+      }));
+    },
+
+    /** Owner: approve a request (true), or decline a request / remove a member (false). */
+    async decideMember(villageId: string, userId: string, approve: boolean): Promise<boolean> {
+      const r = await rpc<{ ok: boolean }>("snowvill_decide_member", { p_village_id: villageId, p_user_id: userId, p_approve: approve });
+      return Boolean(r?.ok);
+    },
+
+    /** Deletes the signed-in account with its villages, houses and photos. `appleCode` lets the server revoke Apple. */
+    async deleteAccount(installId: string, appleCode?: string | null) {
+      await photoFn({ action: "delete_account", install_id: installId, ...(appleCode ? { apple_code: appleCode, apple_client: "web" } : {}) });
     },
   };
 }
@@ -222,10 +318,29 @@ interface RemoteHouse {
   has_photo: boolean;
   created_at: string;
 }
+interface RemoteMyVillage {
+  id: string;
+  name: string;
+  capacity?: number;
+  visibility?: string;
+  created_at: string;
+  role?: string | null;
+  houses?: number;
+  pending?: number;
+}
+interface RemoteMember {
+  user_id: string;
+  nickname: string;
+  status: string;
+  created_at: string;
+}
 interface RemoteVillage {
   id: string;
   name: string;
   created_at: string;
+  visibility?: string;
+  locked?: boolean;
+  me?: { role?: string | null; house_id?: string | null } | null;
   capacity?: number;
   open_halves?: number;
   path_style?: string;
@@ -247,11 +362,18 @@ function toHouse(h: RemoteHouse): House {
   };
 }
 
+function toRole(r: unknown): MemberRole {
+  return r === "owner" || r === "resident" || r === "member" || r === "pending" ? r : null;
+}
+
 function toVillage(v: RemoteVillage): Village {
   return {
     id: v.id,
     name: v.name,
-    createdAt: v.created_at,
+    createdAt: v.created_at ?? "",
+    visibility: v.visibility === "private" ? "private" : "public",
+    ...(v.locked ? { locked: true } : {}),
+    ...(v.me ? { me: { role: toRole(v.me.role), houseId: v.me.house_id ?? null } } : {}),
     ...districtsOf(v),
     pathStyle: isPathStyle(v.path_style) ? v.path_style : "dirt",
     decor: cleanDecor(v.decor),

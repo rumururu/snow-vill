@@ -226,7 +226,8 @@ describe("remote village store", () => {
     const store = createVillageStore({ remote: api });
     await store.createVillage("마을");
     expect(await store.claimHouse("abcdefghjk", 0, { nickname: "하늘", style: "wood" })).toEqual({ ok: false, reason: "SLOT_TAKEN" });
-    expect(api.getVillage).toHaveBeenCalledWith("abcdefghjk");
+    // A guest sends the secrets it holds for this village (private villages need them).
+    expect(api.getVillage).toHaveBeenCalledWith("abcdefghjk", ["owner-secret"]);
   });
 
   it("validates locally before calling the server", async () => {

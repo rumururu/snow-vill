@@ -15,6 +15,8 @@ import { villagePath } from "@/lib/share";
 import { nextMilestone } from "@/lib/milestones";
 import { canUpgrade, freeSlots, houseAt, isFull, lockedSlots, PATH_STYLES, remainingHouses, SAMPLE_VILLAGE_ID, type DecorSpots, type House, type PathStyle } from "@/lib/village";
 import { UpgradeSheet } from "./UpgradeSheet";
+import { LockedVillage, MembersSheet } from "./PrivateVillage";
+import { SignInSheet } from "@/components/account/SignInSheet";
 import { useT } from "@/lib/i18n/I18nProvider";
 import { useVillageState, useVillageStore } from "@/store/VillageStoreProvider";
 
@@ -52,6 +54,8 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
   // Village look being edited (owner): draft path style + moved decorations; null = not editing.
   const [look, setLook] = useState<{ pathStyle: PathStyle; decor: DecorSpots } | null>(null);
   const [savingLook, setSavingLook] = useState(false);
+  const [membersOpen, setMembersOpen] = useState(false);
+  const [signInOpen, setSignInOpen] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const myHouseId = state.myHouses[villageId] ?? null;
@@ -59,6 +63,10 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
   const isOwner = state.ownedVillages.includes(villageId);
   const canEditLook = store.canEditLook(villageId);
   const frameHouse = village?.houses.find((h) => h.id === frameHouseId) ?? null;
+  const signedIn = Boolean(state.account);
+  const isPrivate = village?.visibility === "private";
+  const remoteOwner = isOwner && !simulated && !village?.isSample && !village?.locked;
+  const pendingCount = (state.members[villageId] ?? []).filter((m) => m.status === "pending").length;
 
   function notify(message: string) {
     setToast(message);
@@ -70,7 +78,12 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
   const refresh = useCallback(() => {
     store
       .loadVillage(villageId)
-      .then(() => setRefreshFailed(false))
+      .then(() => {
+        setRefreshFailed(false);
+        // Signed-in owner: keep the join-request count fresh.
+        const s = store.getState();
+        if (s.account && s.ownedVillages.includes(villageId)) void store.loadMembers(villageId);
+      })
       .catch(() => setRefreshFailed(true));
   }, [store, villageId]);
 
@@ -135,6 +148,8 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
     );
   }
 
+  if (village.locked) return <LockedVillage village={village} />;
+
   const full = isFull(village);
   const free = freeSlots(village);
   const upgradable = full && canUpgrade(village);
@@ -187,6 +202,13 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
     notify(t("view.lookSaved"));
   }
 
+  async function togglePrivate() {
+    const r = await store.setVisibility(villageId, isPrivate ? "public" : "private");
+    if (r.ok) return;
+    if ("signIn" in r) setSignInOpen(true);
+    else notify(r.message);
+  }
+
   function simulateFriend() {
     const result = store.simulateFriendClaim(villageId);
     if (result.ok) {
@@ -211,12 +233,17 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
           </Link>
           <h1 className="min-w-0 flex-1 truncate text-center text-lg font-bold text-night">{village.name}</h1>
           <OverflowMenu
-            onShareCard={() => setShareOpen(true)}
+            // A share card carries the name and houses outside the app: not for private villages.
+            onShareCard={isPrivate ? undefined : () => setShareOpen(true)}
             onSimulateFriend={full || !simulated ? undefined : simulateFriend}
             onResetSample={village.isSample ? () => (store.resetSample(), notify(t("view.sampleReset"))) : undefined}
             onDeleteVillage={isOwner && !village.isSample ? () => setDeleteOpen(true) : undefined}
             onUpgrade={canUpgrade(village) ? () => setUpgradeOpen(true) : undefined}
             onEditLook={canEditLook && !look ? startEditLook : undefined}
+            privateOn={remoteOwner ? isPrivate : undefined}
+            onTogglePrivate={remoteOwner ? togglePrivate : undefined}
+            onMembers={remoteOwner && signedIn ? () => setMembersOpen(true) : undefined}
+            pendingCount={remoteOwner && signedIn ? pendingCount : 0}
           />
         </header>
 
@@ -226,6 +253,11 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
               <span className="sr-only">{t("view.housesSr")} </span>
               {village.houses.length}/{village.capacity}
             </span>
+            {isPrivate && (
+              <span className="rounded-full bg-white px-2 py-1 text-xs shadow-sm" role="img" aria-label={t("private.badge")}>
+                🔒
+              </span>
+            )}
             <span className="font-normal text-night/70">
               {full ? t("view.complete") : village.houses.length === 0 ? t("view.lightFirst") : t("view.remaining", { count: remainingHouses(village) })}
             </span>
@@ -289,19 +321,21 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
         >
           {full ? (
             <>
-              <button type="button" onClick={() => setShareOpen(true)} className="min-h-12 rounded-2xl bg-night font-bold text-ivory">
-                {t("view.makeShareCard")}
-              </button>
+              {!isPrivate && (
+                <button type="button" onClick={() => setShareOpen(true)} className="min-h-12 rounded-2xl bg-night font-bold text-ivory">
+                  {t("view.makeShareCard")}
+                </button>
+              )}
               {upgradable ? (
                 <button
                   type="button"
                   onClick={() => setUpgradeOpen(true)}
-                  className="min-h-12 rounded-2xl bg-glow font-bold text-night shadow-sm"
+                  className={`min-h-12 rounded-2xl bg-glow font-bold text-night shadow-sm ${isPrivate ? "col-span-2" : ""}`}
                 >
                   {t("common.expand")}
                 </button>
               ) : (
-                <Link href="/create" className="flex min-h-12 items-center justify-center rounded-2xl bg-white font-semibold text-night">
+                <Link href="/create" className={`flex min-h-12 items-center justify-center rounded-2xl bg-white font-semibold text-night ${isPrivate ? "col-span-2" : ""}`}>
                   {t("common.createVillage")}
                 </Link>
               )}
@@ -370,6 +404,15 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
           return null;
         }}
       />
+      <MembersSheet villageId={villageId} open={membersOpen} onClose={() => setMembersOpen(false)} />
+      <SignInSheet
+        open={signInOpen}
+        onClose={() => setSignInOpen(false)}
+        onSignedIn={() => {
+          // Signed in from the private switch: finish what the owner asked for.
+          if (store.getState().ownedVillages.includes(villageId)) void togglePrivate();
+        }}
+      />
       <InviteSheet village={village} open={inviteOpen} onClose={() => setInviteOpen(false)} />
       <ShareSheet village={village} open={shareOpen} onClose={() => setShareOpen(false)} />
       <UpgradeSheet
@@ -432,8 +475,16 @@ function OverflowMenu({
   onDeleteVillage,
   onUpgrade,
   onEditLook,
+  privateOn,
+  onTogglePrivate,
+  onMembers,
+  pendingCount = 0,
 }: {
-  onShareCard: () => void;
+  privateOn?: boolean;
+  onTogglePrivate?: () => void;
+  onMembers?: () => void;
+  pendingCount?: number;
+  onShareCard?: () => void;
   onEditLook?: () => void;
   onUpgrade?: () => void;
   onSimulateFriend?: () => void;
@@ -479,18 +530,49 @@ function OverflowMenu({
         aria-expanded={open}
         aria-controls={menuId}
         onClick={() => setOpen((o) => !o)}
-        className="grid h-11 w-11 place-items-center rounded-full text-xl text-night hover:bg-night/5"
+        className="relative grid h-11 w-11 place-items-center rounded-full text-xl text-night hover:bg-night/5"
       >
         ⋯
+        {pendingCount > 0 && (
+          <span
+            data-testid="menu-badge"
+            className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#B5523B] px-1 text-[10px] font-bold leading-none text-white"
+          >
+            {pendingCount}
+          </span>
+        )}
       </button>
       {open && (
         <div id={menuId} className="absolute right-0 z-30 mt-1 w-60 rounded-2xl bg-ivory p-1.5 shadow-xl ring-1 ring-night/10">
-          <button type="button" className={item} onClick={run(onShareCard)}>
-            {t("menu.shareCard")}
-          </button>
+          {onShareCard && (
+            <button type="button" className={item} onClick={run(onShareCard)}>
+              {t("menu.shareCard")}
+            </button>
+          )}
           {onEditLook && (
             <button type="button" className={item} onClick={run(onEditLook)}>
               {t("menu.editLook")}
+            </button>
+          )}
+          {onTogglePrivate && (
+            <button type="button" role="switch" aria-checked={Boolean(privateOn)} className={`${item} justify-between`} onClick={run(onTogglePrivate)}>
+              <span>🔒 {t("menu.private")}</span>
+              <span aria-hidden className={`relative h-6 w-10 rounded-full transition-colors motion-reduce:transition-none ${privateOn ? "bg-night" : "bg-night/20"}`}>
+                <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-[left] motion-reduce:transition-none ${privateOn ? "left-[18px]" : "left-0.5"}`} />
+              </span>
+            </button>
+          )}
+          {onMembers && (
+            <button type="button" className={`${item} justify-between`} onClick={run(onMembers)}>
+              <span>{t("menu.members")}</span>
+              {pendingCount > 0 && (
+                <span
+                  className="grid h-5 min-w-5 place-items-center rounded-full bg-[#B5523B] px-1.5 text-xs font-bold text-white"
+                  aria-label={t("home.pendingSr", { count: pendingCount })}
+                >
+                  {pendingCount}
+                </span>
+              )}
             </button>
           )}
           {onUpgrade && (

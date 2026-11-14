@@ -113,7 +113,16 @@ export interface Village {
   pathStyle?: PathStyle;
   /** Decorations the owner moved: decoration id → ground spot (tiles). */
   decor?: DecorSpots;
+  /** Server villages: public (anyone with the link) or private (owner, residents, approved members). */
+  visibility?: VillageVisibility;
+  /** Private village this visitor may not see: only id, name, visibility and `me` are filled in. */
+  locked?: boolean;
+  /** The signed-in caller's relation to the village (server). */
+  me?: { role: MemberRole; houseId: string | null };
 }
+
+export type VillageVisibility = "public" | "private";
+export type MemberRole = "owner" | "resident" | "member" | "pending" | null;
 
 /** Path styles the owner can pick (docs/11-village-expansion-plan.md, "Village look"). */
 export const PATH_STYLES = ["dirt", "stones", "brick", "snow"] as const;

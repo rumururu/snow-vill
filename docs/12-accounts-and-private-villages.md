@@ -77,6 +77,8 @@ server revoke the Apple grant; then the account, its villages, its houses and th
 
 ## Cutover from the shared project (runbook)
 Prepared 2026-11-14; run in this order once web + app 1.1 are ready.
+**Do not deploy the web before step 2**: since commit `web sign-in` the web sends `p_secrets` to `snowvill_get_village`,
+which the shared project does not have (guests would get errors).
 1. Final copy: `python3 supabase/migrate_data.py --fresh` (empties the target's copied tables first — refused once any
    account-linked row exists; then copies rows with matching hashes and every photo with an MD5 check). Re-check
    counts in its output. Already proven: owner/claim hashes and purchases identical on both sides.

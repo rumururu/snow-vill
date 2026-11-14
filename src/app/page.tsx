@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useT } from "@/lib/i18n/I18nProvider";
+import { AccountButton } from "@/components/account/AccountButton";
 import { LandingHero } from "@/components/landing/LandingHero";
+import { MyVillages } from "@/components/landing/MyVillages";
 import { remoteConfig } from "@/lib/remote";
 import { villagePath } from "@/lib/share";
 import { SAMPLE_VILLAGE_ID } from "@/lib/village";
@@ -19,6 +21,7 @@ export default function LandingPage() {
         <span className="ml-auto rounded-full border border-dashed border-night/40 px-2.5 py-1 text-[11px] font-semibold text-night/70">
           {online ? t("landing.beta") : t("landing.simulation")}
         </span>
+        <AccountButton />
       </header>
 
       <section className="mt-6" aria-labelledby="hero-title">
@@ -45,6 +48,11 @@ export default function LandingPage() {
         >
           {t("common.browseSample")}
         </Link>
+      </div>
+
+      <MyVillages />
+
+      <div className="mt-6">
         <p className="text-center text-[11px] leading-relaxed text-night/55">
           <Link href="/privacy/" className="underline underline-offset-2">
             {t("common.privacy")}

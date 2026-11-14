@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createAuth } from "@/lib/auth";
 import { createRemoteApi, remoteConfig } from "@/lib/remote";
 import { createVillageStore, SERVER_STATE, type VillageState, type VillageStore } from "./villageStore";
 
@@ -16,10 +17,13 @@ function browserStorage(kind: "sessionStorage" | "localStorage"): Storage | null
 
 function createBrowserStore(): VillageStore {
   const config = remoteConfig();
+  const local = browserStorage("localStorage");
+  const auth = config && typeof window !== "undefined" ? createAuth(config, { storage: local }) : null;
   return createVillageStore({
     storage: browserStorage("sessionStorage"),
-    identityStorage: browserStorage("localStorage"),
-    remote: config ? createRemoteApi(config) : null,
+    identityStorage: local,
+    remote: config ? createRemoteApi(config, undefined, auth ? () => auth.accessToken() : undefined) : null,
+    auth,
   });
 }
 

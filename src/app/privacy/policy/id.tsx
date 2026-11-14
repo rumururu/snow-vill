@@ -11,7 +11,9 @@ export default function PolicyId() {
 
       <Section n={1} title="Ringkasan">
         <p>
-          Snow Village (selanjutnya &quot;Layanan&quot;) tidak memerlukan pendaftaran dan tidak meminta nama, email, atau nomor telepon.
+          Snow Village (selanjutnya &quot;Layanan&quot;) dapat digunakan tanpa pendaftaran, dan jika mau Anda dapat masuk dengan akun
+          Google atau Apple. Jika Anda tidak masuk, kami tidak meminta nama, email, atau nomor telepon. Jika Anda masuk, kami
+          menerima alamat email dan pengenal akun dari akun tersebut.
           Kami memproses nama desa, nama panggilan, dan pesan singkat yang Anda ketik sendiri, serta satu foto yang Anda pilih untuk
           diunggah, agar dapat ditampilkan di desa. Foto disimpan di penyimpanan privat, bukan penyimpanan publik, dan hanya ditampilkan
           melalui alamat yang berlaku sebentar ketika seseorang mengetuk rumah di desa. Kami tidak menggunakan alat iklan maupun
@@ -32,6 +34,17 @@ export default function PolicyId() {
             <b>Foto</b> (opsional, 1 foto): untuk ditampilkan di bingkai foto rumah Anda. Saat diunggah, foto dipotong menjadi persegi
             dan diperkecil menjadi 512px, dan metadata foto (EXIF) seperti lokasi pengambilan (GPS) dihapus baik di perangkat maupun di
             server.
+          </li>
+          <li>
+            <b>Informasi akun</b> (opsional, jika Anda masuk dengan Google atau Apple): alamat email akun yang digunakan untuk
+            masuk (alamat penerusan Apple jika Anda menggunakan &apos;Sembunyikan Email Saya&apos; dari Apple), nama dan alamat foto
+            profil yang diberikan akun (jika ada), pengenal akun, dan waktu masuk. Digunakan agar Anda dapat terus mengelola desa yang
+            Anda buat dan rumah Anda di perangkat lain serta di aplikasi maupun web, dan untuk memeriksa anggota desa privat. Kami
+            tidak menerima kata sandi Anda.
+          </li>
+          <li>
+            <b>Permintaan bergabung ke desa privat</b>: nama panggilan yang ditulis saat meminta bergabung, waktu permintaan, dan
+            apakah permintaan disetujui. Digunakan agar pemilik desa dapat meninjau dan menyetujui permintaan.
           </li>
           <li>
             <b>ID instalasi acak</b>: nomor acak yang dibuat browser pertama kali. Digunakan agar browser yang sama tidak membangun dua
@@ -63,8 +76,11 @@ export default function PolicyId() {
 
       <Section n={3} title="Siapa yang dapat melihat">
         <p>
-          Siapa pun yang memiliki tautan desa dapat melihat nama desa serta nama panggilan, pesan singkat, dan tanggal pindah setiap
+          Untuk desa publik, siapa pun yang memiliki tautan desa dapat melihat nama desa serta nama panggilan, pesan singkat, dan tanggal pindah setiap
           rumah, melihat foto dengan mengetuk rumah, dan pindah ke rumah yang kosong. Kirim tautan hanya kepada orang yang Anda percaya.
+          Untuk desa privat, hanya pemilik desa, penghuni, dan anggota yang disetujui pemilik yang dapat melihat rumah, pesan
+          singkat, dan foto; orang lain hanya melihat nama desa. Pemilik desa melihat nama panggilan orang yang meminta bergabung.
+          Alamat email tidak ditampilkan kepada orang lain.
           Gambar kartu berbagi desa tidak memuat foto, nama panggilan, maupun pesan singkat. Layanan diatur agar tidak muncul di mesin
           pencari.
         </p>
@@ -74,7 +90,8 @@ export default function PolicyId() {
         <p>
           Layanan tidak membuat cookie sendiri. Namun, Cloudflare yang berada di depan server (Supabase) dapat memasang cookie keamanan
           (__cf_bm, 30 menit) untuk mencegah serangan otomatis. Di penyimpanan lokal browser (localStorage), kami menyimpan ID instalasi
-          dan nilai rahasia yang memungkinkan Anda mengelola desa yang Anda buat dan rumah Anda. Server tidak menyimpan nilai rahasia
+          dan nilai rahasia yang memungkinkan Anda mengelola desa yang Anda buat dan rumah Anda. Jika Anda masuk, kami juga menyimpan token untuk mempertahankan status
+          masuk, yang dihapus saat Anda keluar. Server tidak menyimpan nilai rahasia
           itu sendiri, melainkan hanya nilai yang telah diubah secara tidak dapat dikembalikan (hash). Jika Anda menghapus data situs di
           browser, nilai rahasia ini juga hilang dan Anda tidak dapat lagi mengosongkan rumah atau menghapus desa dari browser tersebut.
           Dalam hal ini, silakan ajukan permintaan melalui email di bawah. Apa yang Anda coba di desa contoh hanya tersimpan di
@@ -95,6 +112,11 @@ export default function PolicyId() {
           <li>
             Pembuat desa dapat menghapus desa beserta semua rumah, foto, dan laporan terkait sekaligus dengan <b>&apos;Hapus
             desa&apos;</b>. Pembuat desa juga dapat mengosongkan rumah lain di dalam desa.
+          </li>
+          <li>
+            Pengguna yang telah masuk dapat menghapus sekaligus informasi akun, desa milik akun tersebut (termasuk semua rumah dan
+            fotonya), rumahnya di desa lain, serta permintaan bergabung dan informasi keanggotaan dengan <b>&apos;Hapus akun&apos;</b>.
+            Jika Anda masuk dengan Apple, tautan dengan akun Apple Anda juga diputus.
           </li>
           <li>
             Informasi yang tidak dihapus disimpan sampai pengguna menghapusnya atau sampai Layanan dihentikan; jika Layanan dihentikan,
@@ -123,8 +145,8 @@ export default function PolicyId() {
       <Section n={7} title="Perusahaan yang diberi tugas pemrosesan dan transfer ke luar negeri">
         <ul className="list-disc space-y-1.5 pl-5">
           <li>
-            <b>Supabase, Inc.</b> (Amerika Serikat) — Tugas: basis data, penyimpanan foto, dan fungsi server. Data yang diproses:
-            informasi desa dan rumah pada butir 2, foto, ID instalasi, catatan permintaan, isi laporan. Lokasi penyimpanan: region Seoul
+            <b>Supabase, Inc.</b> (Amerika Serikat) — Tugas: basis data, penyimpanan foto, proses masuk akun, dan fungsi server. Data yang diproses:
+            informasi desa dan rumah pada butir 2, foto, informasi akun, permintaan bergabung, ID instalasi, catatan permintaan, isi laporan. Lokasi penyimpanan: region Seoul
             (ap-northeast-2). Waktu dan cara transfer: dikirim melalui internet setiap kali Layanan digunakan. Masa penyimpanan: sama
             dengan butir 5. Kontak: <Ext href="https://supabase.com/contact">supabase.com/contact</Ext> ·{" "}
             <Ext href="https://supabase.com/privacy">Kebijakan Privasi</Ext>
@@ -136,8 +158,9 @@ export default function PolicyId() {
             <Ext href="https://www.revenuecat.com/privacy">revenuecat.com/privacy</Ext>
           </li>
           <li>
-            <b>Apple Inc. / Google LLC</b> — Pemrosesan pembayaran pembelian dalam aplikasi (sesuai ketentuan dan kebijakan privasi
-            masing-masing toko).
+            <b>Apple Inc. / Google LLC</b> — Pemrosesan pembayaran pembelian dalam aplikasi dan, jika Anda memilihnya, masuk dengan
+            akun (verifikasi identitas serta penerusan alamat email dan pengenal akun). Sesuai ketentuan dan kebijakan privasi
+            masing-masing perusahaan.
           </li>
           <li>
             <b>Cloudflare, Inc.</b> (Amerika Serikat, jaringan global) — Tugas: pengiriman dan keamanan situs (termasuk di depan server

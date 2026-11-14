@@ -82,7 +82,8 @@ which the shared project does not have (guests would get errors).
 1. Final copy: `python3 supabase/migrate_data.py --fresh` (empties the target's copied tables first — refused once any
    account-linked row exists; then copies rows with matching hashes and every photo with an MD5 check). Re-check
    counts in its output. Already proven: owner/claim hashes and purchases identical on both sides.
-2. Web: `.env.local` → `NEXT_PUBLIC_SUPABASE_URL=https://hbpazldzkmkcawfppiiq.supabase.co` + that project's anon key;
+2. Web: set `EFFECTIVE_DATE` in `src/app/privacy/policy/shared.tsx` to the cutover day (the policy text for
+   sign-in and private villages is already in all 10 languages); `.env.local` → `NEXT_PUBLIC_SUPABASE_URL=https://hbpazldzkmkcawfppiiq.supabase.co` + that project's anon key;
    `npm run deploy`.
 3. RevenueCat webhook `whintgre12bd5d2fe714ce9a01feb1a79a57b25` → `https://hbpazldzkmkcawfppiiq.supabase.co/functions/v1/snowvill-purchase-webhook`
    (`POST https://api.revenuecat.com/v2/projects/projeb9d0302/integrations/webhooks/<id>` with `{"url": …}`, keychain

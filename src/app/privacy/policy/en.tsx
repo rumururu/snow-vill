@@ -11,7 +11,9 @@ export default function PolicyEn() {
 
       <Section n={1} title="Summary">
         <p>
-          Snow Village (the &quot;Service&quot;) has no sign-up and does not collect names, email addresses or phone numbers. We
+          Snow Village (the &quot;Service&quot;) can be used without signing up, and you can optionally sign in with a Google or
+          Apple account. If you do not sign in, we do not collect names, email addresses or phone numbers. If you sign in, we
+          receive that account&apos;s email address and account identifier. We
           process the village name, nickname and short message you enter yourself, and the one photo you choose to upload, in order
           to show them in the village. Photos are kept in private (not public) storage and are shown through a short-lived link only
           when someone taps a house in the village. We do not use advertising or analytics tools.
@@ -31,6 +33,17 @@ export default function PolicyEn() {
             <b>Photo</b> (optional, 1): to show in your house&apos;s photo frame. On upload it is cropped to a square and resized to
             512px, and metadata in the photo (EXIF), such as the location where it was taken (GPS), is removed both on your device and
             on the server.
+          </li>
+          <li>
+            <b>Account information</b> (optional, if you sign in with Google or Apple): the email address of the account you sign in
+            with (Apple&apos;s relay address if you use Apple&apos;s &apos;Hide My Email&apos;), the name and profile photo URL the
+            account provides (if provided), the account identifier and the time of sign-in. Used to let you keep managing the
+            villages you created and your houses on other devices and across the app and the website, and to check the members of
+            private villages. We do not receive your password.
+          </li>
+          <li>
+            <b>Private village join requests</b>: the nickname entered with the request, the time of the request and whether it was
+            approved. Used so that the village owner can review and approve requests.
           </li>
           <li>
             <b>Random install ID</b>: a random number your browser creates the first time. It is used to stop the same browser from
@@ -60,9 +73,11 @@ export default function PolicyEn() {
 
       <Section n={3} title="Who can see it">
         <p>
-          Anyone who has a village link can see that village&apos;s name and each house&apos;s nickname, short message and move-in
+          In a public village, anyone who has the link can see that village&apos;s name and each house&apos;s nickname, short message and move-in
           date, can see the photo by tapping a house, and can move into an empty house. Please send the link only to people you
-          trust. The village share card image does not include photos, nicknames or short messages. The Service is set up so that it
+          trust. In a private village, only the village owner, the residents and members approved by the owner can see the houses,
+          short messages and photos; everyone else sees only the village name. The village owner sees the nicknames of people who
+          request to join. Email addresses are not shown to other people. The village share card image does not include photos, nicknames or short messages. The Service is set up so that it
           is not shown in search engines.
         </p>
       </Section>
@@ -71,7 +86,8 @@ export default function PolicyEn() {
         <p>
           The Service does not set cookies itself. However, Cloudflare, which sits in front of our server (Supabase), may set a
           security cookie (__cf_bm, 30 minutes) to block automated attacks. Your browser&apos;s local storage (localStorage) holds
-          the install ID and secret values that let you manage the villages you created and your own house. The server keeps only an
+          the install ID and secret values that let you manage the villages you created and your own house. If you sign in, a token that keeps you
+          signed in is also stored, and it is removed when you sign out. The server keeps only an
           irreversibly transformed value (hash) of these secrets, not the secrets themselves. If you clear the browser&apos;s site
           data, these secrets are lost and that browser can no longer empty your house or delete your village. In that case, please
           send a request to the email address below. Whatever you try in the sample village stays only in that tab&apos;s temporary
@@ -92,6 +108,11 @@ export default function PolicyEn() {
           <li>
             The person who created a village can use <b>&apos;Delete village&apos;</b> to delete the village and all its houses,
             photos and related reports at once. The village creator can also empty other houses in the village.
+          </li>
+          <li>
+            Signed-in users can use <b>&apos;Delete account&apos;</b> to delete, at once, their account information, the villages of
+            that account (including all their houses and photos), their houses in other villages, and their join requests and
+            membership information. If you signed in with Apple, the link with your Apple account is also revoked.
           </li>
           <li>Information that is not deleted is kept until the user deletes it or the Service ends; if the Service ends, it is all deleted.</li>
           <li>Request logs are deleted automatically after one day.</li>
@@ -117,8 +138,8 @@ export default function PolicyEn() {
       <Section n={7} title="Service providers and international transfers">
         <ul className="list-disc space-y-1.5 pl-5">
           <li>
-            <b>Supabase, Inc.</b> (USA) — Task: database and photo storage, and server functions. Data: the village and house
-            information in section 2, photos, install ID, request logs and reports. Storage location: Seoul region (ap-northeast-2).
+            <b>Supabase, Inc.</b> (USA) — Task: database and photo storage, sign-in, and server functions. Data: the village and house
+            information in section 2, photos, account information, join requests, install ID, request logs and reports. Storage location: Seoul region (ap-northeast-2).
             When and how transferred: sent over the internet each time you use the Service. Retention: as in section 5. Contact:{" "}
             <Ext href="https://supabase.com/contact">supabase.com/contact</Ext> ·{" "}
             <Ext href="https://supabase.com/privacy">Privacy Policy</Ext>
@@ -130,7 +151,9 @@ export default function PolicyEn() {
             <Ext href="https://www.revenuecat.com/privacy">revenuecat.com/privacy</Ext>
           </li>
           <li>
-            <b>Apple Inc. / Google LLC</b> — processing of in-app purchase payments (under each store&apos;s terms and privacy policy).
+            <b>Apple Inc. / Google LLC</b> — processing of in-app purchase payments and, if you choose, account sign-in (verifying
+            your identity and passing on your email address and account identifier). Under each company&apos;s terms and privacy
+            policy.
           </li>
           <li>
             <b>Cloudflare, Inc.</b> (USA, global network) — Task: website delivery and security (including in front of the Supabase

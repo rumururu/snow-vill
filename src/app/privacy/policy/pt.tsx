@@ -11,7 +11,9 @@ export default function PolicyPt() {
 
       <Section n={1} title="Resumo">
         <p>
-          O Snow Village (o &quot;Serviço&quot;) não tem cadastro e não coleta nome, e-mail nem telefone. Tratamos o nome da vila, o
+          O Snow Village (o &quot;Serviço&quot;) pode ser usado sem cadastro e, se quiser, você pode entrar com uma conta Google
+          ou Apple. Se você não entrar, não coletamos nome, e-mail nem telefone. Se entrar, recebemos o endereço de e-mail e o
+          identificador dessa conta. Tratamos o nome da vila, o
           apelido e o recado que você mesmo digita, além de uma foto que você escolhe enviar, para exibi-los na vila. As fotos
           ficam em um armazenamento privado, não público, e só aparecem por meio de um endereço válido por pouco tempo quando alguém
           toca na casa dentro da vila. Não usamos ferramentas de publicidade nem de análise.
@@ -31,6 +33,17 @@ export default function PolicyPt() {
             <b>Foto</b> (opcional, 1): para exibir no porta-retrato da sua casa. No envio, ela é recortada em formato quadrado e
             reduzida para 512px, e os metadados da foto (EXIF), como o local da captura (GPS), são apagados tanto no aparelho quanto no
             servidor.
+          </li>
+          <li>
+            <b>Dados da conta</b> (opcional, se você entrar com Google ou Apple): o endereço de e-mail da conta usada para entrar
+            (o endereço de retransmissão da Apple, se você usar &apos;Ocultar Meu E-mail&apos; da Apple), o nome e o endereço da foto
+            de perfil fornecidos pela conta (quando houver), o identificador da conta e o horário de entrada. Usados para que você
+            continue gerenciando as vilas que criou e a sua casa em outros aparelhos e entre o app e o site, e para verificar os
+            membros das vilas privadas. Não recebemos a sua senha.
+          </li>
+          <li>
+            <b>Pedidos para entrar em vilas privadas</b>: o apelido informado no pedido, o horário do pedido e se ele foi aprovado.
+            Usados para que o dono da vila possa analisar e aprovar os pedidos.
           </li>
           <li>
             <b>ID de instalação aleatório</b>: um número aleatório criado pelo navegador na primeira vez. Serve para impedir que o mesmo
@@ -61,8 +74,11 @@ export default function PolicyPt() {
 
       <Section n={3} title="Quem pode ver">
         <p>
-          Qualquer pessoa com o link da vila pode ver o nome da vila e o apelido, o recado e a data de mudança de cada casa,
-          ver a foto ao tocar em uma casa e se mudar para uma casa vazia. Envie o link apenas para pessoas de confiança. A imagem do
+          Em uma vila pública, qualquer pessoa com o link pode ver o nome da vila e o apelido, o recado e a data de mudança de cada casa,
+          ver a foto ao tocar em uma casa e se mudar para uma casa vazia. Envie o link apenas para pessoas de confiança. Em uma vila privada, somente o dono da
+          vila, os moradores e os membros aprovados pelo dono podem ver as casas, os recados e as fotos; as demais pessoas veem
+          apenas o nome da vila. O dono da vila vê o apelido de quem pede para entrar. O endereço de e-mail não é mostrado a outras
+          pessoas. A imagem do
           cartão de compartilhamento da vila não inclui fotos, apelidos nem recados. O Serviço está configurado para não aparecer em
           mecanismos de busca.
         </p>
@@ -73,6 +89,7 @@ export default function PolicyPt() {
           O Serviço não cria cookies por conta própria. No entanto, a Cloudflare, que fica na frente do servidor (Supabase), pode
           definir um cookie de segurança (__cf_bm, 30 minutos) para bloquear ataques automatizados. No armazenamento local do navegador
           (localStorage), guardamos o ID de instalação e valores secretos que permitem gerenciar as vilas que você criou e a sua casa.
+          Se você entrar, também guardamos um token que mantém você conectado, que é apagado quando você sai.
           O servidor não guarda esses valores secretos em si, apenas um valor convertido de forma irreversível (hash). Se você apagar os
           dados do site no navegador, esses valores secretos também somem, e você não poderá mais desocupar a sua casa nem excluir a
           vila por esse navegador. Nesse caso, faça o pedido pelo e-mail abaixo. O que você fizer na vila de exemplo fica apenas no
@@ -94,6 +111,11 @@ export default function PolicyPt() {
           <li>
             Quem criou a vila pode apagar de uma vez a vila e todas as casas, fotos e denúncias relacionadas com <b>&apos;Excluir
             vila&apos;</b>. Quem criou a vila também pode desocupar outras casas dentro dela.
+          </li>
+          <li>
+            Quem entrou com uma conta pode apagar de uma vez, com <b>&apos;Excluir conta&apos;</b>, os dados da conta, as vilas
+            dessa conta (incluindo todas as casas e fotos), as suas casas em outras vilas e os pedidos para entrar e dados de membro.
+            Se você entrou com a Apple, a vinculação com a sua conta Apple também é desfeita.
           </li>
           <li>
             As informações não apagadas são guardadas até que o usuário as apague ou até o encerramento do Serviço; se o Serviço for
@@ -122,8 +144,8 @@ export default function PolicyPt() {
       <Section n={7} title="Empresas contratadas para o tratamento e transferência internacional">
         <ul className="list-disc space-y-1.5 pl-5">
           <li>
-            <b>Supabase, Inc.</b> (EUA) — Serviço contratado: banco de dados, armazenamento de fotos e funções de servidor. Dados
-            tratados: informações da vila e das casas do item 2, fotos, ID de instalação, registros de solicitações e denúncias. Local
+            <b>Supabase, Inc.</b> (EUA) — Serviço contratado: banco de dados, armazenamento de fotos, login e funções de servidor. Dados
+            tratados: informações da vila e das casas do item 2, fotos, dados da conta, pedidos para entrar, ID de instalação, registros de solicitações e denúncias. Local
             de armazenamento: região de Seul (ap-northeast-2). Momento e forma da transferência: enviados pela internet sempre que o
             Serviço é usado. Prazo de guarda: o mesmo do item 5. Contato: <Ext href="https://supabase.com/contact">supabase.com/contact</Ext>{" "}
             · <Ext href="https://supabase.com/privacy">Política de Privacidade</Ext>
@@ -135,8 +157,9 @@ export default function PolicyPt() {
             <Ext href="https://www.revenuecat.com/privacy">revenuecat.com/privacy</Ext>
           </li>
           <li>
-            <b>Apple Inc. / Google LLC</b> — Processamento de pagamentos de compras no app (conforme os termos e a política de
-            privacidade de cada loja).
+            <b>Apple Inc. / Google LLC</b> — Processamento de pagamentos de compras no app e, se você escolher, login com a conta
+            (verificação de identidade e envio do endereço de e-mail e do identificador da conta). Conforme os termos e a política
+            de privacidade de cada empresa.
           </li>
           <li>
             <b>Cloudflare, Inc.</b> (EUA, rede global) — Serviço contratado: entrega e segurança do site (inclusive na frente do

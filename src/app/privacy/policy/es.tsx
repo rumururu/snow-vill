@@ -11,8 +11,9 @@ export default function PolicyEs() {
 
       <Section n={1} title="Resumen">
         <p>
-          Snow Village (en adelante, el &quot;Servicio&quot;) no requiere registro y no solicita nombre, correo electrónico ni número
-          de teléfono. Tratamos el nombre del pueblo, el apodo y el mensaje que tú escribes, y una foto que decidas subir, para
+          Snow Village (en adelante, el &quot;Servicio&quot;) se puede usar sin registrarse y, si quieres, puedes iniciar sesión con una cuenta
+          de Google o Apple. Si no inicias sesión, no solicita nombre, correo electrónico ni número de teléfono. Si inicias sesión,
+          recibimos la dirección de correo electrónico y el identificador de esa cuenta. Tratamos el nombre del pueblo, el apodo y el mensaje que tú escribes, y una foto que decidas subir, para
           mostrarlos en el pueblo. Las fotos se guardan en un almacenamiento privado, no público, y solo se muestran mediante una
           dirección válida por poco tiempo cuando alguien toca la casa en el pueblo. No usamos herramientas de publicidad ni de
           analítica.
@@ -32,6 +33,18 @@ export default function PolicyEs() {
             <b>Foto</b> (opcional, 1): para mostrarla en el marco de fotos de tu casa. Al subirla se recorta en cuadrado y se reduce a
             512 px, y los metadatos de la foto (EXIF), como la ubicación de la toma (GPS), se eliminan tanto en el dispositivo como en
             el servidor.
+          </li>
+          <li>
+            <b>Información de la cuenta</b> (opcional, si inicias sesión con Google o Apple): la dirección de correo electrónico de
+            la cuenta con la que inicias sesión (la dirección de reenvío de Apple si usas &apos;Ocultar mi correo electrónico&apos; de
+            Apple), el nombre y la dirección de la foto de perfil que facilite la cuenta (si los facilita), el identificador de la
+            cuenta y la hora de inicio de sesión. Se usa para que puedas seguir administrando los pueblos que creaste y tus casas
+            desde otros dispositivos y entre la app y la web, y para comprobar los miembros de los pueblos privados. No recibimos tu
+            contraseña.
+          </li>
+          <li>
+            <b>Solicitudes para unirse a un pueblo privado</b>: el apodo indicado en la solicitud, la hora de la solicitud y si se
+            aprobó. Se usa para que el dueño del pueblo pueda revisar y aprobar las solicitudes.
           </li>
           <li>
             <b>ID de instalación aleatorio</b>: un número aleatorio que crea el navegador la primera vez. Se usa para que el mismo
@@ -63,9 +76,11 @@ export default function PolicyEs() {
 
       <Section n={3} title="Quién puede verla">
         <p>
-          Cualquier persona que tenga el enlace de un pueblo puede ver el nombre del pueblo y el apodo, el mensaje y la fecha de
+          En un pueblo público, cualquier persona que tenga el enlace puede ver el nombre del pueblo y el apodo, el mensaje y la fecha de
           llegada de cada casa; al tocar una casa puede ver la foto, y puede mudarse a una casa vacía. Envía el enlace solo a personas
-          de confianza. La imagen de la tarjeta para compartir el pueblo no incluye fotos, apodos ni mensajes. El Servicio está
+          de confianza. En un pueblo privado, solo el dueño del pueblo, quienes viven en él y los miembros aprobados por el dueño pueden ver
+          las casas, los mensajes y las fotos; las demás personas solo ven el nombre del pueblo. El dueño del pueblo ve el apodo de
+          quienes solicitan unirse. Las direcciones de correo electrónico no se muestran a otras personas. La imagen de la tarjeta para compartir el pueblo no incluye fotos, apodos ni mensajes. El Servicio está
           configurado para no aparecer en los buscadores.
         </p>
       </Section>
@@ -75,7 +90,8 @@ export default function PolicyEs() {
           El Servicio no crea cookies propias. Sin embargo, Cloudflare, que está delante del servidor (Supabase), puede establecer una
           cookie de seguridad (__cf_bm, 30 minutos) para frenar ataques automatizados. En el almacenamiento local del navegador
           (localStorage) guardamos el ID de instalación y un valor secreto que te permite administrar los pueblos que creaste y tu
-          casa. El servidor no guarda ese valor secreto, sino solo un valor transformado de forma irreversible (hash). Si borras los
+          casa. Si inicias sesión, también guardamos un token que mantiene la sesión iniciada, y lo borramos al cerrar sesión. El
+          servidor no guarda ese valor secreto, sino solo un valor transformado de forma irreversible (hash). Si borras los
           datos del sitio en el navegador, ese valor secreto también se pierde y desde ese navegador ya no podrás vaciar tu casa ni
           eliminar el pueblo. En ese caso, pídelo por correo a la dirección que aparece abajo. Lo que hagas en el pueblo de muestra
           queda solo en el almacenamiento temporal de esa pestaña (sessionStorage) y no se envía al servidor.
@@ -96,6 +112,11 @@ export default function PolicyEs() {
           <li>
             Quien creó el pueblo puede borrar de una vez el pueblo, todas las casas, las fotos y las denuncias relacionadas con
             <b> &apos;Eliminar pueblo&apos;</b>. Quien creó el pueblo también puede vaciar las demás casas del pueblo.
+          </li>
+          <li>
+            Si iniciaste sesión, con <b>&apos;Eliminar cuenta&apos;</b> puedes borrar de una vez la información de la cuenta, los
+            pueblos de esa cuenta (con todas sus casas y fotos), tus casas en otros pueblos, y las solicitudes para unirte y la
+            información de membresía. Si iniciaste sesión con Apple, también se revoca la vinculación con tu cuenta de Apple.
           </li>
           <li>
             La información que no se elimine se conserva hasta que la persona usuaria la borre o hasta que el Servicio termine; al
@@ -124,8 +145,8 @@ export default function PolicyEs() {
       <Section n={7} title="Empresas encargadas del tratamiento y transferencias internacionales">
         <ul className="list-disc space-y-1.5 pl-5">
           <li>
-            <b>Supabase, Inc.</b> (EE. UU.) — Tarea encargada: almacenamiento de la base de datos y de las fotos, y funciones del
-            servidor. Datos tratados: información del pueblo y de las casas indicada en la sección 2, fotos, ID de instalación,
+            <b>Supabase, Inc.</b> (EE. UU.) — Tarea encargada: almacenamiento de la base de datos y de las fotos, inicio de sesión y funciones del
+            servidor. Datos tratados: información del pueblo y de las casas indicada en la sección 2, fotos, información de la cuenta, solicitudes para unirse, ID de instalación,
             registros de solicitudes y contenido de las denuncias. Ubicación del almacenamiento: región de Seúl (ap-northeast-2).
             Momento y forma de la transferencia: se envían por internet cada vez que se usa el Servicio. Plazo de conservación: igual
             que en la sección 5. Contacto: <Ext href="https://supabase.com/contact">supabase.com/contact</Ext> ·{" "}
@@ -138,8 +159,9 @@ export default function PolicyEs() {
             Contacto: <Ext href="https://www.revenuecat.com/privacy">revenuecat.com/privacy</Ext>
           </li>
           <li>
-            <b>Apple Inc. / Google LLC</b> — Procesamiento de los pagos de compras dentro de la app (según los términos y la política de
-            privacidad de cada tienda).
+            <b>Apple Inc. / Google LLC</b> — Procesamiento de los pagos de compras dentro de la app y, si así lo eliges, inicio de
+            sesión con la cuenta (verificación de identidad y envío de la dirección de correo electrónico y del identificador de la
+            cuenta). Según los términos y la política de privacidad de cada empresa.
           </li>
           <li>
             <b>Cloudflare, Inc.</b> (EE. UU., red global) — Tarea encargada: entrega y seguridad del sitio web (incluida la capa

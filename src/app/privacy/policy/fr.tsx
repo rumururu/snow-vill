@@ -11,8 +11,9 @@ export default function PolicyFr() {
 
       <Section n={1} title="Résumé">
         <p>
-          Snow Village (ci-après le « Service ») ne demande aucune inscription et ne collecte ni nom, ni adresse e-mail, ni numéro de
-          téléphone. Nous traitons le nom du village, le pseudo et le petit mot que vous saisissez vous-même, ainsi qu’une photo que
+          Snow Village (ci-après le « Service ») peut être utilisé sans inscription et, si vous le souhaitez, vous pouvez vous connecter
+          avec un compte Google ou Apple. Si vous ne vous connectez pas, nous ne collectons ni nom, ni adresse e-mail, ni numéro de
+          téléphone. Si vous vous connectez, nous recevons l’adresse e-mail et l’identifiant de ce compte. Nous traitons le nom du village, le pseudo et le petit mot que vous saisissez vous-même, ainsi qu’une photo que
           vous choisissez d’ajouter, afin de les afficher dans le village. Les photos sont conservées dans un stockage privé, et non
           public, et ne sont affichées que via une adresse valable peu de temps, lorsque quelqu’un touche la maison dans le village.
           Nous n’utilisons aucun outil publicitaire ni d’analyse.
@@ -32,6 +33,18 @@ export default function PolicyFr() {
             <b>Photo</b> (facultative, 1) : pour l’afficher dans le cadre photo de votre maison. Lors de l’envoi, elle est recadrée en
             carré et réduite à 512 px, et ses métadonnées (EXIF), comme le lieu de prise de vue (GPS), sont supprimées à la fois sur
             l’appareil et sur le serveur.
+          </li>
+          <li>
+            <b>Informations de compte</b> (facultatives, si vous vous connectez avec Google ou Apple) : l’adresse e-mail du compte
+            utilisé pour la connexion (l’adresse relais d’Apple si vous utilisez « Masquer mon adresse e-mail » d’Apple), le nom et
+            l’adresse de la photo de profil fournis par le compte (le cas échéant), l’identifiant du compte et l’heure de connexion.
+            Elles servent à vous permettre de continuer à gérer les villages que vous avez créés et votre maison sur d’autres
+            appareils ainsi qu’entre l’application et le site, et à vérifier les membres des villages privés. Nous ne recevons pas
+            votre mot de passe.
+          </li>
+          <li>
+            <b>Demandes pour rejoindre un village privé</b> : le pseudo indiqué dans la demande, l’heure de la demande et si elle a
+            été acceptée. Elles servent à permettre au propriétaire du village d’examiner et d’accepter les demandes.
           </li>
           <li>
             <b>Identifiant d’installation aléatoire</b> : un numéro aléatoire créé par le navigateur lors de la première visite. Il
@@ -63,9 +76,12 @@ export default function PolicyFr() {
 
       <Section n={3} title="Qui peut les voir">
         <p>
-          Toute personne disposant du lien d’un village peut voir le nom du village ainsi que le pseudo, le petit mot et la date
+          Pour un village public, toute personne disposant du lien peut voir le nom du village ainsi que le pseudo, le petit mot et la date
           d’emménagement de chaque maison ; en touchant une maison, elle peut voir la photo, et elle peut emménager dans une maison
-          vide. N’envoyez le lien qu’à des personnes de confiance. L’image de la carte de partage du village ne contient ni photos, ni
+          vide. N’envoyez le lien qu’à des personnes de confiance. Pour un village privé, seuls le propriétaire du village, les personnes qui y habitent et
+          les membres acceptés par le propriétaire peuvent voir les maisons, les petits mots et les photos ; les autres ne voient que
+          le nom du village. Le propriétaire du village voit le pseudo des personnes qui demandent à le rejoindre. Les adresses
+          e-mail ne sont pas visibles par les autres. L’image de la carte de partage du village ne contient ni photos, ni
           pseudos, ni petits mots. Le Service est configuré pour ne pas apparaître dans les moteurs de recherche.
         </p>
       </Section>
@@ -75,7 +91,8 @@ export default function PolicyFr() {
           Le Service ne crée pas lui-même de cookies. Toutefois, Cloudflare, placé devant le serveur (Supabase), peut définir un
           cookie de sécurité (__cf_bm, 30 minutes) pour bloquer les attaques automatisées. Nous enregistrons dans le stockage local du
           navigateur (localStorage) l’identifiant d’installation et une valeur secrète qui vous permet de gérer les villages que vous
-          avez créés et votre maison. Le serveur ne conserve pas cette valeur secrète elle-même, mais uniquement une valeur
+          avez créés et votre maison. Si vous vous connectez, nous enregistrons aussi un jeton qui maintient votre connexion ; il est
+          supprimé lorsque vous vous déconnectez. Le serveur ne conserve pas cette valeur secrète elle-même, mais uniquement une valeur
           transformée de manière irréversible (hachage). Si vous effacez les données du site dans le navigateur, cette valeur secrète
           disparaît aussi et vous ne pourrez plus, depuis ce navigateur, vider votre maison ni supprimer le village. Dans ce cas,
           faites-en la demande à l’adresse e-mail ci-dessous. Ce que vous faites dans le village d’exemple reste uniquement dans le
@@ -97,6 +114,12 @@ export default function PolicyFr() {
           <li>
             La personne qui a créé le village peut supprimer en une fois le village, toutes les maisons, les photos et les
             signalements associés avec <b>« Supprimer le village »</b>. Elle peut aussi vider les autres maisons du village.
+          </li>
+          <li>
+            Les utilisateurs connectés peuvent supprimer en une fois, avec <b>« Supprimer le compte »</b>, les informations de
+            compte, les villages de ce compte (y compris toutes leurs maisons et photos), leurs maisons dans d’autres villages, ainsi
+            que les demandes pour rejoindre et les informations d’adhésion. Si vous vous êtes connecté avec Apple, le lien avec votre
+            compte Apple est également révoqué.
           </li>
           <li>
             Les informations non supprimées sont conservées jusqu’à ce que l’utilisateur les supprime ou jusqu’à la fin du Service ;
@@ -125,8 +148,8 @@ export default function PolicyFr() {
       <Section n={7} title="Sous-traitants et transferts hors de Corée">
         <ul className="list-disc space-y-1.5 pl-5">
           <li>
-            <b>Supabase, Inc.</b> (États-Unis) — Tâches confiées : stockage de la base de données et des photos, fonctions serveur.
-            Données traitées : informations sur le village et les maisons de la section 2, photos, identifiant d’installation,
+            <b>Supabase, Inc.</b> (États-Unis) — Tâches confiées : stockage de la base de données et des photos, connexion, fonctions serveur.
+            Données traitées : informations sur le village et les maisons de la section 2, photos, informations de compte, demandes pour rejoindre, identifiant d’installation,
             journaux de requêtes, contenu des signalements. Lieu de stockage : région de Séoul (ap-northeast-2). Moment et mode du
             transfert : envoi par Internet à chaque utilisation du Service. Durée de conservation : identique à la section 5.
             Contact : <Ext href="https://supabase.com/contact">supabase.com/contact</Ext> ·{" "}
@@ -139,8 +162,9 @@ export default function PolicyFr() {
             RevenueCat. Contact : <Ext href="https://www.revenuecat.com/privacy">revenuecat.com/privacy</Ext>
           </li>
           <li>
-            <b>Apple Inc. / Google LLC</b> — Traitement des paiements des achats intégrés (selon les conditions et la politique de
-            confidentialité de chaque boutique).
+            <b>Apple Inc. / Google LLC</b> — Traitement des paiements des achats intégrés et, si vous le choisissez, connexion au
+            compte (vérification de l’identité et transmission de l’adresse e-mail et de l’identifiant du compte), selon les
+            conditions et la politique de confidentialité de chaque entreprise.
           </li>
           <li>
             <b>Cloudflare, Inc.</b> (États-Unis, réseau mondial) — Tâches confiées : diffusion et sécurité du site web (y compris en

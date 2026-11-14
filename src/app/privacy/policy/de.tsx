@@ -11,8 +11,9 @@ export default function PolicyDe() {
 
       <Section n={1} title="Zusammenfassung">
         <p>
-          Snow Village (im Folgenden „Dienst“) erfordert keine Registrierung und erhebt weder Namen noch E-Mail-Adresse noch
-          Telefonnummer. Wir verarbeiten den Dorfnamen, den Spitznamen und die kurze Nachricht, die Sie selbst eingeben, sowie ein
+          Snow Village (im Folgenden „Dienst“) kann ohne Registrierung genutzt werden; auf Wunsch können Sie sich mit einem
+          Google- oder Apple-Konto anmelden. Wenn Sie sich nicht anmelden, erheben wir weder Namen noch E-Mail-Adresse noch
+          Telefonnummer. Wenn Sie sich anmelden, erhalten wir die E-Mail-Adresse und die Kontokennung dieses Kontos. Wir verarbeiten den Dorfnamen, den Spitznamen und die kurze Nachricht, die Sie selbst eingeben, sowie ein
           Foto, das Sie freiwillig hochladen, um sie im Dorf anzuzeigen. Fotos liegen nicht in einem öffentlichen, sondern in einem
           privaten Speicher und werden nur über eine kurzzeitig gültige Adresse angezeigt, wenn jemand im Dorf auf das Haus tippt.
           Wir verwenden keine Werbe- oder Analysetools.
@@ -32,6 +33,18 @@ export default function PolicyDe() {
             <b>Foto</b> (optional, 1 Stück): um es im Fotorahmen Ihres Hauses anzuzeigen. Beim Hochladen wird es quadratisch
             zugeschnitten und auf 512 px verkleinert; Metadaten im Foto (EXIF) wie der Aufnahmeort (GPS) werden sowohl auf dem Gerät
             als auch auf dem Server entfernt.
+          </li>
+          <li>
+            <b>Kontodaten</b> (optional, bei Anmeldung mit Google oder Apple): die E-Mail-Adresse des angemeldeten Kontos (bei
+            Nutzung von Apples „E-Mail-Adresse verbergen“ die Weiterleitungsadresse von Apple), Name und Adresse des Profilbilds,
+            sofern das Konto sie bereitstellt, die Kontokennung und der Zeitpunkt der Anmeldung. Sie dienen dazu, Ihre selbst
+            erstellten Dörfer und Ihr Haus auf anderen Geräten sowie in App und Web weiter zu verwalten und die Mitglieder privater
+            Dörfer zu prüfen. Ein Passwort erhalten wir nicht.
+          </li>
+          <li>
+            <b>Beitrittsanfragen für private Dörfer</b>: der bei der Anfrage angegebene Spitzname, der Zeitpunkt der Anfrage und ob
+            sie angenommen wurde. Sie dienen dazu, dass die Inhaberin oder der Inhaber des Dorfes Anfragen prüfen und annehmen
+            kann.
           </li>
           <li>
             <b>Zufällige Installations-ID</b>: eine Zufallsnummer, die der Browser beim ersten Besuch erzeugt. Sie verhindert, dass
@@ -63,9 +76,12 @@ export default function PolicyDe() {
 
       <Section n={3} title="Wer die Daten sehen kann">
         <p>
-          Jede Person mit dem Link zu einem Dorf kann den Namen des Dorfes sowie Spitznamen, kurze Nachrichten und Einzugsdaten der
+          Bei einem öffentlichen Dorf kann jede Person mit dem Link den Namen des Dorfes sowie Spitznamen, kurze Nachrichten und Einzugsdaten der
           Häuser sehen, beim Tippen auf ein Haus das Foto ansehen und in ein leeres Haus einziehen. Schicken Sie den Link nur an Menschen,
-          denen Sie vertrauen. Das Bild der Teilen-Karte des Dorfes enthält keine Fotos, Spitznamen oder Nachrichten. Der Dienst ist so
+          denen Sie vertrauen. Bei einem privaten Dorf können nur die Inhaberin oder der Inhaber des Dorfes, die Bewohnerinnen und Bewohner sowie
+          von der Inhaberin oder dem Inhaber angenommene Mitglieder die Häuser, Nachrichten und Fotos sehen; alle anderen sehen nur
+          den Namen des Dorfes. Die Inhaberin oder der Inhaber des Dorfes sieht die Spitznamen der Personen, die einen Beitritt
+          anfragen. E-Mail-Adressen sind für andere nicht sichtbar. Das Bild der Teilen-Karte des Dorfes enthält keine Fotos, Spitznamen oder Nachrichten. Der Dienst ist so
           eingestellt, dass er nicht in Suchmaschinen erscheint.
         </p>
       </Section>
@@ -75,7 +91,8 @@ export default function PolicyDe() {
           Der Dienst setzt selbst keine Cookies. Cloudflare, das dem Server (Supabase) vorgeschaltet ist, kann jedoch ein
           Sicherheits-Cookie (__cf_bm, 30 Minuten) setzen, um automatisierte Angriffe abzuwehren. Im lokalen Speicher des Browsers
           (localStorage) speichern wir die Installations-ID und einen geheimen Wert, mit dem Sie Ihre selbst erstellten Dörfer und Ihr
-          Haus verwalten können. Der Server speichert nicht diesen geheimen Wert selbst, sondern nur einen unumkehrbar umgewandelten
+          Haus verwalten können. Wenn Sie sich anmelden, speichern wir außerdem ein Token, das Sie angemeldet hält; beim Abmelden wird es
+          gelöscht. Der Server speichert nicht diesen geheimen Wert selbst, sondern nur einen unumkehrbar umgewandelten
           Wert (Hash). Wenn Sie die Websitedaten im Browser löschen, geht auch dieser geheime Wert verloren, und Sie können in diesem
           Browser Ihr Haus nicht mehr räumen und das Dorf nicht mehr löschen. Bitte wenden Sie sich in diesem Fall per E-Mail an die
           unten genannte Adresse. Was Sie im Beispieldorf ausprobieren, bleibt nur im temporären Speicher dieses Tabs (sessionStorage)
@@ -97,6 +114,12 @@ export default function PolicyDe() {
           <li>
             Wer das Dorf erstellt hat, kann mit <b>„Dorf löschen“</b> das Dorf mit allen Häusern, Fotos und zugehörigen Meldungen auf
             einmal löschen. Wer das Dorf erstellt hat, kann auch andere Häuser im Dorf räumen.
+          </li>
+          <li>
+            Angemeldete Nutzerinnen und Nutzer können mit <b>„Konto löschen“</b> die Kontodaten, die Dörfer dieses Kontos
+            (einschließlich aller Häuser und Fotos), ihre Häuser in anderen Dörfern sowie Beitrittsanfragen und Mitgliedschaftsdaten
+            auf einmal löschen. Wenn Sie sich mit Apple angemeldet haben, wird auch die Verknüpfung mit Ihrem Apple-Konto
+            aufgehoben.
           </li>
           <li>
             Nicht gelöschte Daten werden gespeichert, bis die Nutzerin oder der Nutzer sie löscht oder der Dienst eingestellt wird;
@@ -125,8 +148,8 @@ export default function PolicyDe() {
       <Section n={7} title="Auftragsverarbeiter und Übermittlung ins Ausland">
         <ul className="list-disc space-y-1.5 pl-5">
           <li>
-            <b>Supabase, Inc.</b> (USA) — Beauftragte Tätigkeit: Speicherung von Datenbank und Fotos sowie Serverfunktionen.
-            Verarbeitete Daten: Dorf- und Hausdaten aus Abschnitt 2, Fotos, Installations-ID, Anfrageprotokolle, Inhalt von Meldungen.
+            <b>Supabase, Inc.</b> (USA) — Beauftragte Tätigkeit: Speicherung von Datenbank und Fotos, Anmeldung sowie Serverfunktionen.
+            Verarbeitete Daten: Dorf- und Hausdaten aus Abschnitt 2, Fotos, Kontodaten, Beitrittsanfragen, Installations-ID, Anfrageprotokolle, Inhalt von Meldungen.
             Speicherort: Region Seoul (ap-northeast-2). Zeitpunkt und Art der Übermittlung: Übertragung über das Internet bei jeder
             Nutzung des Dienstes. Speicherdauer: wie in Abschnitt 5. Kontakt:{" "}
             <Ext href="https://supabase.com/contact">supabase.com/contact</Ext> ·{" "}
@@ -139,8 +162,9 @@ export default function PolicyDe() {
             <Ext href="https://www.revenuecat.com/privacy">revenuecat.com/privacy</Ext>
           </li>
           <li>
-            <b>Apple Inc. / Google LLC</b> — Zahlungsabwicklung für In-App-Käufe (gemäß den Bedingungen und Datenschutzerklärungen des
-            jeweiligen Stores).
+            <b>Apple Inc. / Google LLC</b> — Zahlungsabwicklung für In-App-Käufe sowie, wenn Sie dies wählen, Kontoanmeldung
+            (Identitätsprüfung und Übermittlung von E-Mail-Adresse und Kontokennung). Es gelten die Bedingungen und
+            Datenschutzerklärungen des jeweiligen Unternehmens.
           </li>
           <li>
             <b>Cloudflare, Inc.</b> (USA, weltweites Netzwerk) — Beauftragte Tätigkeit: Auslieferung und Sicherheit der Website

@@ -49,6 +49,11 @@ case "$(q "select count(*) as n from pg_tables where schemaname='public' and tab
 esac
 
 AFTER=$(q "$HASH")
+# Accounts + private villages need Supabase Auth: dedicated project only (docs/12). Re-runnable.
+if [ "$SHARED_PROJECT" = 0 ]; then
+  R=$(q "$(cat migrations/20261114100000_snowvill_accounts.sql)"); echo "accounts migration: $R"
+fi
+
 if [ "$SHARED_PROJECT" = 1 ]; then
   [ "$BEFORE" = "$AFTER" ] && echo "other games unchanged ($AFTER)" || { echo "OTHER OBJECTS CHANGED: $BEFORE -> $AFTER"; exit 1; }
 fi
@@ -63,6 +68,12 @@ security find-generic-password -a snowvill-webhook-auth -s supabase >/dev/null 2
   || security add-generic-password -a snowvill-webhook-auth -s supabase -w "$(python3 -c 'import secrets;print(secrets.token_urlsafe(36))')"
 python3 -c "import json,sys;print(json.dumps([{'name':'SNOWVILL_WEBHOOK_AUTH','value':sys.argv[1]}]))" "$(security find-generic-password -a snowvill-webhook-auth -s supabase -w)" \
   | curl -s -m 30 -o /dev/null -w 'webhook secret HTTP%{http_code}\n' -X POST -H "Authorization: Bearer $TOK" -H "Content-Type: application/json" -d @- "$API/secrets"
+# Sign in with Apple key for revoking the grant on account deletion (dedicated project; keychain apple-signin).
+if [ "$SHARED_PROJECT" = 0 ]; then
+  python3 -c "import json,sys,base64;print(json.dumps([{'name':'SNOWVILL_APPLE_KEY_P8','value':base64.b64decode(sys.argv[1]).decode()},{'name':'SNOWVILL_APPLE_KEY_ID','value':'7W98CY35QQ'},{'name':'SNOWVILL_APPLE_TEAM_ID','value':'3SAMRT9KZD'}]))" \
+    "$(security find-generic-password -a snow-village-apple-signin-key -s apple-signin -w)" \
+    | curl -s -m 30 -o /dev/null -w 'apple key secrets HTTP%{http_code}\n' -X POST -H "Authorization: Bearer $TOK" -H "Content-Type: application/json" -d @- "$API/secrets"
+fi
 curl -s -m 120 -o /dev/null -w 'purchase webhook deploy HTTP%{http_code}\n' -X POST "$API/functions/deploy?slug=snowvill-purchase-webhook" \
   -H "Authorization: Bearer $TOK" \
   -F 'metadata={"entrypoint_path":"index.ts","name":"snowvill-purchase-webhook","verify_jwt":false};type=application/json' \

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Deploys Snow Village (snowvill_) to the shared mkideabox-games project via the Management API
+# Deploys Snow Village (snowvill_) via the Management API to the project chosen by SNOWVILL_TARGET (target.sh;
+# default: the shared mkideabox-games project)
 # (never via `supabase login` — the CLI login on this Mac belongs to other projects), then runs live checks.
 # Re-runnable: migrations are applied only when their objects are missing; the Edge Function is redeployed.
 # Aborts if any non-snowvill object changes. Keychain (service supabase): mkideabox-games-mgmt-token.
 set -eu
 cd "$(dirname "$0")"
-REF=qfhbkfzxhldfycmcwntw
-TOK=$(security find-generic-password -a mkideabox-games-mgmt-token -s supabase -w)
-API="https://api.supabase.com/v1/projects/$REF"
+. ./target.sh
+echo "target: ${SNOWVILL_TARGET:-shared} ($REF)"
 q() { python3 -c "import json,sys;print(json.dumps({'query':sys.argv[1]}))" "$1" \
   | curl -s -m 60 -X POST -H "Authorization: Bearer $TOK" -H "Content-Type: application/json" -d @- "$API/database/query"; }
 
@@ -24,6 +24,7 @@ case "$(q "select count(*) as n from pg_tables where schemaname='public' and tab
   *) echo "core tables exist, core migration skipped" ;;
 esac
 R=$(q "$(cat migrations/20261109100100_snowvill_photo_bucket.sql)"); echo "photo bucket: $R"
+[ "$SHARED_PROJECT" = 1 ] || echo "pg_cron: $(q "create extension if not exists pg_cron")"
 R=$(q "$(cat migrations/20261109120000_snowvill_calls_purge.sql)"); echo "calls purge job: $R"
 case "$(q "select count(*) as n from information_schema.columns where table_name='snowvill_villages' and column_name='capacity'")" in
   *'"n":0'*) R=$(q "$(cat migrations/20261110100000_snowvill_big_village.sql)"); echo "big village migration: $R" ;;
@@ -48,7 +49,9 @@ case "$(q "select count(*) as n from pg_tables where schemaname='public' and tab
 esac
 
 AFTER=$(q "$HASH")
-[ "$BEFORE" = "$AFTER" ] && echo "other games unchanged ($AFTER)" || { echo "OTHER OBJECTS CHANGED: $BEFORE -> $AFTER"; exit 1; }
+if [ "$SHARED_PROJECT" = 1 ]; then
+  [ "$BEFORE" = "$AFTER" ] && echo "other games unchanged ($AFTER)" || { echo "OTHER OBJECTS CHANGED: $BEFORE -> $AFTER"; exit 1; }
+fi
 
 curl -s -m 120 -o /dev/null -w 'edge function deploy HTTP%{http_code}\n' -X POST "$API/functions/deploy?slug=snowvill-photo" \
   -H "Authorization: Bearer $TOK" \

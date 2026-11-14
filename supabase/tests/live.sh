@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
-# Live check against mkideabox-games through the same path the web app uses (REST + anon key, Edge Function).
+# Live check against the SNOWVILL_TARGET project (../target.sh) through the same path the web app uses (REST + anon key, Edge Function).
 # Test villages are deleted at the end (Edge Function delete_village + SQL sweep by test install IDs).
 # Usage: supabase/tests/live.sh   (keychain mkideabox-games-mgmt-token)
 set -u
-REF=qfhbkfzxhldfycmcwntw
+. "$(dirname "$0")/../target.sh"
 URL=https://$REF.supabase.co
 FN=$URL/functions/v1/snowvill-photo
-TOK=$(security find-generic-password -a mkideabox-games-mgmt-token -s supabase -w)
-API="https://api.supabase.com/v1/projects/$REF"
 ANON=$(curl -s -H "Authorization: Bearer $TOK" "$API/api-keys?reveal=true" \
   | python3 -c "import json,sys;print(next(k['api_key'] for k in json.load(sys.stdin) if k['name']=='anon'))")
 W=$(mktemp -d)

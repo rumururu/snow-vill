@@ -7,7 +7,7 @@
 set -eu
 cd "$(dirname "$0")"
 . ./target.sh
-echo "target: ${SNOWVILL_TARGET:-shared} ($REF)"
+echo "target: ${SNOWVILL_TARGET:-dedicated} ($REF)"
 q() { python3 -c "import json,sys;print(json.dumps({'query':sys.argv[1]}))" "$1" \
   | curl -s -m 60 -X POST -H "Authorization: Bearer $TOK" -H "Content-Type: application/json" -d @- "$API/database/query"; }
 

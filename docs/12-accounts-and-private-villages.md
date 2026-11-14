@@ -76,7 +76,11 @@ Signed in → `Authorization: Bearer <access_token>`; guest → `Authorization: 
 server revoke the Apple grant; then the account, its villages, its houses and their photos are deleted.
 
 ## Cutover from the shared project (runbook)
-Prepared 2026-11-14; run in this order once web + app 1.1 are ready.
+Prepared and **run 2026-11-14 (22:35–23:00 KST)**: shared writes frozen first (only `get_village`, `wallet` remain
+callable), then the fresh copy (5 villages, 4 houses, 2 wallets, 4 purchases, 2 tier credits, 0 photos; row hashes
+identical on both sides), web switched and deployed (CSP updated for the new host and Google/Apple sign-in — the first
+deploy without it failed to load villages and was fixed within minutes), RevenueCat webhook moved, report alerts on
+the new project, app builds with `env/prod.json` → dedicated. Scripts now default to `dedicated`.
 **Do not deploy the web before step 2**: since commit `web sign-in` the web sends `p_secrets` to `snowvill_get_village`,
 which the shared project does not have (guests would get errors).
 1. Final copy: `python3 supabase/migrate_data.py --fresh` (empties the target's copied tables first — refused once any

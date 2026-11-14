@@ -29,10 +29,10 @@ from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
 from pathlib import Path
 
-# Same switch as target.sh: SNOWVILL_TARGET=shared (default, live until the cutover) | dedicated (docs/12).
+# Same switch as target.sh: SNOWVILL_TARGET=dedicated (default, live since 2026-11-14) | shared (frozen; docs/12).
 _TARGETS = {"shared": ("qfhbkfzxhldfycmcwntw", "mkideabox-games-mgmt-token"),
             "dedicated": ("hbpazldzkmkcawfppiiq", "snow-village-mgmt-token")}
-REF, TOKEN_ACCOUNT = _TARGETS[os.environ.get("SNOWVILL_TARGET", "shared")]
+REF, TOKEN_ACCOUNT = _TARGETS[os.environ.get("SNOWVILL_TARGET", "dedicated")]
 API = f"https://api.supabase.com/v1/projects/{REF}"
 URL = f"https://{REF}.supabase.co"
 BUCKET = "snowvill-photos"

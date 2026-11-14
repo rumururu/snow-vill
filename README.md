@@ -27,15 +27,17 @@ npm run dev          # http://localhost:3000
 | `npm run screenshots` | Simulation-mode browser smoke test + README screenshots via installed Chrome over CDP (see below) |
 | `supabase/tests/local.sh` | SQL tests (58) on a throwaway local Postgres with Supabase's roles/default privileges |
 | `supabase/deploy.sh` | Deploy schema + photo bucket + Edge Function via Management API, verify other games unchanged, run live tests |
-| `supabase/tests/live.sh` | Live server tests (51) through the anon REST/Edge path; deletes its test data |
+| `supabase/migrations/…_snowvill_accounts.sql` | Accounts (owner_user / user_id), private villages, join requests, link device, my villages, account deletion |
+| `supabase/auth_config.py` | Google + Apple sign-in settings; renews the Apple client secret (expires 2027-05-12) |
+| `supabase/tests/live.sh` · `accounts.py` · `accounts_live.py` | Live server tests (86 guest flows · 33 account rules · 18 signed-in flows); delete their test data |
 | `supabase/moderation.py` | Report handling: `check` (alert mail, LaunchAgent `supabase/launchd/` every 15 min), `list`, `photo`, `remove`, `dismiss`, `log` |
 | `scripts/e2e-remote.sh` | Multi-device browser E2E against the live backend (needs a build with `.env.local`); verifies server cleanup |
 
 Without `.env.local` the app runs in simulation mode and needs no credentials. To use the real backend, copy `.env.example` to `.env.local` and fill in the **anon** key (public by design — never a service_role/secret key):
 
 ```bash
-TOK=$(security find-generic-password -a mkideabox-games-mgmt-token -s supabase -w)
-curl -s -H "Authorization: Bearer $TOK" "https://api.supabase.com/v1/projects/qfhbkfzxhldfycmcwntw/api-keys?reveal=true" \
+TOK=$(security find-generic-password -a snow-village-mgmt-token -s supabase -w)
+curl -s -H "Authorization: Bearer $TOK" "https://api.supabase.com/v1/projects/hbpazldzkmkcawfppiiq/api-keys?reveal=true" \
   | python3 -c "import json,sys;print(next(k['api_key'] for k in json.load(sys.stdin) if k['name']=='anon'))"
 ```
 
@@ -79,8 +81,13 @@ Deploy checklist:
 
 ## Backend (M1)
 
-Shared Supabase project **`mkideabox-games`** (ref `qfhbkfzxhldfycmcwntw`, Seoul), governed by
-`/Volumes/home_extension/mkideabox-corp-process/processes/infrastructure/game-shared-backend.md`: every object is prefixed `snowvill_`, deploys go through the Management API with the keychain token (never `supabase login`), and other games' objects must not change.
+Dedicated Supabase project **`snow-village`** (ref `hbpazldzkmkcawfppiiq`, Seoul, account rumururu2) since the
+2026-11-14 cutover — sign-in (Google, Apple) and private villages need Supabase Auth, which the shared game project may
+not host. Design, client contract and cutover record: [docs/12-accounts-and-private-villages.md](docs/12-accounts-and-private-villages.md).
+Objects keep the `snowvill_` prefix; deploys go through the Management API with the keychain token (never
+`supabase login`). The former shared project `mkideabox-games` (`qfhbkfzxhldfycmcwntw`) is frozen (reads only for app
+1.0) until its `snowvill_` objects are removed. Scripts pick the project with `SNOWVILL_TARGET` (`supabase/target.sh`,
+default `dedicated`).
 
 | Piece | What it does |
 |---|---|

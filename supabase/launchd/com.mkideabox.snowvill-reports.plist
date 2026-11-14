@@ -15,6 +15,8 @@
 		<string>1</string>
 		<key>TZ</key>
 		<string>Asia/Seoul</string>
+		<key>SNOWVILL_TARGET</key>
+		<string>dedicated</string>
 	</dict>
 	<key>ProgramArguments</key>
 	<array>

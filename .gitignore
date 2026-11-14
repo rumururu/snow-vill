@@ -52,3 +52,6 @@ private-photos/
 # wrangler local state
 .wrangler/
 __pycache__/
+
+# python
+__pycache__/

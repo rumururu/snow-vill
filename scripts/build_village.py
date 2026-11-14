@@ -25,7 +25,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from build_assets import alpha_mask, hull_polygon, widest_row
+from sprite_geometry import alpha_mask, hull_polygon, widest_row
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "assets" / "source"
@@ -368,7 +368,7 @@ def main() -> None:
                  "auroraMinHouses": AURORA_MIN_HOUSES, "props": PROPS, "lots": lot_list}
     for key, (ko, en, a, b) in HOUSES.items():
         geo["houses"][key] = {"label": {"ko": ko, "en": en, **NAMES_I18N["house:" + key]}, "a": a, "b": b}
-        for name in {a, b}:
+        for name in dict.fromkeys((a, b)):  # ordered (a set would reorder the JSON between runs)
             if name not in geo["sprites"]:
                 geo["sprites"][name] = measure(name, "house", SPRITE_SIZE)
     facility_sprites = {f["sprite"]: f["tiles"] for f in PLAZA if f["sprite"] not in PROPS.values() and not f["sprite"].startswith("prop_")}

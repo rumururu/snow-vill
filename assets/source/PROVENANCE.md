@@ -12,7 +12,7 @@ sage 0.983 / 0.5%, indigo 0.986 / 0.5%, empty 0.968 / 1.0%, tree base vs complet
 
 Added 2026-11-10 (same chat): `background_aurora.webp` (edit of the background; pixel alignment vs original measured, best shift (0,0)), `decor_sled.webp`, `decor_snowfamily.webp` (free decorations unlocked by house count). `build_assets.py` also cuts a **foreground layer** (`*_front.webp`: everything outside the fence on the front side) from each background so front fences/lamps/snowman are drawn over houses and props.
 
-Delivery files are produced by `scripts/build_assets.py` → `public/assets/` + `src/lib/asset-geometry.json`.
+Delivery files are produced by `scripts/build_village.py` → `public/assets/v2/` + `src/lib/village-geometry.json` (the first layout's `build_assets.py` and its delivery files were removed 2026-11-14; the masters stay).
 
 ## Prompts (verbatim, in order)
 

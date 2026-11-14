@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-export const EFFECTIVE_DATE = "2026-11-10";
+export const EFFECTIVE_DATE = "2026-11-14";
 export const CONTACT = "mkideabox.feedback@gmail.com";
 // Company-standard privacy officer (same as other mkideabox app policies).
 export const OFFICER = { name: "hyung-woo park", email: "mkideabox@gmail.com", phone: "+82-10-4732-7825" };

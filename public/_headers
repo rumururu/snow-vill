@@ -1,8 +1,9 @@
 # Cloudflare static-asset response headers (copied into ./out by next build).
-# connect/img sources: this site + the shared Supabase project (anon RPC, Edge Function, signed photo URLs).
+# connect/img sources: this site + the dedicated snow-village Supabase project (RPC, Edge Function, signed photo URLs,
+# sign-in). Google Identity Services and Sign in with Apple JS need their script/style/frame/connect origins.
 # 'unsafe-inline' scripts are required by Next.js static export bootstrapping.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://qfhbkfzxhldfycmcwntw.supabase.co; connect-src 'self' https://qfhbkfzxhldfycmcwntw.supabase.co; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client https://appleid.cdn-apple.com; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob: https://hbpazldzkmkcawfppiiq.supabase.co; connect-src 'self' https://hbpazldzkmkcawfppiiq.supabase.co https://accounts.google.com/gsi/ https://appleid.apple.com; frame-src https://accounts.google.com/gsi/ https://appleid.apple.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()

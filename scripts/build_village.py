@@ -135,11 +135,10 @@ POND_RADIUS = 1.7
 HOUSE_RING = [(55, 3.6), (-55, 3.6), (105, 3.9), (-105, 3.9), (155, 3.5), (-155, 3.5)]
 # Decoration around each clearing (degrees from the entrance, radius, sprite, tiles). Sized to the houses
 # (1.7 tiles, ~215 px tall): lamp ~0.55x a house, bench/signpost/snowman well under half (owner: props looked too big).
+# Owner 2026-11-14: the village looked busy — one lamp at the entrance, no signpost / bench / snowman by the houses.
 DECOR = [
-    (25, 5.0, "prop_lamp", 0.36), (-25, 5.0, "prop_lamp", 0.36),
-    (12, 3.0, "prop_signpost", 0.42),
-    (180, 2.1, "prop_bench", 0.5),
-    (128, 5.1, "prop_bush", 0.55), (-128, 5.1, "prop_snowman_lantern", 0.5),
+    (25, 5.0, "prop_lamp", 0.36),
+    (128, 5.1, "prop_bush", 0.55),
     (180, 5.1, "prop_pines", 1.0),
 ]
 FOREST_RADIUS = 30.0

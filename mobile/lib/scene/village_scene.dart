@@ -1036,14 +1036,14 @@ class _GroundPainter extends CustomPainter {
     }
 
     // Empty lots: dashed outline; locked second halves: grey dashed outline.
-    final lotFill = Paint()..color = const Color(0x80FFFFFF);
-    final lockFill = Paint()..color = const Color(0x26B8C4D6);
+    final lotFill = Paint()..color = const Color(0x4DFFFFFF);
+    final lockFill = Paint()..color = const Color(0x1AB8C4D6);
     final lotLine = Paint()
-      ..color = const Color(0xFFA49CC8)
+      ..color = const Color(0x99A49CC8)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2;
+      ..strokeWidth = 2.0;
     final lockLine = Paint()
-      ..color = const Color(0x997D8CA6)
+      ..color = const Color(0x737D8CA6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.4;
     for (final l in g.lots) {

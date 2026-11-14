@@ -528,7 +528,7 @@ export function VillageMapArt({ openHalves, houses, view, names = false, ghosts 
       {halfLocked.map((l) => {
         const c = project(l.at[0], l.at[1], l.z);
         return (
-          <g key={`hl${l.slot}`} data-lot={l.slot} data-state="locked" opacity={0.6}>
+          <g key={`hl${l.slot}`} data-lot={l.slot} data-state="locked" opacity={0.45}>
             <polygon points={pts(tileDiamond(l.at[0], l.at[1], HOUSE_TILES * 0.62, l.z))} fill="#B8C4D6" fillOpacity={0.25} stroke="#7D8CA6" strokeWidth={2.4}
               strokeDasharray="8 7" />
             <text x={c.x} y={c.y + 9} textAnchor="middle" fontSize={26}>
@@ -563,9 +563,9 @@ export function VillageMapArt({ openHalves, houses, view, names = false, ghosts 
           const c = project(i, j, z);
           return (
             <g key={`lot-${e.slot}`} data-lot={e.slot} data-state="empty">
-              <polygon points={pts(tileDiamond(i, j, HOUSE_TILES * 0.62, z))} fill="#FFFFFF" fillOpacity={0.5} stroke="#A49CC8" strokeWidth={2.2}
+              <polygon points={pts(tileDiamond(i, j, HOUSE_TILES * 0.62, z))} fill="#FFFFFF" fillOpacity={0.3} stroke="#A49CC8" strokeOpacity={0.6} strokeWidth={2}
                 strokeDasharray="7 7" strokeLinejoin="round" />
-              <circle cx={c.x} cy={c.y} r={17} fill="#FFFFFF" opacity={0.92} />
+              <circle cx={c.x} cy={c.y} r={15} fill="#FFFFFF" opacity={0.8} />
               <path d={`M ${c.x - 8} ${c.y} h 16 M ${c.x} ${c.y - 8} v 16`} stroke="#7D74A8" strokeWidth={3.4} strokeLinecap="round" />
             </g>
           );

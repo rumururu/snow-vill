@@ -96,8 +96,8 @@ void main() {
         expect(g.decorSpotOk(open, const {}, f.id, Offset(f.i, f.j)), isTrue, reason: f.id);
       }
     }
-    // Same count as the web's movableDecor for an all-open village (75).
-    expect(g.movableDecor((1 << 20) - 1), hasLength(75));
+    // Same count as the web's movableDecor for an all-open village (36 since the 2026-11-14 decor trim).
+    expect(g.movableDecor((1 << 20) - 1), hasLength(36));
   });
 
   test('village look: blocked spots and moved decorations', () {

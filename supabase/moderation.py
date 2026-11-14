@@ -18,6 +18,7 @@ the photo. If CSAM is confirmed: remove the house, then report it (child safety 
 """
 import argparse
 import json
+import os
 import smtplib
 import ssl
 import subprocess
@@ -28,7 +29,10 @@ from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
 from pathlib import Path
 
-REF = "qfhbkfzxhldfycmcwntw"
+# Same switch as target.sh: SNOWVILL_TARGET=shared (default, live until the cutover) | dedicated (docs/12).
+_TARGETS = {"shared": ("qfhbkfzxhldfycmcwntw", "mkideabox-games-mgmt-token"),
+            "dedicated": ("hbpazldzkmkcawfppiiq", "snow-village-mgmt-token")}
+REF, TOKEN_ACCOUNT = _TARGETS[os.environ.get("SNOWVILL_TARGET", "shared")]
 API = f"https://api.supabase.com/v1/projects/{REF}"
 URL = f"https://{REF}.supabase.co"
 BUCKET = "snowvill-photos"
@@ -37,7 +41,7 @@ FEEDBACK_MAIL_TOOL = Path("/Volumes/home_extension/mkideabox-corp-process/automa
 
 
 def mgmt_token() -> str:
-    return subprocess.run(["security", "find-generic-password", "-a", "mkideabox-games-mgmt-token", "-s", "supabase", "-w"],
+    return subprocess.run(["security", "find-generic-password", "-a", TOKEN_ACCOUNT, "-s", "supabase", "-w"],
                           check=True, capture_output=True, text=True).stdout.strip()
 
 

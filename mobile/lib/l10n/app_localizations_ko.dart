@@ -15,10 +15,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get tagline => '친구들과 만드는\n우리만의 겨울 마을';
 
   @override
-  String get taglineBody =>
-      '친구 한 명이 집 한 채. 성당 광장을 가운데 두고 동네를 하나씩 열어 60채까지 넓혀요. 동네마다 아이스링크·산타의 집 같은 시설이 생기고, 사진은 집을 눌렀을 때만 보여요.';
-
-  @override
   String get createVillage => '새 마을 만들기';
 
   @override
@@ -40,8 +36,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get villageNameHint => '예: 눈송이 마을';
 
   @override
-  String get createCapacity =>
-      '친구 6명까지 무료로 한 집씩 입주할 수 있어요. 동네를 열어 60채까지 넓힐 수 있어요.';
+  String get createCapacity => '친구 6명까지 무료로 입주할 수 있어요.';
 
   @override
   String get createButton => '마을 생성하기';
@@ -61,9 +56,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get villageComplete => '마을이 완성됐어요';
-
-  @override
-  String get tapHint => '불 켜진 집을 누르면 사진 액자가, 빈 집을 누르면 내 집 만들기가 열려요.';
 
   @override
   String get makeMyHouse => '내 집 만들기';
@@ -145,9 +137,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get removePhoto => '사진 빼기';
 
   @override
-  String get photoHint => '사진 없이도 참여할 수 있어요. 정사각형으로 잘리고 위치 정보(EXIF)는 지워져요.';
-
-  @override
   String get message => '한마디';
 
   @override
@@ -209,7 +198,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String inviteBody(int count) {
-    return '친구를 초대해 마을을 완성해요. 빈 집이 $count채 남았어요.';
+    return '빈 집이 $count채 남았어요.';
   }
 
   @override
@@ -222,8 +211,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get shareLink => '공유하기';
 
   @override
-  String get inviteNote =>
-      '링크를 받은 사람은 누구나 마을을 구경하고 빈 집에 입주할 수 있어요. 믿을 수 있는 친구에게만 보내 주세요.';
+  String get inviteNote => '믿을 수 있는 친구에게만 보내 주세요.';
 
   @override
   String shareText(String url) {
@@ -240,7 +228,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '집은 완성됐지만 사진을 올리지 못했어요. 내 집을 눌러 다시 올려 주세요.';
 
   @override
-  String get alreadyHaveHouse => '이미 이 마을에 내 집이 있어요. 친구를 초대해 빈 집을 채워 주세요!';
+  String get alreadyHaveHouse => '이미 이 마을에 내 집이 있어요.';
 
   @override
   String houseRemoved(String name) {
@@ -331,14 +319,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String upgradePointAurora(int big) {
-    return '$big채가 모두 차면 하늘에 오로라가 떠요.';
-  }
-
-  @override
-  String get upgradePointGift => '마을 주인이 아니어도 넓혀 줄 수 있고, 넓히면 웹과 앱의 모두에게 적용돼요.';
-
-  @override
   String get useCredit => '보유한 이용권으로 넓히기';
 
   @override
@@ -365,9 +345,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get errPurchasePending =>
       '결제는 됐지만 확인이 늦어지고 있어요. 잠시 후 다시 열면 자동으로 적용돼요.';
-
-  @override
-  String get tapHintFull => '집을 눌러 친구들의 사진 액자를 열어 보세요.';
 
   @override
   String get doorDirection => '문 방향';
@@ -398,27 +375,14 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String expandBody(int capacity, int step) {
-    return '지금 집 $capacity채 마을이에요. 동네를 고르면 집터 $step곳이 열려요 (한 동네는 6채, 두 번에 걸쳐 열려요).';
-  }
+  String get pickDistrict => '어느 동네를 열까요?';
 
   @override
-  String get pickDistrict => '열 동네';
-
-  @override
-  String get districtNew => '새 동네 · 3채';
-
-  @override
-  String get districtHalf => '반쯤 열림 · 나머지 3채';
+  String get districtHalf => '반쯤 열림';
 
   @override
   String buyDistrict(String price) {
     return '$price에 넓히기';
-  }
-
-  @override
-  String priceLadder(String p1, String p2, String p3, String p4, int max) {
-    return '무료 6채 → 9채 $p1 → 12채 $p2 → 15채 $p3 → 그 뒤 3채마다 $p4 (최대 $max채)';
   }
 
   @override
@@ -448,7 +412,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pathSnow => '눈길';
 
   @override
-  String get lookHint => '장식 아래 동그라미를 끌어서 옮겨요. 집·길·랜드마크 위나 마을 밖에는 놓을 수 없어요.';
+  String get lookHint => '장식 아래 동그라미를 끌어서 옮겨요.';
 
   @override
   String get resetDecor => '장식 처음 자리로';

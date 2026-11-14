@@ -9,23 +9,19 @@ import '../scene/village_scene.dart';
 import '../state/providers.dart';
 import '../ui/common.dart';
 
-/// Decorative hero village (illustrative only, no user data).
+/// Decorative hero village: a small free village (6 lots, 4 houses lit, 2 lots waiting for friends).
+/// Illustrative only, no user data. Same as the web (`LandingHero`).
 final _heroVillage = Village(
   id: 'hero',
   name: 'Snow Village',
   createdAt: DateTime(2026, 12, 1),
-  openHalves: 0x1F, // districts 0 and 1, half of 2
+  openHalves: freeOpenHalves,
   houses: [
     for (final (slot, style, dir) in [
-      (0, HouseStyle.brick, 1),
-      (1, HouseStyle.bakery, 1),
-      (2, HouseStyle.tower, 0),
-      (3, HouseStyle.gingerbread, 0),
-      (5, HouseStyle.windmill, 2),
-      (6, HouseStyle.timber, 1),
-      (7, HouseStyle.aframe, 0),
-      (9, HouseStyle.greenhouse, 3),
-      (12, HouseStyle.wood, 2),
+      (0, HouseStyle.brick, 0),
+      (1, HouseStyle.gingerbread, 1),
+      (2, HouseStyle.bakery, 3),
+      (4, HouseStyle.timber, 3),
     ])
       House(
         id: 'h$slot',
@@ -76,15 +72,6 @@ class HomeScreen extends ConsumerWidget {
                 height: 1.25,
                 fontWeight: FontWeight.w800,
                 color: SvColors.night,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              l.taglineBody,
-              style: TextStyle(
-                fontSize: 15,
-                height: 1.5,
-                color: SvColors.night.withValues(alpha: 0.75),
               ),
             ),
             const SizedBox(height: 16),

@@ -328,29 +328,20 @@ function convexHull(points: G[]): G[] {
 }
 
 /** The opened village as ONE rounded shape on the ground plane (owner: not islands, no bridges): a convex
- *  envelope of the plaza base and every opened clearing, resampled with a gently wavy edge. */
+ *  envelope of the plaza base and every opened clearing, resampled every ~0.6 tiles with a smooth edge
+ *  (owner 2026-11-14: the old wavy edge looked bumpy). */
 export function villageShape(village: Pick<Village, "openHalves">): G[] {
   const circles: Array<[number, number, number]> = plazaShown(village.openHalves) ? [[0, 0, PLAZA_BASE_RADIUS]] : [];
   for (const d of DISTRICTS) if (districtState(village.openHalves, d.index) > 0) circles.push([d.at[0], d.at[1], DISTRICT_RADIUS + HULL_MARGIN]);
   const pts: G[] = [];
   for (const [ci, cj, r] of circles) for (let k = 0; k < 48; k++) pts.push([ci + r * Math.cos((k * Math.PI) / 24), cj + r * Math.sin((k * Math.PI) / 24)]);
   const hull = convexHull(pts);
-  // resample every ~0.6 tiles and push each point out/in a little along the outward normal
   const out: G[] = [];
-  let s = 0;
   for (let k = 0; k < hull.length; k++) {
     const a = hull[k];
     const b = hull[(k + 1) % hull.length];
-    const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
-    const n = Math.max(1, Math.round(L / 0.6));
-    const ni = (b[1] - a[1]) / (L || 1);
-    const nj = -(b[0] - a[0]) / (L || 1);
-    for (let t = 0; t < n; t++) {
-      const f = t / n;
-      const w = 0.22 * Math.sin(s * 0.55 + 0.7) + 0.12 * Math.sin(s * 1.37 + 2.1);
-      out.push([a[0] + (b[0] - a[0]) * f + ni * w, a[1] + (b[1] - a[1]) * f + nj * w]);
-      s += L / n;
-    }
+    const n = Math.max(1, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.6));
+    for (let t = 0; t < n; t++) out.push([a[0] + ((b[0] - a[0]) * t) / n, a[1] + ((b[1] - a[1]) * t) / n]);
   }
   return out;
 }
@@ -370,17 +361,9 @@ export function pointInPolygon(p: G, poly: G[]): boolean {
   return inside;
 }
 
-/** The village ground (z = 0): projected outline, and its bank (side wall) quads to draw first. */
+/** The village ground (z = 0): projected outline. */
 export function shapeOutline(shape: G[]): Point[] {
   return shape.map(([i, j]) => project(i, j, 0));
-}
-export function shapeBank(shape: G[], height = 0.45): Point[][] {
-  const top = shapeOutline(shape);
-  const drop = height * ELEVATION_PX;
-  return top.map((p, k) => {
-    const q = top[(k + 1) % top.length];
-    return [p, q, { x: q.x, y: q.y + drop }, { x: p.x, y: p.y + drop }];
-  });
 }
 
 /** Projected outline of an area (plaza mound top, or a district clearing for hit tests / ghosts). */
@@ -727,7 +710,8 @@ export function lotsView(village: Pick<Village, "openHalves">): [number, number,
 /** The camera never shows less than this many px of map across: a small (unexpanded) village sits in the middle of the
  *  screen like the concept's little diorama, with forest around it, and visibly grows as districts open (owner 2026-11-12).
  *  Same value as `VillageGeometry.minViewWidth` in the app. */
-export const MIN_VIEW_WIDTH = 1150;
+// Owner 2026-11-14: the free village filled too little of a phone screen at 1150; at 820 it fills the width.
+export const MIN_VIEW_WIDTH = 820;
 
 /** Default camera: the opened village, widened (same centre and aspect) to at least MIN_VIEW_WIDTH. */
 export function cameraView(village: Pick<Village, "openHalves">): [number, number, number, number] {

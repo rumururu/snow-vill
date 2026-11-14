@@ -103,8 +103,9 @@ describe("free village = the first concept (owner 2026-11-12)", () => {
     expect(runs[0].length).toBeGreaterThan(30);
     for (const p of runs[0]) expect(pointInPolygon(p, shape)).toBe(true);
   });
-  it("starts small on screen: the camera shows at least MIN_VIEW_WIDTH across", () => {
+  it("the free village fills the camera: at least MIN_VIEW_WIDTH across, no wider than the village needs", () => {
     expect(cameraView({ openHalves: FREE_OPEN_HALVES })[2]).toBeGreaterThanOrEqual(MIN_VIEW_WIDTH);
+    expect(cameraView({ openHalves: FREE_OPEN_HALVES })[2]).toBeLessThan(1000);
   });
 });
 

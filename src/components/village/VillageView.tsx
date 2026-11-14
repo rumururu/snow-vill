@@ -260,9 +260,6 @@ export function VillageView({ villageId, isNew = false }: { villageId: string; i
               {t("view.milestone", { count: milestone.remaining, label: t(milestone.label) })}
             </p>
           )}
-          <p className="px-4 text-center text-xs text-night/60">
-            {full ? t("view.hintFull") : t("view.hint")}
-          </p>
           {refreshFailed && (
             <p role="status" className="mx-4 mt-2 rounded-xl bg-[#F8E6DD] px-3 py-2 text-xs text-night">
               {t("view.unstable")}

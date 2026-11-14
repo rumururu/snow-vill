@@ -15,10 +15,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tagline => '和朋友一起打造的\n专属冬日小镇';
 
   @override
-  String get taglineBody =>
-      '一位朋友一栋房子。以大教堂广场为中心，逐条开放巷子，最多扩建到 60 栋。每条巷子都会出现溜冰场、圣诞老人之家等设施，照片只有点开房子时才会显示。';
-
-  @override
   String get createVillage => '创建新小镇';
 
   @override
@@ -40,7 +36,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get villageNameHint => '例如：雪花小镇';
 
   @override
-  String get createCapacity => '最多 6 位朋友可免费入住。开放更多巷子，最多可扩建到 60 栋。';
+  String get createCapacity => '最多 6 位朋友可免费入住。';
 
   @override
   String get createButton => '创建小镇';
@@ -60,9 +56,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get villageComplete => '小镇建成啦';
-
-  @override
-  String get tapHint => '点击亮灯的房子可打开相框，点击空房子可建造自己的家。';
 
   @override
   String get makeMyHouse => '建造我的家';
@@ -144,9 +137,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get removePhoto => '移除照片';
 
   @override
-  String get photoHint => '没有照片也能参与。照片会裁成正方形，位置信息（EXIF）会被删除。';
-
-  @override
   String get message => '留言';
 
   @override
@@ -208,7 +198,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String inviteBody(int count) {
-    return '邀请朋友一起完成小镇吧。还剩 $count 栋空房子。';
+    return '还剩 $count 栋空房子。';
   }
 
   @override
@@ -221,7 +211,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shareLink => '分享';
 
   @override
-  String get inviteNote => '收到链接的人都可以参观小镇并入住空房子。请只发给信任的朋友。';
+  String get inviteNote => '请只发给信任的朋友。';
 
   @override
   String shareText(String url) {
@@ -237,7 +227,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get photoFailedAfterClaim => '房子已建好，但照片上传失败。点一下你的家再试一次吧。';
 
   @override
-  String get alreadyHaveHouse => '你在这个小镇已经有家了。邀请朋友来填满空房子吧！';
+  String get alreadyHaveHouse => '你在这个小镇已经有家了。';
 
   @override
   String houseRemoved(String name) {
@@ -327,14 +317,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String upgradePointAurora(int big) {
-    return '$big 栋全部住满后，天空会出现极光。';
-  }
-
-  @override
-  String get upgradePointGift => '不是镇主也能扩建，扩建后对网页版和 App 的所有人都生效。';
-
-  @override
   String get useCredit => '使用已有的扩建券';
 
   @override
@@ -360,9 +342,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errPurchasePending => '已付款，但确认有些延迟。稍后重新打开即会自动生效。';
-
-  @override
-  String get tapHintFull => '点击房子，打开朋友们的相框吧。';
 
   @override
   String get doorDirection => '门的朝向';
@@ -393,27 +372,14 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String expandBody(int capacity, int step) {
-    return '小镇现在可容纳 $capacity 栋房子。选择一条巷子即可开放 $step 块地（每条巷子 6 栋，分两次开放）。';
-  }
+  String get pickDistrict => '要开放哪条巷子？';
 
   @override
-  String get pickDistrict => '要开放的巷子';
-
-  @override
-  String get districtNew => '新巷子 · 3 栋';
-
-  @override
-  String get districtHalf => '已开放一半 · 剩余 3 栋';
+  String get districtHalf => '已开放一半';
 
   @override
   String buyDistrict(String price) {
     return '$price 扩建';
-  }
-
-  @override
-  String priceLadder(String p1, String p2, String p3, String p4, int max) {
-    return '免费 6 栋 → 9 栋 $p1 → 12 栋 $p2 → 15 栋 $p3 → 之后每 3 栋 $p4（最多 $max 栋）';
   }
 
   @override
@@ -443,7 +409,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pathSnow => '雪路';
 
   @override
-  String get lookHint => '拖动装饰下方的圆圈来移动它。不能放在房子、道路、地标上或小镇外。';
+  String get lookHint => '拖动装饰下方的圆圈来移动它。';
 
   @override
   String get resetDecor => '装饰恢复原位';

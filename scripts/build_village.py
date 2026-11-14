@@ -87,8 +87,8 @@ DISTRICTS = [
     ("forest", "숲속 동네", "Forest Lane", "prop_pines", 1.5),
     ("lantern", "등불 동네", "Lantern Lane", "prop_lamp", 0.75),
     ("starlight", "별빛 동네", "Starlight Lane", "tree_complete", 1.0),
-    ("hill", "언덕 동네", "Hill Lane", "prop_pines", 1.4),
-    ("lake", "호숫가 동네", "Lakeside Lane", None, 0),      # frozen pond drawn in code
+    ("hill", "언덕 동네", "Hill Lane", "landmark_hill", 1.7),          # owner 2026-11-14: its own landmark, not the forest pines
+    ("lake", "호숫가 동네", "Lakeside Lane", "landmark_lake", 2.0),    # owner 2026-11-14: frozen pond landmark (was drawn in code)
 ]
 # Names in the other 8 store languages (ko/en are in DISTRICTS / HOUSES). One glossary for the app, web and store.
 NAMES_I18N = {
@@ -269,7 +269,7 @@ def districts_and_lots() -> tuple[list[dict], list[dict], list[dict], dict]:
             "radius": DISTRICT_RADIUS, "outline": blob(ci, cj, DISTRICT_RADIUS, d + 1),
             "path": line,
             "facility": {"sprite": sprite, "at": [round(ci, 3), round(cj, 3)], "z": z, "tiles": tiles} if sprite else None,
-            "pond": blob(ci, cj, POND_RADIUS, d + 50, 24) if key == "lake" else None,
+            "pond": None,  # the lake's pond is now its landmark sprite (landmark_lake)
             "decor": decor,
         })
     lots.sort(key=lambda l: l["slot"])

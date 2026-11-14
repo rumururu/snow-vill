@@ -27,14 +27,11 @@ export default function LandingPage() {
           <br />
           {t("landing.titleLine2")}
         </h1>
-        <p className="mt-3 text-base leading-relaxed text-night/75">
-          {t("landing.lead")}
-        </p>
       </section>
 
       <LandingHero />
 
-      <div className="mt-auto space-y-3 pt-4">
+      <div className="mt-6 space-y-3">
         <Link
           href="/create"
           className="flex min-h-14 items-center justify-center rounded-2xl bg-night text-lg font-bold text-ivory shadow-md"

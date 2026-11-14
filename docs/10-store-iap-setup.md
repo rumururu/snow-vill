@@ -110,7 +110,7 @@ Test data to remove after the refund check: villages "QA IAP test" (capacity 6),
 | ~~Play app content forms, data safety, store settings, production countries~~ done 2026-11-12 (see §8) | Claude | — |
 | ~~Play: production release 1.0.0 (build 8) sent for review~~ 2026-11-12 | Claude | review usually ≤ 7 days |
 | ~~ASC reviewer contact~~ set 2026-11-12 (company standard contact, passed as `REVIEW_*` env to `tools/store/listing.py`, not stored in the repo) | Claude | |
-| ASC: submit for review | owner approval | |
+| ~~ASC: submit for review~~ submitted 2026-11-14: version 1.0 (build 10) + 4 consumables in one submission, WAITING_FOR_REVIEW. Age rating, content rights and free price set through the API; App Privacy published in the web UI (name, photos, other user content, device ID, purchase history, product interaction — all app functionality, linked, no tracking); the first consumable can only be added to the version's submission from the IAP page ("심사에 추가" → the draft), the API returns FIRST_CONSUMABLE_MUST_BE_SUBMITTED_ON_VERSION | Claude | review ≤ 48 h |
 | Report handling built 2026-11-12 (`supabase/migrations/20261113100000_snowvill_moderation.sql`, `supabase/moderation.py`, LaunchAgent `supabase/launchd/com.mkideabox.snowvill-reports.plist`): deployed 2026-11-13 (live tests 86/86); one real alert mail verified end to end (report → `check` mail in the operator inbox → `remove`, test data cleaned). **LaunchAgent install pending** — the owner runs the install line in the plist header | owner | before launch traffic |
 | Lower the RevenueCat v2 key to read-only | Claude | after setup |
 

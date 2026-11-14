@@ -190,7 +190,6 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
           <HousePreview style={draft.style} direction={draft.direction} className="h-28 w-32 shrink-0" />
           <div className="text-sm text-night/80">
             <p className="font-semibold text-night">{lot ? t("claim.lot", { n: lot.slot + 1 }) : ""}</p>
-            <p>{t("claim.lead")}</p>
           </div>
         </div>
 
@@ -276,7 +275,6 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                   className="sr-only"
-                  aria-describedby="photo-hint"
                   disabled={photoBusy}
                   onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
                 />
@@ -292,9 +290,6 @@ export function ClaimHouseSheet({ village, slot, onClose, onClaimed, onChangeSlo
               )}
             </div>
           </div>
-          <p id="photo-hint" className="mt-2 text-xs text-night/60">
-            {t("claim.photoHint")}
-          </p>
           {photoError && (
             <div role="alert" className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-[#F8E6DD] px-3 py-2 text-sm text-night">
               <span>{photoError}</span>

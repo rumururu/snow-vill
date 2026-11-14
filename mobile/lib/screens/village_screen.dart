@@ -452,14 +452,6 @@ class _VillageScreenState extends ConsumerState<VillageScreen> {
               ),
             ] else ...[
               const SizedBox(height: 8),
-              Text(
-                village.isFull ? l.tapHintFull : l.tapHint,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: SvColors.night.withValues(alpha: 0.6),
-                ),
-              ),
               if (async.hasError)
                 Padding(
                   padding: const EdgeInsets.all(8),
@@ -1019,14 +1011,6 @@ class _ClaimSheetState extends ConsumerState<_ClaimSheet> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  l.photoHint,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: SvColors.night.withValues(alpha: 0.6),
-                  ),
-                ),
                 const SizedBox(height: 14),
                 TextField(
                   key: const ValueKey('message'),
@@ -1437,7 +1421,6 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
   Package? _package;
 
   /// Store prices of every tier (local currency) for the price ladder; empty until loaded.
-  Map<int, String> _prices = const {};
   Map<int, int> _credits = const {};
   bool _loading = true;
   bool _busy = false;
@@ -1481,13 +1464,6 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
       _package = results[1] as Package?;
       _loading = false;
     });
-    if (!purchases.available) return;
-    final prices = <int, String>{};
-    for (final tier in const [1, 2, 3, 4]) {
-      final p = await purchases.tierPackage(_installId, tier);
-      if (p != null) prices[tier] = p.storeProduct.priceString;
-    }
-    if (mounted && prices.length == 4) setState(() => _prices = prices);
   }
 
   Future<void> _apply(Future<ActionOutcome> Function() action) async {
@@ -1536,7 +1512,43 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
     }
   }
 
-  String _won(int n) => '₩${NumberFormat.decimalPattern('ko').format(n)}';
+  Widget _districtName(String name) {
+    final text = Text(
+      name,
+      style: const TextStyle(
+        fontWeight: FontWeight.w700,
+        color: SvColors.night,
+      ),
+    );
+    return name.contains(' ')
+        ? text
+        : FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: text,
+          );
+  }
+
+  Widget _landmark(geo.VillageGeometry g, geo.DistrictDef d) {
+    final f = d.facility;
+    if (f == null) {
+      return const Center(
+        child: SizedBox(
+          width: 44,
+          height: 22,
+          child: DecoratedBox(
+            decoration: ShapeDecoration(
+              color: Color(0xFFA9CFE6),
+              shape: StadiumBorder(
+                side: BorderSide(color: Color(0xFF7FA9C4), width: 2),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return Image.asset(g.sprites[f.sprite]!.asset, fit: BoxFit.contain);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1591,15 +1603,6 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
               color: SvColors.night,
             ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            l.expandBody(v.capacity, expansionStep),
-            style: const TextStyle(
-              fontSize: 15,
-              height: 1.5,
-              color: SvColors.night,
-            ),
-          ),
           if (_tier > 0) ...[
             const SizedBox(height: 12),
             Text(
@@ -1645,27 +1648,37 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
                             : () => setState(() => _selected = d),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
+                            horizontal: 8,
                             vertical: 6,
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          child: Row(
                             children: [
-                              Text(
-                                g.districts[d].name(lang),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  color: SvColors.night,
-                                ),
+                              // The district's landmark (its name comes from it); the lake has a pond.
+                              SizedBox(
+                                width: 52,
+                                height: 52,
+                                child: _landmark(g, g.districts[d]),
                               ),
-                              Text(
-                                districtState(v.openHalves, d) == 1
-                                    ? l.districtHalf
-                                    : l.districtNew,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: SvColors.night.withValues(alpha: 0.65),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    // A name without spaces (German compounds, Japanese) shrinks to one
+                                    // line instead of breaking mid-word.
+                                    _districtName(g.districts[d].name(lang)),
+                                    if (districtState(v.openHalves, d) == 1)
+                                      Text(
+                                        l.districtHalf,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: SvColors.night.withValues(
+                                            alpha: 0.65,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -1677,32 +1690,6 @@ class _UpgradeSheetState extends ConsumerState<_UpgradeSheet> {
               ],
             ),
           ],
-          const SizedBox(height: 10),
-          // Store prices in the buyer's currency; the ₩ fallback only makes sense in Korean.
-          if (_prices.length == 4 || lang == 'ko')
-            Text(
-              l.priceLadder(
-                _prices[1] ?? _won(tierPriceKrw[1]!),
-                _prices[2] ?? _won(tierPriceKrw[2]!),
-                _prices[3] ?? _won(tierPriceKrw[3]!),
-                _prices[4] ?? _won(tierPriceKrw[4]!),
-                maxCapacity,
-              ),
-              style: TextStyle(
-                fontSize: 12,
-                height: 1.45,
-                color: SvColors.night.withValues(alpha: 0.7),
-              ),
-            ),
-          const SizedBox(height: 4),
-          Text(
-            l.upgradePointGift,
-            style: TextStyle(
-              fontSize: 12,
-              height: 1.45,
-              color: SvColors.night.withValues(alpha: 0.7),
-            ),
-          ),
           const SizedBox(height: 16),
           if (_status != null) ...[
             Text(_status!, textAlign: TextAlign.center),

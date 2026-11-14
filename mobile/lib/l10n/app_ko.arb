@@ -2,7 +2,6 @@
   "@@locale": "ko",
   "appTitle": "Snow Village",
   "tagline": "친구들과 만드는\n우리만의 겨울 마을",
-  "taglineBody": "친구 한 명이 집 한 채. 성당 광장을 가운데 두고 동네를 하나씩 열어 60채까지 넓혀요. 동네마다 아이스링크·산타의 집 같은 시설이 생기고, 사진은 집을 눌렀을 때만 보여요.",
   "createVillage": "새 마을 만들기",
   "openByLink": "초대 링크로 마을 열기",
   "myVillages": "내 마을",
@@ -10,7 +9,7 @@
   "privacyPolicy": "개인정보처리방침",
   "createHeading": "우리 마을의 이름은?",
   "villageNameHint": "예: 눈송이 마을",
-  "createCapacity": "친구 6명까지 무료로 한 집씩 입주할 수 있어요. 동네를 열어 60채까지 넓힐 수 있어요.",
+  "createCapacity": "친구 6명까지 무료로 입주할 수 있어요.",
   "createButton": "마을 생성하기",
   "creating": "만드는 중…",
   "occupancy": "{count}/{capacity}",
@@ -33,7 +32,6 @@
     }
   },
   "villageComplete": "마을이 완성됐어요",
-  "tapHint": "불 켜진 집을 누르면 사진 액자가, 빈 집을 누르면 내 집 만들기가 열려요.",
   "makeMyHouse": "내 집 만들기",
   "myHouse": "내 집 보기",
   "invite": "친구 초대",
@@ -73,7 +71,6 @@
   "changePhoto": "사진 바꾸기",
   "addPhoto": "사진 올리기",
   "removePhoto": "사진 빼기",
-  "photoHint": "사진 없이도 참여할 수 있어요. 정사각형으로 잘리고 위치 정보(EXIF)는 지워져요.",
   "message": "한마디",
   "messageHint": "마을 친구들에게 남길 한마디",
   "visibilityNote": "입력한 닉네임·한마디·사진은 이 마을 링크를 가진 사람에게 보여요.",
@@ -113,7 +110,7 @@
   "removeButton": "집 비우기",
   "photoLoadFailed": "사진을 불러오지 못했어요.",
   "inviteTitle": "친구 초대",
-  "inviteBody": "친구를 초대해 마을을 완성해요. 빈 집이 {count}채 남았어요.",
+  "inviteBody": "빈 집이 {count}채 남았어요.",
   "@inviteBody": {
     "placeholders": {
       "count": {
@@ -124,7 +121,7 @@
   "copyLink": "링크 복사",
   "linkCopied": "초대 링크를 복사했어요.",
   "shareLink": "공유하기",
-  "inviteNote": "링크를 받은 사람은 누구나 마을을 구경하고 빈 집에 입주할 수 있어요. 믿을 수 있는 친구에게만 보내 주세요.",
+  "inviteNote": "믿을 수 있는 친구에게만 보내 주세요.",
   "shareText": "우리 겨울 마을에 집을 지어 줘! {url}",
   "@shareText": {
     "placeholders": {
@@ -142,7 +139,7 @@
     }
   },
   "photoFailedAfterClaim": "집은 완성됐지만 사진을 올리지 못했어요. 내 집을 눌러 다시 올려 주세요.",
-  "alreadyHaveHouse": "이미 이 마을에 내 집이 있어요. 친구를 초대해 빈 집을 채워 주세요!",
+  "alreadyHaveHouse": "이미 이 마을에 내 집이 있어요.",
   "houseRemoved": "{name}님의 집을 비웠어요.",
   "@houseRemoved": {
     "placeholders": {
@@ -194,15 +191,6 @@
       }
     }
   },
-  "upgradePointAurora": "{big}채가 모두 차면 하늘에 오로라가 떠요.",
-  "@upgradePointAurora": {
-    "placeholders": {
-      "big": {
-        "type": "int"
-      }
-    }
-  },
-  "upgradePointGift": "마을 주인이 아니어도 넓혀 줄 수 있고, 넓히면 웹과 앱의 모두에게 적용돼요.",
   "useCredit": "보유한 이용권으로 넓히기",
   "upgradeWaiting": "결제를 확인하는 중이에요…",
   "restorePurchases": "구매 복원",
@@ -212,7 +200,6 @@
   "errAlreadyBig": "이미 가장 큰 마을(60채)이에요.",
   "errPurchaseFailed": "결제를 완료하지 못했어요. 다시 시도해 주세요.",
   "errPurchasePending": "결제는 됐지만 확인이 늦어지고 있어요. 잠시 후 다시 열면 자동으로 적용돼요.",
-  "tapHintFull": "집을 눌러 친구들의 사진 액자를 열어 보세요.",
   "doorDirection": "문 방향",
   "dirFrontLeft": "왼쪽 앞",
   "dirFrontRight": "오른쪽 앞",
@@ -235,45 +222,13 @@
       }
     }
   },
-  "expandBody": "지금 집 {capacity}채 마을이에요. 동네를 고르면 집터 {step}곳이 열려요 (한 동네는 6채, 두 번에 걸쳐 열려요).",
-  "@expandBody": {
-    "placeholders": {
-      "capacity": {
-        "type": "int"
-      },
-      "step": {
-        "type": "int"
-      }
-    }
-  },
-  "pickDistrict": "열 동네",
-  "districtNew": "새 동네 · 3채",
-  "districtHalf": "반쯤 열림 · 나머지 3채",
+  "pickDistrict": "어느 동네를 열까요?",
+  "districtHalf": "반쯤 열림",
   "buyDistrict": "{price}에 넓히기",
   "@buyDistrict": {
     "placeholders": {
       "price": {
         "type": "String"
-      }
-    }
-  },
-  "priceLadder": "무료 6채 → 9채 {p1} → 12채 {p2} → 15채 {p3} → 그 뒤 3채마다 {p4} (최대 {max}채)",
-  "@priceLadder": {
-    "placeholders": {
-      "p1": {
-        "type": "String"
-      },
-      "p2": {
-        "type": "String"
-      },
-      "p3": {
-        "type": "String"
-      },
-      "p4": {
-        "type": "String"
-      },
-      "max": {
-        "type": "int"
       }
     }
   },
@@ -292,7 +247,7 @@
   "pathStones": "디딤돌",
   "pathBrick": "벽돌길",
   "pathSnow": "눈길",
-  "lookHint": "장식 아래 동그라미를 끌어서 옮겨요. 집·길·랜드마크 위나 마을 밖에는 놓을 수 없어요.",
+  "lookHint": "장식 아래 동그라미를 끌어서 옮겨요.",
   "resetDecor": "장식 처음 자리로",
   "saveLook": "저장",
   "savingLook": "저장하는 중…",

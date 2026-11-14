@@ -15,10 +15,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get tagline => 'Зимняя деревня,\nкоторую строишь с друзьями';
 
   @override
-  String get taglineBody =>
-      'Один друг — один дом. Открывай переулки вокруг соборной площади, и деревня вырастет до 60 домов. В каждом переулке — своя достопримечательность: каток, дом Санты и другие. Фото видно, только если нажать на дом.';
-
-  @override
   String get createVillage => 'Создать деревню';
 
   @override
@@ -41,8 +37,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get villageNameHint => 'напр. Снежинкино';
 
   @override
-  String get createCapacity =>
-      'До 6 друзей заселятся бесплатно, а с новыми переулками деревня вырастет до 60 домов.';
+  String get createCapacity => 'До 6 друзей заселятся бесплатно.';
 
   @override
   String get createButton => 'Создать деревню';
@@ -62,10 +57,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get villageComplete => 'Деревня готова';
-
-  @override
-  String get tapHint =>
-      'Нажми на дом, где горит свет, — откроется фоторамка, на пустой — можно заселиться.';
 
   @override
   String get makeMyHouse => 'Построить дом';
@@ -147,10 +138,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get removePhoto => 'Убрать фото';
 
   @override
-  String get photoHint =>
-      'Фото не обязательно. Оно обрезается до квадрата, а данные о местоположении (EXIF) удаляются.';
-
-  @override
   String get message => 'Сообщение';
 
   @override
@@ -214,7 +201,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String inviteBody(int count) {
-    return 'Позови друзей, чтобы заполнить деревню. Свободно домов: $count.';
+    return 'Свободно домов: $count.';
   }
 
   @override
@@ -227,8 +214,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get shareLink => 'Поделиться';
 
   @override
-  String get inviteNote =>
-      'Любой, у кого есть ссылка, может посмотреть деревню и заселиться в пустой дом. Отправляй её только тем, кому доверяешь.';
+  String get inviteNote => 'Отправляй её только тем, кому доверяешь.';
 
   @override
   String shareText(String url) {
@@ -245,8 +231,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Дом построен, но фото не загрузилось. Нажми на свой дом, чтобы попробовать ещё раз.';
 
   @override
-  String get alreadyHaveHouse =>
-      'У тебя уже есть дом в этой деревне. Позови друзей, чтобы заполнить остальные!';
+  String get alreadyHaveHouse => 'У тебя уже есть дом в этой деревне.';
 
   @override
   String houseRemoved(String name) {
@@ -339,15 +324,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String upgradePointAurora(int big) {
-    return 'Когда заселят все дома ($big), в небе загорится северное сияние.';
-  }
-
-  @override
-  String get upgradePointGift =>
-      'Расширить деревню может кто угодно, не только владелец; изменения видят все — на сайте и в приложении.';
-
-  @override
   String get useCredit => 'Использовать свой пропуск';
 
   @override
@@ -374,9 +350,6 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get errPurchasePending =>
       'Оплата прошла, но подтверждение задерживается. Открой чуть позже — всё применится.';
-
-  @override
-  String get tapHintFull => 'Нажми на дом, чтобы открыть фоторамку друга.';
 
   @override
   String get doorDirection => 'Направление двери';
@@ -407,27 +380,14 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String expandBody(int capacity, int step) {
-    return 'Сейчас в деревне домов: $capacity. Выбери переулок, чтобы открыть ещё участков: $step (в переулке 6 участков, открываются в два этапа).';
-  }
+  String get pickDistrict => 'Какой переулок открыть?';
 
   @override
-  String get pickDistrict => 'Какой переулок открыть';
-
-  @override
-  String get districtNew => 'Новый переулок · 3 участка';
-
-  @override
-  String get districtHalf => 'Открыт наполовину · последние 3';
+  String get districtHalf => 'Открыт наполовину';
 
   @override
   String buyDistrict(String price) {
     return 'Расширить за $price';
-  }
-
-  @override
-  String priceLadder(String p1, String p2, String p3, String p4, int max) {
-    return '6 бесплатно → 9 за $p1 → 12 за $p2 → 15 за $p3 → далее $p4 за каждые 3 (до $max)';
   }
 
   @override
@@ -457,8 +417,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pathSnow => 'Снег';
 
   @override
-  String get lookHint =>
-      'Перетащи кольцо под украшением, чтобы его сдвинуть. Нельзя ставить на дома, дорожки, достопримечательности и за пределы деревни.';
+  String get lookHint => 'Перетащи кольцо под украшением, чтобы его сдвинуть.';
 
   @override
   String get resetDecor => 'Сбросить украшения';

@@ -15,10 +15,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tagline => '友だちとつくる\nわたしたちの冬の村';
 
   @override
-  String get taglineBody =>
-      '友だち1人に家が1軒。大聖堂の広場を囲んで通りを1つずつ開き、60軒まで広げられます。通りごとにスケートリンクやサンタの家などができます。写真は家をタップしたときだけ表示されます。';
-
-  @override
   String get createVillage => '新しい村をつくる';
 
   @override
@@ -40,7 +36,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get villageNameHint => '例：雪の結晶村';
 
   @override
-  String get createCapacity => '友だち6人まで無料で入居できます。通りを開けば60軒まで広げられます。';
+  String get createCapacity => '友だち6人まで無料で入居できます。';
 
   @override
   String get createButton => '村をつくる';
@@ -60,9 +56,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get villageComplete => '村が完成しました';
-
-  @override
-  String get tapHint => '明かりのついた家をタップで写真フレーム、空き家をタップで家づくりが開きます。';
 
   @override
   String get makeMyHouse => '自分の家をつくる';
@@ -144,9 +137,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get removePhoto => '写真を外す';
 
   @override
-  String get photoHint => '写真なしでも参加できます。正方形に切り抜かれ、位置情報（EXIF）は削除されます。';
-
-  @override
   String get message => 'ひとこと';
 
   @override
@@ -208,7 +198,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String inviteBody(int count) {
-    return '友だちを招待して村を完成させましょう。空き家はあと$count軒です。';
+    return '空き家はあと$count軒です。';
   }
 
   @override
@@ -221,7 +211,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get shareLink => '共有';
 
   @override
-  String get inviteNote => 'リンクを受け取った人は誰でも村を見て、空き家に入居できます。信頼できる友だちにだけ送ってください。';
+  String get inviteNote => '信頼できる友だちにだけ送ってください。';
 
   @override
   String shareText(String url) {
@@ -238,7 +228,7 @@ class AppLocalizationsJa extends AppLocalizations {
       '家は完成しましたが、写真をアップロードできませんでした。自分の家をタップして、もう一度アップロードしてください。';
 
   @override
-  String get alreadyHaveHouse => 'この村にはもう自分の家があります。友だちを招待して空き家を埋めましょう！';
+  String get alreadyHaveHouse => 'この村にはもう自分の家があります。';
 
   @override
   String houseRemoved(String name) {
@@ -329,14 +319,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String upgradePointAurora(int big) {
-    return '$big軒すべてが埋まると、空にオーロラが現れます。';
-  }
-
-  @override
-  String get upgradePointGift => '村のオーナーでなくても広げられます。広げるとWebとアプリのみんなに反映されます。';
-
-  @override
   String get useCredit => '持っている利用券で広げる';
 
   @override
@@ -363,9 +345,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get errPurchasePending =>
       '支払いは完了しましたが、確認に時間がかかっています。少ししてから開き直すと自動で反映されます。';
-
-  @override
-  String get tapHintFull => '家をタップして友だちの写真フレームを開いてみてください。';
 
   @override
   String get doorDirection => 'ドアの向き';
@@ -396,27 +375,14 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String expandBody(int capacity, int step) {
-    return 'いまは$capacity軒の村です。通りを選ぶと区画が$stepつ開きます（1つの通りは6軒で、2回に分けて開きます）。';
-  }
+  String get pickDistrict => 'どの通りを開きますか？';
 
   @override
-  String get pickDistrict => '開く通り';
-
-  @override
-  String get districtNew => '新しい通り · 3軒';
-
-  @override
-  String get districtHalf => '半分開放 · 残り3軒';
+  String get districtHalf => '半分開放';
 
   @override
   String buyDistrict(String price) {
     return '$priceで広げる';
-  }
-
-  @override
-  String priceLadder(String p1, String p2, String p3, String p4, int max) {
-    return '無料6軒 → 9軒 $p1 → 12軒 $p2 → 15軒 $p3 → 以降3軒ごとに$p4（最大$max軒）';
   }
 
   @override
@@ -446,7 +412,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pathSnow => '雪道';
 
   @override
-  String get lookHint => '飾りの下の丸をドラッグして動かします。家・道・ランドマークの上や村の外には置けません。';
+  String get lookHint => '飾りの下の丸をドラッグして動かします。';
 
   @override
   String get resetDecor => '飾りを元の位置に';

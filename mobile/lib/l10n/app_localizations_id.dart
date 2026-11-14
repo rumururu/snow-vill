@@ -15,10 +15,6 @@ class AppLocalizationsId extends AppLocalizations {
   String get tagline => 'Desa musim dingin\nyang kamu bangun bersama teman';
 
   @override
-  String get taglineBody =>
-      'Satu teman, satu rumah. Buka lorong di sekitar alun-alun katedral hingga 60 rumah — tiap lorong punya fasilitas seperti arena es dan rumah Sinterklas. Foto hanya muncul saat rumah diketuk.';
-
-  @override
   String get createVillage => 'Buat desa';
 
   @override
@@ -41,8 +37,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get villageNameHint => 'mis. Desa Kepingan Salju';
 
   @override
-  String get createCapacity =>
-      'Hingga 6 teman bisa menempati rumah gratis; buka lorong lain untuk memperluas desa hingga 60 rumah.';
+  String get createCapacity => 'Hingga 6 teman bisa menempati rumah gratis.';
 
   @override
   String get createButton => 'Buat desa';
@@ -62,10 +57,6 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get villageComplete => 'Desa sudah lengkap';
-
-  @override
-  String get tapHint =>
-      'Ketuk rumah yang menyala untuk bingkai fotonya, atau rumah kosong untuk pindah.';
 
   @override
   String get makeMyHouse => 'Bangun rumahku';
@@ -147,10 +138,6 @@ class AppLocalizationsId extends AppLocalizations {
   String get removePhoto => 'Hapus foto';
 
   @override
-  String get photoHint =>
-      'Foto opsional. Foto dipotong persegi dan data lokasi (EXIF) dihapus.';
-
-  @override
   String get message => 'Pesan';
 
   @override
@@ -214,7 +201,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String inviteBody(int count) {
-    return 'Undang teman untuk melengkapi desa. Sisa $count rumah.';
+    return 'Sisa $count rumah.';
   }
 
   @override
@@ -227,8 +214,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get shareLink => 'Bagikan';
 
   @override
-  String get inviteNote =>
-      'Siapa pun yang punya tautan bisa melihat desa dan pindah ke rumah kosong. Bagikan hanya ke orang yang kamu percaya.';
+  String get inviteNote => 'Bagikan hanya ke orang yang kamu percaya.';
 
   @override
   String shareText(String url) {
@@ -245,8 +231,7 @@ class AppLocalizationsId extends AppLocalizations {
       'Rumahmu sudah jadi, tapi fotonya gagal diunggah. Ketuk rumahmu untuk mencoba lagi.';
 
   @override
-  String get alreadyHaveHouse =>
-      'Kamu sudah punya rumah di sini. Undang teman untuk mengisi sisanya!';
+  String get alreadyHaveHouse => 'Kamu sudah punya rumah di sini.';
 
   @override
   String houseRemoved(String name) {
@@ -340,15 +325,6 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String upgradePointAurora(int big) {
-    return 'Saat semua $big rumah terisi, aurora muncul di langit.';
-  }
-
-  @override
-  String get upgradePointGift =>
-      'Siapa pun bisa memperluas desa, bukan hanya pemiliknya; berlaku untuk semua di web dan aplikasi.';
-
-  @override
   String get useCredit => 'Pakai tiket yang kamu punya';
 
   @override
@@ -375,10 +351,6 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get errPurchasePending =>
       'Sudah dibayar, tapi konfirmasinya tertunda. Buka lagi nanti, pembelian akan diterapkan otomatis.';
-
-  @override
-  String get tapHintFull =>
-      'Ketuk rumah untuk membuka bingkai foto teman-temanmu.';
 
   @override
   String get doorDirection => 'Arah pintu';
@@ -409,27 +381,14 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String expandBody(int capacity, int step) {
-    return 'Desa ini kini memuat $capacity rumah. Pilih lorong untuk membuka $step kavling lagi (satu lorong berisi 6, dibuka dua tahap).';
-  }
+  String get pickDistrict => 'Lorong mana yang dibuka?';
 
   @override
-  String get pickDistrict => 'Lorong yang dibuka';
-
-  @override
-  String get districtNew => 'Lorong baru · 3 kavling';
-
-  @override
-  String get districtHalf => 'Setengah terbuka · 3 terakhir';
+  String get districtHalf => 'Setengah terbuka';
 
   @override
   String buyDistrict(String price) {
     return 'Perluas seharga $price';
-  }
-
-  @override
-  String priceLadder(String p1, String p2, String p3, String p4, int max) {
-    return 'Gratis 6 → 9 seharga $p1 → 12 seharga $p2 → 15 seharga $p3 → lalu $p4 per 3 (maks. $max)';
   }
 
   @override
@@ -460,7 +419,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get lookHint =>
-      'Seret lingkaran di bawah dekorasi untuk memindahkannya. Tidak bisa di atas rumah, jalan, atau landmark, atau di luar desa.';
+      'Seret lingkaran di bawah dekorasi untuk memindahkannya.';
 
   @override
   String get resetDecor => 'Atur ulang dekorasi';

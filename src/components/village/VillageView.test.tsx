@@ -132,7 +132,9 @@ describe("VillageView (sample village)", () => {
     await user.click(document.querySelector('polygon[data-district="2"]')!);
     const sheet = screen.getByRole("dialog", { name: "마을 넓히기" });
     expect(within(sheet).getByRole("radio", { name: /산타 동네/ })).toBeChecked();
-    expect(within(sheet).getByText(/₩2,900 → 12채 ₩6,900/)).toBeInTheDocument();
+    // Only the choice: no price ladder or explanations; each card shows its district's landmark.
+    expect(within(sheet).queryByText(/→/)).toBeNull();
+    expect(within(within(sheet).getByRole("radio", { name: /산타 동네/ }).closest("label")!).getByRole("presentation", { hidden: true }).getAttribute("src")).toContain("landmark_santa");
     await user.click(within(sheet).getByRole("button", { name: "산타 동네 열기 (시뮬레이션)" }));
     expect(screen.getByText("6/9")).toBeInTheDocument();
     expect(Array.from(document.querySelectorAll('polygon[data-state="empty"]')).map((n) => n.getAttribute("data-slot")).sort()).toEqual(["12", "13", "14"]);

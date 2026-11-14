@@ -126,12 +126,6 @@ abstract class AppLocalizations {
   /// **'친구들과 만드는\n우리만의 겨울 마을'**
   String get tagline;
 
-  /// No description provided for @taglineBody.
-  ///
-  /// In ko, this message translates to:
-  /// **'친구 한 명이 집 한 채. 성당 광장을 가운데 두고 동네를 하나씩 열어 60채까지 넓혀요. 동네마다 아이스링크·산타의 집 같은 시설이 생기고, 사진은 집을 눌렀을 때만 보여요.'**
-  String get taglineBody;
-
   /// No description provided for @createVillage.
   ///
   /// In ko, this message translates to:
@@ -177,7 +171,7 @@ abstract class AppLocalizations {
   /// No description provided for @createCapacity.
   ///
   /// In ko, this message translates to:
-  /// **'친구 6명까지 무료로 한 집씩 입주할 수 있어요. 동네를 열어 60채까지 넓힐 수 있어요.'**
+  /// **'친구 6명까지 무료로 입주할 수 있어요.'**
   String get createCapacity;
 
   /// No description provided for @createButton.
@@ -209,12 +203,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'마을이 완성됐어요'**
   String get villageComplete;
-
-  /// No description provided for @tapHint.
-  ///
-  /// In ko, this message translates to:
-  /// **'불 켜진 집을 누르면 사진 액자가, 빈 집을 누르면 내 집 만들기가 열려요.'**
-  String get tapHint;
 
   /// No description provided for @makeMyHouse.
   ///
@@ -366,12 +354,6 @@ abstract class AppLocalizations {
   /// **'사진 빼기'**
   String get removePhoto;
 
-  /// No description provided for @photoHint.
-  ///
-  /// In ko, this message translates to:
-  /// **'사진 없이도 참여할 수 있어요. 정사각형으로 잘리고 위치 정보(EXIF)는 지워져요.'**
-  String get photoHint;
-
   /// No description provided for @message.
   ///
   /// In ko, this message translates to:
@@ -483,7 +465,7 @@ abstract class AppLocalizations {
   /// No description provided for @inviteBody.
   ///
   /// In ko, this message translates to:
-  /// **'친구를 초대해 마을을 완성해요. 빈 집이 {count}채 남았어요.'**
+  /// **'빈 집이 {count}채 남았어요.'**
   String inviteBody(int count);
 
   /// No description provided for @copyLink.
@@ -507,7 +489,7 @@ abstract class AppLocalizations {
   /// No description provided for @inviteNote.
   ///
   /// In ko, this message translates to:
-  /// **'링크를 받은 사람은 누구나 마을을 구경하고 빈 집에 입주할 수 있어요. 믿을 수 있는 친구에게만 보내 주세요.'**
+  /// **'믿을 수 있는 친구에게만 보내 주세요.'**
   String get inviteNote;
 
   /// No description provided for @shareText.
@@ -531,7 +513,7 @@ abstract class AppLocalizations {
   /// No description provided for @alreadyHaveHouse.
   ///
   /// In ko, this message translates to:
-  /// **'이미 이 마을에 내 집이 있어요. 친구를 초대해 빈 집을 채워 주세요!'**
+  /// **'이미 이 마을에 내 집이 있어요.'**
   String get alreadyHaveHouse;
 
   /// No description provided for @houseRemoved.
@@ -696,18 +678,6 @@ abstract class AppLocalizations {
   /// **'잠긴 빈 집 {count}채가 열려요.'**
   String upgradePointLots(int count);
 
-  /// No description provided for @upgradePointAurora.
-  ///
-  /// In ko, this message translates to:
-  /// **'{big}채가 모두 차면 하늘에 오로라가 떠요.'**
-  String upgradePointAurora(int big);
-
-  /// No description provided for @upgradePointGift.
-  ///
-  /// In ko, this message translates to:
-  /// **'마을 주인이 아니어도 넓혀 줄 수 있고, 넓히면 웹과 앱의 모두에게 적용돼요.'**
-  String get upgradePointGift;
-
   /// No description provided for @useCredit.
   ///
   /// In ko, this message translates to:
@@ -762,12 +732,6 @@ abstract class AppLocalizations {
   /// **'결제는 됐지만 확인이 늦어지고 있어요. 잠시 후 다시 열면 자동으로 적용돼요.'**
   String get errPurchasePending;
 
-  /// No description provided for @tapHintFull.
-  ///
-  /// In ko, this message translates to:
-  /// **'집을 눌러 친구들의 사진 액자를 열어 보세요.'**
-  String get tapHintFull;
-
   /// No description provided for @doorDirection.
   ///
   /// In ko, this message translates to:
@@ -816,28 +780,16 @@ abstract class AppLocalizations {
   /// **'{name} (아직 열리지 않음) · 마을 넓히기로 열기'**
   String lockedDistrict(String name);
 
-  /// No description provided for @expandBody.
-  ///
-  /// In ko, this message translates to:
-  /// **'지금 집 {capacity}채 마을이에요. 동네를 고르면 집터 {step}곳이 열려요 (한 동네는 6채, 두 번에 걸쳐 열려요).'**
-  String expandBody(int capacity, int step);
-
   /// No description provided for @pickDistrict.
   ///
   /// In ko, this message translates to:
-  /// **'열 동네'**
+  /// **'어느 동네를 열까요?'**
   String get pickDistrict;
-
-  /// No description provided for @districtNew.
-  ///
-  /// In ko, this message translates to:
-  /// **'새 동네 · 3채'**
-  String get districtNew;
 
   /// No description provided for @districtHalf.
   ///
   /// In ko, this message translates to:
-  /// **'반쯤 열림 · 나머지 3채'**
+  /// **'반쯤 열림'**
   String get districtHalf;
 
   /// No description provided for @buyDistrict.
@@ -845,12 +797,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'{price}에 넓히기'**
   String buyDistrict(String price);
-
-  /// No description provided for @priceLadder.
-  ///
-  /// In ko, this message translates to:
-  /// **'무료 6채 → 9채 {p1} → 12채 {p2} → 15채 {p3} → 그 뒤 3채마다 {p4} (최대 {max}채)'**
-  String priceLadder(String p1, String p2, String p3, String p4, int max);
 
   /// No description provided for @maxVillage.
   ///
@@ -903,7 +849,7 @@ abstract class AppLocalizations {
   /// No description provided for @lookHint.
   ///
   /// In ko, this message translates to:
-  /// **'장식 아래 동그라미를 끌어서 옮겨요. 집·길·랜드마크 위나 마을 밖에는 놓을 수 없어요.'**
+  /// **'장식 아래 동그라미를 끌어서 옮겨요.'**
   String get lookHint;
 
   /// No description provided for @resetDecor.

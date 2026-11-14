@@ -15,10 +15,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get tagline => 'Uma vila de inverno\nque você constrói com amigos';
 
   @override
-  String get taglineBody =>
-      'Um amigo, uma casa. Abra ruas ao redor da praça da catedral e amplie a vila até 60 casas — cada rua ganha uma atração, como pista de gelo ou a casa do Papai Noel. As fotos só aparecem ao tocar em uma casa.';
-
-  @override
   String get createVillage => 'Criar uma vila';
 
   @override
@@ -41,8 +37,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get villageNameHint => 'ex.: Vila Floco de Neve';
 
   @override
-  String get createCapacity =>
-      'Até 6 amigos se mudam de graça; abra mais ruas para ampliar a vila até 60 casas.';
+  String get createCapacity => 'Até 6 amigos se mudam de graça.';
 
   @override
   String get createButton => 'Criar vila';
@@ -62,10 +57,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get villageComplete => 'Vila completa';
-
-  @override
-  String get tapHint =>
-      'Toque numa casa acesa para ver o porta-retrato, ou numa vazia para se mudar.';
 
   @override
   String get makeMyHouse => 'Criar minha casa';
@@ -148,10 +139,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get removePhoto => 'Remover foto';
 
   @override
-  String get photoHint =>
-      'A foto é opcional. Ela é cortada em quadrado e os dados de localização (EXIF) são removidos.';
-
-  @override
   String get message => 'Recado';
 
   @override
@@ -215,7 +202,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String inviteBody(int count) {
-    return 'Convide amigos para completar a vila. Casas livres: $count.';
+    return 'Casas livres: $count.';
   }
 
   @override
@@ -228,8 +215,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get shareLink => 'Compartilhar';
 
   @override
-  String get inviteNote =>
-      'Qualquer pessoa com o link pode ver a vila e se mudar para uma casa vazia. Compartilhe só com quem você confia.';
+  String get inviteNote => 'Compartilhe só com quem você confia.';
 
   @override
   String shareText(String url) {
@@ -246,8 +232,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Sua casa está pronta, mas a foto não foi enviada. Toque na sua casa para tentar de novo.';
 
   @override
-  String get alreadyHaveHouse =>
-      'Você já tem uma casa aqui. Convide amigos para ocupar o resto!';
+  String get alreadyHaveHouse => 'Você já tem uma casa aqui.';
 
   @override
   String houseRemoved(String name) {
@@ -342,15 +327,6 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String upgradePointAurora(int big) {
-    return 'Quando todas as $big casas estiverem ocupadas, uma aurora ilumina o céu.';
-  }
-
-  @override
-  String get upgradePointGift =>
-      'Qualquer um pode ampliar a vila, não só o dono; vale para todos na web e no app.';
-
-  @override
   String get useCredit => 'Usar um passe que você tem';
 
   @override
@@ -377,10 +353,6 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get errPurchasePending =>
       'Pagamento feito, mas a confirmação está demorando. Abra de novo em instantes e ele será aplicado.';
-
-  @override
-  String get tapHintFull =>
-      'Toque numa casa para abrir os porta-retratos dos seus amigos.';
 
   @override
   String get doorDirection => 'Direção da porta';
@@ -411,27 +383,14 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String expandBody(int capacity, int step) {
-    return 'Esta vila tem $capacity casas. Escolha uma rua para abrir mais $step terrenos (cada rua tem 6, abertos em duas etapas).';
-  }
+  String get pickDistrict => 'Qual rua abrir?';
 
   @override
-  String get pickDistrict => 'Rua a abrir';
-
-  @override
-  String get districtNew => 'Rua nova · 3 casas';
-
-  @override
-  String get districtHalf => 'Meio aberta · últimos 3';
+  String get districtHalf => 'Meio aberta';
 
   @override
   String buyDistrict(String price) {
     return 'Ampliar por $price';
-  }
-
-  @override
-  String priceLadder(String p1, String p2, String p3, String p4, int max) {
-    return '6 grátis → 9 por $p1 → 12 por $p2 → 15 por $p3 → depois $p4 a cada 3 (até $max)';
   }
 
   @override
@@ -461,8 +420,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get pathSnow => 'Neve';
 
   @override
-  String get lookHint =>
-      'Arraste o anel sob um enfeite para movê-lo. Não sobre casas, caminhos ou marcos, nem fora da vila.';
+  String get lookHint => 'Arraste o anel sob um enfeite para movê-lo.';
 
   @override
   String get resetDecor => 'Redefinir enfeites';

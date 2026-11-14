@@ -528,7 +528,8 @@ class VillageGeometry {
   }
 
   /// The opened village as ONE rounded shape on the ground plane: a convex envelope of the plaza base and
-  /// every opened clearing, resampled with a gently wavy edge (same numbers as the web).
+  /// every opened clearing, resampled every ~0.6 tiles with a smooth edge (same as the web; owner
+  /// 2026-11-14: the old wavy edge looked bumpy).
   List<Offset> villageShape(int openHalves) {
     final circles = <(double, double, double)>[
       if (plazaShown(openHalves)) (0, 0, plazaBaseRadius),
@@ -546,25 +547,12 @@ class VillageGeometry {
     ];
     final hull = convexHull(pts);
     final out = <Offset>[];
-    var s = 0.0;
     for (var k = 0; k < hull.length; k++) {
       final a = hull[k];
       final b = hull[(k + 1) % hull.length];
-      final l = (b - a).distance;
-      final n = math.max(1, (l / 0.6).round());
-      final ni = (b.dy - a.dy) / (l == 0 ? 1 : l);
-      final nj = -(b.dx - a.dx) / (l == 0 ? 1 : l);
+      final n = math.max(1, ((b - a).distance / 0.6).round());
       for (var t = 0; t < n; t++) {
-        final f = t / n;
-        final w =
-            0.22 * math.sin(s * 0.55 + 0.7) + 0.12 * math.sin(s * 1.37 + 2.1);
-        out.add(
-          Offset(
-            a.dx + (b.dx - a.dx) * f + ni * w,
-            a.dy + (b.dy - a.dy) * f + nj * w,
-          ),
-        );
-        s += l / n;
+        out.add(Offset.lerp(a, b, t / n)!);
       }
     }
     return out;
@@ -622,9 +610,9 @@ class VillageGeometry {
   }
 
   /// Camera framing the plaza and every opened district, with room for roofs and name chips.
-  /// The camera never shows less than this many px of map across, so a small village sits in the middle like the
-  /// concept's little diorama and grows as districts open. Same as `MIN_VIEW_WIDTH` in map.ts.
-  static const minViewWidth = 1150.0;
+  /// The camera never shows less than this many px of map across (owner 2026-11-14: at 1150 the free village was
+  /// too small on a phone; at 820 it fills the width). Same as `MIN_VIEW_WIDTH` in map.ts.
+  static const minViewWidth = 820.0;
 
   /// Land radius (tiles) and its lowest screen y: the default camera never looks past it. Same as map.ts.
   static const landRadius = 33.0;

@@ -891,9 +891,8 @@ class _GroundPainter extends CustomPainter {
 
     final tex = _texture();
 
-    // The village ground: ONE rounded shape — a deep snowy slab, as in the concept diorama.
-    final top = [for (final p in shape) project(p.dx, p.dy)];
-    _slab(canvas, top, _slabDepth * elevationPx, tex, lip: 16, rim: 0.3);
+    // The village ground: ONE smooth cleared snowfield, level with the forest (owner 2026-11-14: no raised slab).
+    _clearing(canvas, [for (final p in shape) project(p.dx, p.dy)], tex);
 
     final opened = g.openDistricts(open);
     if (!plazaShown(open)) {
@@ -1405,8 +1404,41 @@ class _GroundPainter extends CustomPainter {
     }
   }
 
-  /// Thickness of the village slab (elevation units). Same as the web (`BANK`).
-  static const _slabDepth = 1.1;
+  /// The village ground: a cleared snowfield level with the forest floor. A wide blurred band of snow spills
+  /// past the edge so it blends into the field instead of ending in a cut. Mirrors `Clearing` in VillageMapArt.tsx.
+  void _clearing(Canvas canvas, List<Offset> outline, Paint? tex) {
+    final surface = Path()..addPolygon(outline, true);
+    canvas.drawPath(
+      surface,
+      Paint()
+        ..color = const Color(0xD9E4E1F2)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
+    );
+    canvas.drawPath(
+      surface,
+      Paint()
+        ..color = const Color(0xD9E4E1F2)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 70
+        ..strokeJoin = StrokeJoin.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
+    );
+    final b = surface.getBounds();
+    canvas.drawPath(
+      surface,
+      Paint()
+        ..shader = ui.Gradient.radial(
+          Offset(b.center.dx, b.top + b.height * 0.45),
+          b.longestSide * 0.6,
+          const [Color(0xFFFFFFFF), Color(0xFFF5F3FB), Color(0xFFE2DEF0)],
+          const [0, 0.7, 1],
+        )
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+    );
+    if (tex != null) {
+      canvas.drawPath(surface, tex..color = const Color(0xB3FFFFFF));
+    }
+  }
 
   /// Warm light pool radius (px) per light-giving sprite. Same as the web (`GLOW`).
   static const _glow = {

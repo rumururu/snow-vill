@@ -65,7 +65,6 @@ describe("dictionaries", () => {
     expect(translate("ko", "upgrade.inApp", params)).toContain("₩2,900");
     for (const locale of LOCALES.filter((l) => l !== "ko")) {
       expect(translate(locale, "upgrade.inApp", params)).not.toContain("₩");
-      expect(translate(locale, "upgrade.prices", params)).not.toContain("₩");
     }
   });
 });

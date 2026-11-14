@@ -25,7 +25,6 @@ import {
   plazaShown,
   villageFence,
   mapOrder,
-  shapeBank,
   shapeOutline,
   villageShape,
   pathBand,
@@ -154,8 +153,17 @@ function GroundPattern() {
   );
 }
 
-/** Thickness of the village slab (elevation units): a deep snowy diorama base, as in the concept art. */
-const BANK = 1.1;
+/** The village ground: a cleared snowfield level with the forest floor (owner 2026-11-14: no raised slab).
+ *  A wide blurred band of snow spills past the edge so the clearing blends into the field instead of ending in a cut. */
+function Clearing({ outline }: { outline: Point[] }) {
+  return (
+    <>
+      <polygon points={pts(outline)} fill="#E4E1F2" stroke="#E4E1F2" strokeWidth={70} strokeLinejoin="round" filter="url(#sv-soft-wide)" opacity={0.85} />
+      <polygon points={pts(outline)} fill="url(#sv-snow)" filter="url(#sv-soft-thin)" />
+      <polygon points={pts(outline)} fill="url(#sv-ground)" opacity={0.7} />
+    </>
+  );
+}
 
 /** A raised snowy slab: stone wall sides with mortar joints, a soft shadow under a rounded snow lip, then the top. */
 function Slab({ id, outline, bank, drop, top, texture, lip, rim = 0.3, rimColor = "#B3AAD6" }: { id: string; rim?: number; rimColor?: string; outline: Point[]; bank: Point[][]; drop: number; top: string; texture: number; lip: number }) {
@@ -463,9 +471,9 @@ export function VillageMapArt({ openHalves, houses, view, names = false, ghosts 
       </defs>
       <rect x={vb[0] - 4000} y={vb[1] - 4000} width={vb[2] + 8000} height={vb[3] + 8000} fill="url(#sv-sky)" />
       <Backdrop vb={vb} aurora={aurora} base={lotsView({ openHalves })} />
-      {/* The village ground: ONE rounded shape (bank first, then the snowy top), then the cathedral mound. */}
+      {/* The village ground: ONE smooth cleared snowfield, level with the forest, then the cathedral mound. */}
       <g data-area="village">
-        <Slab id="sv-clip-village" outline={shapeOutline(shape)} bank={shapeBank(shape, BANK)} drop={BANK * ELEVATION_PX} top="url(#sv-snow)" texture={0.7} lip={16} />
+        <Clearing outline={shapeOutline(shape)} />
       </g>
       {/* Free village (district 0 alone): no plaza yet; a fence all around its snowy base, like the first concept. */}
       {!withPlaza && <Fence runs={villageFence(shape)} z={0} />}

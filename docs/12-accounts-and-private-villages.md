@@ -75,14 +75,23 @@ Signed in → `Authorization: Bearer <access_token>`; guest → `Authorization: 
 `{install_id, apple_code?, apple_client?: "web"|"app"}` — a fresh Sign in with Apple authorization code lets the
 server revoke the Apple grant; then the account, its villages, its houses and their photos are deleted.
 
-## Cutover from the shared project
-1. Apply the schema to the new project; port `supabase/deploy.sh` (REF/token) and the live tests.
-2. Copy rows (villages, houses, reports, moderation log, tier credits/purchases) and photo objects; check counts and
-   a photo checksum per object.
-3. Switch at once: web env (`NEXT_PUBLIC_SUPABASE_*`), app 1.1 `env/*.json`, RevenueCat webhook URL, moderation
-   LaunchAgent (`supabase/moderation.py` REF/token).
-4. Old project: writes return an error (app 1.0 shows its generic error; installs are near zero on launch day),
-   reads stay until 1.1 is out, then the `snowvill_` objects are removed there.
+## Cutover from the shared project (runbook)
+Prepared 2026-11-14; run in this order once web + app 1.1 are ready.
+1. Final copy: `python3 supabase/migrate_data.py --fresh` (empties the target's copied tables first — refused once any
+   account-linked row exists; then copies rows with matching hashes and every photo with an MD5 check). Re-check
+   counts in its output. Already proven: owner/claim hashes and purchases identical on both sides.
+2. Web: `.env.local` → `NEXT_PUBLIC_SUPABASE_URL=https://hbpazldzkmkcawfppiiq.supabase.co` + that project's anon key;
+   `npm run deploy`.
+3. RevenueCat webhook `whintgre12bd5d2fe714ce9a01feb1a79a57b25` → `https://hbpazldzkmkcawfppiiq.supabase.co/functions/v1/snowvill-purchase-webhook`
+   (`POST https://api.revenuecat.com/v2/projects/projeb9d0302/integrations/webhooks/<id>` with `{"url": …}`, keychain
+   `snowvillage-revenuecat-secret`). Same Authorization secret (`SNOWVILL_WEBHOOK_AUTH`) is already set on the new project.
+4. Freeze the shared project: run `supabase/cutover/freeze_shared.sql` there (app 1.0 keeps reading, writes refused).
+5. Report alerts: set `SNOWVILL_TARGET=dedicated` in `supabase/launchd/com.mkideabox.snowvill-reports.plist`
+   (EnvironmentVariables), reinstall the LaunchAgent; scripts default to `shared` until then (`supabase/target.sh`).
+6. App 1.1: `mobile/env/prod.json` `SUPABASE_URL`/`SUPABASE_ANON_KEY` → dedicated; build and submit both stores.
+7. After 1.1 is live everywhere: flip the script default to `dedicated`, then drop the `snowvill_` objects from the
+   shared project (separate approval).
+Already done on the new project: schema + both Edge Functions, Apple key secrets, CORS origins secret.
 
 ## Store and policy changes (ship with app 1.1)
 - Privacy policy (10 languages): account data (email and name from Google/Apple, user id), private villages,

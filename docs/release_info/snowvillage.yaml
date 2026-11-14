@@ -67,7 +67,10 @@ localizations:
 
       링크를 가진 사람은 마을을 볼 수 있으니 믿을 수 있는 친구에게만 보내 주세요.
     review_notes: |
-      No login. Create a village on the home screen (새 마을 만들기), then move into a lot. To see the in-app purchase:
+      Sign-in is optional: everything works without an account. Sign in with Apple or Google (account button at the
+      top right of the home screen) keeps your villages across devices, and lets an owner make a village private
+      (⋮ → 비공개 마을; others then send a join request the owner approves under ⋮ → 멤버). Account deletion:
+      account button → 계정 삭제. Create a village on the home screen (새 마을 만들기), then move into a lot. To see the in-app purchase:
       open the village → top-right menu (⋮) → 마을 넓히기 (Grow the village) → pick a district → buy.
       Each purchase is consumable and opens 3 more lots in the chosen district. Content: user names, a one-line
       message and one photo per house; report (집 신고) and delete (내 집 비우기 / 마을 삭제) are in the house and village menus.
